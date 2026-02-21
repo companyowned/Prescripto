@@ -10,8 +10,10 @@ import {
     StyleSheet,
     SafeAreaView,
     TouchableOpacity,
+    Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { MockBottomTabs } from '../../components/home';
 import { Card, Button, Loader, EmptyState } from '../../components/ui';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { usePrescriptionHistory } from '../../features/prescriptions/hooks';
@@ -88,23 +90,31 @@ export default function HistoryScreen() {
                     />
                 }
             />
+
+            <MockBottomTabs
+                activeTab="records"
+                onHomePress={() => router.push('/(app)/home')}
+                onRecordsPress={() => { }}
+                onInsightsPress={() => router.push('/(app)/insights')}
+                onSettingsPress={() => router.push('/(app)/settings')}
+            />
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.dark.bg },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingTop: spacing.md, marginBottom: spacing.lg },
-    title: { ...typography.h2, color: colors.dark.textPrimary },
-    list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
-    itemCard: { marginBottom: spacing.md },
+    container: { flex: 1, backgroundColor: '#F5F6F8' },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingTop: Platform.OS === 'ios' ? 10 : 30, marginBottom: spacing.lg },
+    title: { ...typography.h3, color: '#111827', fontWeight: '700' },
+    list: { paddingHorizontal: spacing.xl, paddingBottom: 110 },
+    itemCard: { marginBottom: spacing.md, backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1, borderWidth: 1, borderColor: '#F3F4F6' },
     itemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm },
     itemLeft: { flex: 1, marginRight: spacing.md },
-    itemDiagnosis: { ...typography.body, color: colors.dark.textPrimary, fontWeight: '600' },
-    itemDate: { ...typography.caption, color: colors.dark.textMuted, marginTop: 2 },
+    itemDiagnosis: { ...typography.body, color: '#111827', fontWeight: '700' },
+    itemDate: { ...typography.caption, color: '#6B7280', marginTop: 2 },
     confidenceBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: borderRadius.sm },
-    confidenceText: { ...typography.caption, fontWeight: '700' },
+    confidenceText: { ...typography.caption, fontWeight: '800' },
     itemDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-    chip: { backgroundColor: colors.dark.surfaceElevated, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: borderRadius.sm },
-    chipText: { ...typography.caption, color: colors.dark.textSecondary },
+    chip: { backgroundColor: '#F9FAFB', paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: borderRadius.sm, borderWidth: 1, borderColor: '#E5E7EB' },
+    chipText: { ...typography.caption, color: '#4B5563' },
 });

@@ -29,19 +29,21 @@ const styles = StyleSheet.create({
 
 const variantStyles: Record<string, ViewStyle> = {
     default: {
-        backgroundColor: colors.dark.surface,
+        backgroundColor: '#FFFFFF',
     },
     elevated: {
-        backgroundColor: colors.dark.surfaceElevated,
+        backgroundColor: '#FFFFFF',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 6,
+        shadowOpacity: 0.05,
+        shadowRadius: 15,
+        elevation: 2,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
     },
     outlined: {
         backgroundColor: 'transparent',
         borderWidth: 1,
-        borderColor: colors.dark.border,
+        borderColor: '#E5E7EB',
     },
 };

@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: borderRadius.sm,
-        backgroundColor: colors.success + '15',
+        backgroundColor: '#DCFCE7',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -70,12 +70,13 @@ const styles = StyleSheet.create({
     },
     label: {
         ...typography.label,
-        color: colors.dark.textMuted,
+        color: '#9BA6B3',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
+        fontWeight: '700',
     },
     countBadge: {
-        backgroundColor: colors.primary[500],
+        backgroundColor: '#109AE8',
         paddingHorizontal: spacing.sm,
         paddingVertical: 2,
         borderRadius: borderRadius.full,
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     },
     empty: {
         ...typography.bodySmall,
-        color: colors.dark.textMuted,
+        color: '#9BA6B3',
         textAlign: 'center',
         paddingVertical: spacing.lg,
         fontStyle: 'italic',

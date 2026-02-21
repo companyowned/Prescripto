@@ -31,7 +31,7 @@ export const Input: React.FC<InputProps> = ({
                     error && styles.inputError,
                     style,
                 ]}
-                placeholderTextColor={colors.dark.textMuted}
+                placeholderTextColor="#9BA6B3"
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 {...props}
@@ -47,17 +47,18 @@ const styles = StyleSheet.create({
     },
     label: {
         ...typography.label,
-        color: colors.dark.textSecondary,
+        color: '#6B7280',
         marginBottom: spacing.xs,
+        fontWeight: '600',
     },
     input: {
-        backgroundColor: colors.dark.surface,
+        backgroundColor: '#FFFFFF',
         borderWidth: 1.5,
-        borderColor: colors.dark.border,
+        borderColor: '#E5E7EB',
         borderRadius: borderRadius.md,
         paddingHorizontal: spacing.lg,
         paddingVertical: spacing.md,
-        color: colors.dark.textPrimary,
+        color: '#111827',
         ...typography.body,
     },
     inputFocused: {

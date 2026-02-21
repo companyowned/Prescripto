@@ -25,3 +25,7 @@ class UserResponse(BaseModel):
     full_name: str
 
     model_config = {"from_attributes": True}
+
+
+class UserUpdateRequest(BaseModel):
+    full_name: str = Field(..., min_length=2, max_length=255)

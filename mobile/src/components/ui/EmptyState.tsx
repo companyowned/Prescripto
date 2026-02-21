@@ -53,13 +53,14 @@ const styles = StyleSheet.create({
     },
     title: {
         ...typography.h3,
-        color: colors.dark.textPrimary,
+        color: '#111827',
         textAlign: 'center',
         marginBottom: spacing.sm,
+        fontWeight: '700',
     },
     message: {
         ...typography.bodySmall,
-        color: colors.dark.textMuted,
+        color: '#6B7280',
         textAlign: 'center',
         maxWidth: 280,
     },

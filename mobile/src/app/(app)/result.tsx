@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { ScrollView, StyleSheet, SafeAreaView } from 'react-native';
+import { ScrollView, StyleSheet, SafeAreaView, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button, Loader } from '../../components/ui';
 import {
@@ -71,9 +71,9 @@ export default function ResultScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.dark.bg },
-    scroll: { paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xxxl },
+    container: { flex: 1, backgroundColor: '#F5F6F8' },
+    scroll: { paddingHorizontal: spacing.xl, paddingTop: Platform.OS === 'ios' ? 10 : 30, paddingBottom: spacing.xxxl },
     backBtn: { alignSelf: 'flex-start', marginBottom: spacing.md },
-    homeBtn: { alignSelf: 'center', marginTop: spacing.lg },
-    doneBtn: { marginTop: spacing.xl },
+    homeBtn: { alignSelf: 'center', marginTop: spacing.lg, backgroundColor: '#109AE8' },
+    doneBtn: { marginTop: spacing.xl, backgroundColor: '#109AE8' },
 });

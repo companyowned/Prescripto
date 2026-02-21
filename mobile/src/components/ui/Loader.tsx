@@ -20,7 +20,7 @@ export const Loader: React.FC<LoaderProps> = ({
     if (fullScreen) {
         return (
             <View style={styles.fullScreen}>
-                <ActivityIndicator size={size} color={colors.primary[400]} />
+                <ActivityIndicator size={size} color="#109AE8" />
                 {message && <Text style={styles.message}>{message}</Text>}
             </View>
         );
@@ -28,7 +28,7 @@ export const Loader: React.FC<LoaderProps> = ({
 
     return (
         <View style={styles.inline}>
-            <ActivityIndicator size={size} color={colors.primary[400]} />
+            <ActivityIndicator size={size} color="#109AE8" />
             {message && <Text style={styles.message}>{message}</Text>}
         </View>
     );
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: colors.dark.bg,
+        backgroundColor: '#F5F6F8',
     },
     inline: {
         padding: spacing.xl,
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     },
     message: {
         ...typography.bodySmall,
-        color: colors.dark.textSecondary,
+        color: '#6B7280',
         marginTop: spacing.md,
     },
 });

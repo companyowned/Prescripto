@@ -29,3 +29,12 @@ class UserRepo:
         await db.flush()
         await db.refresh(user)
         return user
+
+    @staticmethod
+    async def update(db: AsyncSession, user: User, **kwargs) -> User:
+        for key, value in kwargs.items():
+            setattr(user, key, value)
+        db.add(user)
+        await db.flush()
+        await db.refresh(user)
+        return user

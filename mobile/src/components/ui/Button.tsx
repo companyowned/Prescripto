@@ -60,7 +60,7 @@ export const Button: React.FC<ButtonProps> = ({
             {loading ? (
                 <ActivityIndicator
                     size="small"
-                    color={variant === 'outline' || variant === 'ghost' ? colors.primary[500] : colors.white}
+                    color={variant === 'outline' || variant === 'ghost' ? '#109AE8' : colors.white}
                 />
             ) : (
                 <>
@@ -101,15 +101,15 @@ const textSizeStyles: Record<string, TextStyle> = {
 };
 
 const variantStyles: Record<string, ViewStyle> = {
-    primary: { backgroundColor: colors.primary[500] },
+    primary: { backgroundColor: '#109AE8' },
     secondary: { backgroundColor: colors.secondary[500] },
-    outline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.primary[500] },
+    outline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#109AE8' },
     ghost: { backgroundColor: 'transparent' },
 };
 
 const variantTextStyles: Record<string, TextStyle> = {
     primary: { color: colors.white },
     secondary: { color: colors.white },
-    outline: { color: colors.primary[500] },
-    ghost: { color: colors.primary[500] },
+    outline: { color: '#109AE8' },
+    ghost: { color: '#109AE8' },
 };

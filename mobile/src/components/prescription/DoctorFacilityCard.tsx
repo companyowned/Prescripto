@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: borderRadius.md,
-        backgroundColor: colors.primary[500] + '15',
+        backgroundColor: '#E0F2FE',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -80,23 +80,24 @@ const styles = StyleSheet.create({
     },
     label: {
         ...typography.caption,
-        color: colors.dark.textMuted,
+        color: '#9BA6B3',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
+        fontWeight: '700',
     },
     value: {
         ...typography.body,
-        color: colors.dark.textPrimary,
-        fontWeight: '600',
+        color: '#111827',
+        fontWeight: '700',
     },
     sublabel: {
         ...typography.caption,
-        color: colors.dark.textSecondary,
+        color: '#6B7280',
         marginTop: 2,
     },
     divider: {
         height: 1,
-        backgroundColor: colors.dark.border,
+        backgroundColor: '#F3F4F6',
         marginVertical: spacing.md,
     },
 });

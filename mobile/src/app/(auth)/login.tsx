@@ -100,7 +100,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.dark.bg,
+        backgroundColor: '#F5F6F8',
     },
     scroll: {
         flexGrow: 1,
@@ -117,15 +117,24 @@ const styles = StyleSheet.create({
     },
     title: {
         ...typography.h1,
-        color: colors.dark.textPrimary,
+        color: '#111827',
         marginBottom: spacing.xs,
+        fontWeight: '800',
     },
     subtitle: {
         ...typography.bodySmall,
-        color: colors.dark.textMuted,
+        color: '#6B7280',
     },
     form: {
         width: '100%',
+        backgroundColor: '#FFFFFF',
+        padding: 24,
+        borderRadius: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 15,
+        elevation: 2,
     },
     error: {
         ...typography.bodySmall,
@@ -135,6 +144,7 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: spacing.sm,
+        backgroundColor: '#109AE8',
     },
     registerBtn: {
         marginTop: spacing.md,

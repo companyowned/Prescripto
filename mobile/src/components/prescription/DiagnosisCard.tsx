@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: borderRadius.sm,
-        backgroundColor: colors.accent[500] + '15',
+        backgroundColor: '#E0F2FE',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -50,17 +50,19 @@ const styles = StyleSheet.create({
     },
     label: {
         ...typography.label,
-        color: colors.dark.textMuted,
+        color: '#6B7280',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
     },
     value: {
         ...typography.body,
-        color: colors.dark.textPrimary,
+        color: '#111827',
         lineHeight: 24,
+        fontWeight: '600',
     },
     notFound: {
-        color: colors.dark.textMuted,
+        color: '#9BA6B3',
         fontStyle: 'italic',
+        fontWeight: 'normal',
     },
 });

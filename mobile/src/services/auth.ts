@@ -88,4 +88,14 @@ export const authService = {
         const token = await getToken();
         return !!token;
     },
+
+    async getCurrentUser(): Promise<UserResponse> {
+        const response = await apiClient.get<UserResponse>('/auth/me');
+        return response.data;
+    },
+
+    async updateProfile(data: { full_name: string }): Promise<UserResponse> {
+        const response = await apiClient.put<UserResponse>('/auth/me', data);
+        return response.data;
+    },
 };
