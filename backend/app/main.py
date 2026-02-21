@@ -1,0 +1,76 @@
+"""Prescripto FastAPI application entry point."""
+
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.core.config import settings
+from app.core.exceptions import register_exception_handlers
+from app.db.session import init_db
+from app.views.health import router as health_router
+from app.views.auth import router as auth_router
+from app.views.documents import router as documents_router
+from app.views.prescriptions import router as prescriptions_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Run on startup: create DB tables."""
+    # Import all models so SQLAlchemy relationships resolve
+    import app.models.user  # noqa
+    import app.models.document  # noqa
+    import app.models.job  # noqa
+    import app.models.doctor  # noqa
+    import app.models.facility  # noqa
+    import app.models.prescription  # noqa
+    import app.models.medication  # noqa
+    import app.models.workflow  # noqa
+
+    await init_db()
+    yield
+
+
+def create_app() -> FastAPI:
+    """Create and configure the FastAPI application."""
+    app = FastAPI(
+        title=settings.APP_NAME,
+        version=settings.APP_VERSION,
+        description="Medical prescription scanning and analysis API powered by SkepticGen",
+        docs_url="/docs",
+        redoc_url="/redoc",
+        lifespan=lifespan,
+    )
+
+    # CORS
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:8081",
+            "http://localhost:8082",
+            "http://localhost:19006",
+            "http://localhost:3000",
+            "http://127.0.0.1:8081",
+            "http://127.0.0.1:8082",
+            "http://192.168.100.93:8081",
+            "http://192.168.100.93:8082",
+            "http://192.168.100.93:19006",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Exception handlers
+    register_exception_handlers(app)
+
+    # Routers
+    app.include_router(health_router)
+    app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(documents_router, prefix="/api/v1")
+    app.include_router(prescriptions_router, prefix="/api/v1")
+
+    return app
+
+
+app = create_app()
+

@@ -1,0 +1,126 @@
+/**
+ * Scan route — Camera capture
+ */
+
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { Button } from '../../components/ui';
+import { colors, spacing, typography, borderRadius } from '../../theme';
+import { useUploadDocument } from '../../features/documents/hooks';
+
+export default function ScanScreen() {
+    const router = useRouter();
+    const [permission, requestPermission] = useCameraPermissions();
+    const cameraRef = useRef<CameraView>(null);
+    const [capturing, setCapturing] = useState(false);
+    const uploadMutation = useUploadDocument();
+
+    const handleCapture = async () => {
+        if (!cameraRef.current || capturing) return;
+
+        setCapturing(true);
+        try {
+            const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
+            if (!photo?.uri) {
+                Alert.alert('Error', 'Failed to capture photo');
+                return;
+            }
+
+            const result = await uploadMutation.mutateAsync({
+                uri: photo.uri,
+                name: `scan_${Date.now()}.jpg`,
+                type: 'image/jpeg',
+            });
+
+            router.replace({
+                pathname: '/(app)/processing',
+                params: { jobId: result.job_id, documentId: result.document_id },
+            });
+        } catch (err: any) {
+            Alert.alert('Upload Failed', err?.message || 'Could not upload the scan.');
+        } finally {
+            setCapturing(false);
+        }
+    };
+
+    if (!permission) return null;
+
+    if (!permission.granted) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.permissionView}>
+                    <Text style={styles.permissionIcon}>📸</Text>
+                    <Text style={styles.permissionTitle}>Camera Access Required</Text>
+                    <Text style={styles.permissionText}>
+                        We need camera access to scan your prescriptions
+                    </Text>
+                    <Button title="Grant Permission" onPress={requestPermission} style={styles.grantBtn} />
+                    <Button title="Go Back" onPress={() => router.back()} variant="ghost" />
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    return (
+        <View style={styles.cameraContainer}>
+            <CameraView ref={cameraRef} style={styles.camera} facing="back">
+                <SafeAreaView style={styles.overlay}>
+                    <View style={styles.topBar}>
+                        <TouchableOpacity onPress={() => router.back()}>
+                            <Text style={styles.backBtn}>← Back</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.scanTitle}>Scan Prescription</Text>
+                        <View style={{ width: 60 }} />
+                    </View>
+
+                    <View style={styles.guideContainer}>
+                        <View style={styles.guideFrame}>
+                            <Text style={styles.guideText}>
+                                Position the prescription within the frame
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.bottomBar}>
+                        <TouchableOpacity
+                            style={[styles.captureBtn, capturing && styles.captureBtnDisabled]}
+                            onPress={handleCapture}
+                            disabled={capturing}
+                            activeOpacity={0.7}
+                        >
+                            <View style={styles.captureInner} />
+                        </TouchableOpacity>
+                        {uploadMutation.isPending && (
+                            <Text style={styles.uploadingText}>Uploading...</Text>
+                        )}
+                    </View>
+                </SafeAreaView>
+            </CameraView>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.dark.bg },
+    permissionView: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.xxl },
+    permissionIcon: { fontSize: 64, marginBottom: spacing.xl },
+    permissionTitle: { ...typography.h2, color: colors.dark.textPrimary, marginBottom: spacing.sm },
+    permissionText: { ...typography.body, color: colors.dark.textMuted, textAlign: 'center', marginBottom: spacing.xl },
+    grantBtn: { marginBottom: spacing.md, minWidth: 200 },
+    cameraContainer: { flex: 1 },
+    camera: { flex: 1 },
+    overlay: { flex: 1, justifyContent: 'space-between' },
+    topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+    backBtn: { ...typography.body, color: colors.white, fontWeight: '600' },
+    scanTitle: { ...typography.h3, color: colors.white },
+    guideContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    guideFrame: { width: '85%', aspectRatio: 0.7, borderWidth: 2, borderColor: colors.primary[400] + '80', borderRadius: borderRadius.lg, borderStyle: 'dashed', justifyContent: 'flex-end', alignItems: 'center', paddingBottom: spacing.lg },
+    guideText: { ...typography.caption, color: colors.white, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: borderRadius.sm },
+    bottomBar: { alignItems: 'center', paddingBottom: spacing.xxl },
+    captureBtn: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.3)', justifyContent: 'center', alignItems: 'center' },
+    captureBtnDisabled: { opacity: 0.5 },
+    captureInner: { width: 58, height: 58, borderRadius: 29, backgroundColor: colors.white },
+    uploadingText: { ...typography.caption, color: colors.white, marginTop: spacing.sm },
+});
