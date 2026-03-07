@@ -1,0 +1,189 @@
+{
+  "name": "Handwritten Medical Prescription Digitization and Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "prescription-analysis",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "6c6621fa-c99f-45f3-be6e-408efd4ad11d",
+      "name": "Receive Prescription Image",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        336
+      ],
+      "webhookId": "f5f08d6a-5c16-428e-95a6-615a25096edb"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "f1ea5fb0-6df2-4a69-8535-727b83108b1a",
+      "name": "Return Analysis Results",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1232,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let inputData = $input.first().json;\n\nlet rawText = \"\";\n\n// 1. Grab the text from the exact path Gemini is using in your screenshot\nif (inputData.content && inputData.content.parts && inputData.content.parts.length > 0) {\n    rawText = inputData.content.parts[0].text;\n} else if (inputData.text) {\n    rawText = inputData.text; // Fallback\n}\n\n// 2. Clean up any markdown codeblocks\nrawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();\n\n// 3. Parse and return the clean JSON\ntry {\n    return { json: JSON.parse(rawText) };\n} catch(e) {\n    return { \n        json: { \n            \"doctor\": {\"name\": \"JSON ERROR\"}, \n            \"diagnosis\": \"Still failed to parse this text: \" + rawText\n        } \n    };\n}\n"
+      },
+      "id": "0c42ddc8-2ce6-472e-beef-99b88d077ee5",
+      "name": "Clean JSON Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "You are an expert pharmacist. Carefully read the attached handwritten prescription image.\n\nYou MUST follow these strict rules:\n1. Return ONLY pure, raw JSON. \n2. Do NOT wrap the response in ```json codeblocks.\n3. Decipher the doctor's handwriting as best as you can for the medications and dosages.\n4. If a diagnosis isn't explicitly written, try to infer it from the medications prescribed, or output null.\n\nUse this exact JSON structure:\n{\n  \"doctor\": {\"name\": \"Doctor Name\"},\n  \"facility\": {\"name\": \"Hospital/Clinic Name\"},\n  \"diagnosis\": \"What the diagnosis is\",\n  \"medications\": [\n    {\n      \"name\": \"Medicine\",\n      \"dose\": \"Dose\",\n      \"frequency\": \"Frequency\",\n      \"duration\": \"Duration\"\n    }\n  ],\n  \"confidence\": { \"overall\": 0.95 }\n}\n\nIf you are unsure about a word, make your best educated guess based on standard medical terminology.\n",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        352
+      ],
+      "id": "9d21c952-8af7-4ad1-b7e9-751b71ac50ab",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3b7LhmZbXHZJqGQT",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Receive Prescription Image": [
+      {
+        "json": {
+          "headers": {
+            "host": "hazemmahmoud512.app.n8n.cloud",
+            "user-agent": "python-httpx/0.28.1",
+            "content-length": "62092",
+            "accept": "application/json",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "156.216.225.104",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "EG",
+            "cf-ray": "9d13f249f7965ee7-MRS",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "multipart/form-data; boundary=8b0a50f6e0c6865d1ea13bb51a595488",
+            "x-forwarded-for": "156.216.225.104, 162.159.122.165",
+            "x-forwarded-host": "hazemmahmoud512.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-63-757945c69-p4j66",
+            "x-is-trusted": "yes",
+            "x-real-ip": "156.216.225.104"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://hazemmahmoud512.app.n8n.cloud/webhook/prescription-analysis",
+          "executionMode": "production"
+        },
+        "binary": {
+          "file": {
+            "mimeType": "image/jpeg",
+            "fileType": "image",
+            "fileExtension": "jpg",
+            "data": "filesystem-v2",
+            "fileName": "783d9d73-141c-4d3c-ad84-9633eb69121b.jpg",
+            "id": "filesystem-v2:workflows/yY6pEjkFC3bEiVku/executions/temp/binary_data/0f94028f-73c1-41e9-b7f0-12bd3b0c9a58",
+            "fileSize": "61.9 kB",
+            "bytes": 61890
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Receive Prescription Image": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean JSON Output": {
+      "main": [
+        [
+          {
+            "node": "Return Analysis Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Clean JSON Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b44af4eb-d531-435a-aa89-f1a3a1180677",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fc158ef1a556c717348c16100c44e275716eae38c4e406aafc813f69e1051d02"
+  },
+  "id": "yY6pEjkFC3bEiVku",
+  "tags": []
+}
