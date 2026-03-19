@@ -18,6 +18,22 @@ import { authService } from '../../services/auth';
 import { validators } from '../../utils/validators';
 import { useAuth } from '../_layout';
 
+function getApiErrorMessage(err: any, fallback: string): string {
+    const detail = err?.response?.data?.detail;
+    if (typeof detail === 'string' && detail.trim().length > 0) {
+        return detail;
+    }
+    if (Array.isArray(detail) && detail.length > 0) {
+        const first = detail[0];
+        if (typeof first === 'string') return first;
+        if (first?.msg) return String(first.msg);
+    }
+    if (err?.message) {
+        return String(err.message);
+    }
+    return fallback;
+}
+
 export default function RegisterScreen() {
     const router = useRouter();
     const { signIn } = useAuth();
@@ -43,7 +59,7 @@ export default function RegisterScreen() {
             await authService.login({ email, password });
             signIn(); // Update AuthGate state → triggers navigation to home
         } catch (err: any) {
-            setError(err?.response?.data?.detail || 'Registration failed.');
+            setError(getApiErrorMessage(err, 'Registration failed.'));
         } finally {
             setLoading(false);
         }

@@ -28,7 +28,8 @@
         "backgroundColor": "#0F172A"
       },
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "package": "com.prescripto.app"
     },
@@ -45,6 +46,12 @@
         }
       ],
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f9081609-7f60-4871-b7a4-e54b68ba4eb9"
+      }
+    }
   }
 }

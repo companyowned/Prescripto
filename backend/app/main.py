@@ -1,5 +1,6 @@
 """Prescripto FastAPI application entry point."""
 
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,7 +27,8 @@ async def lifespan(app: FastAPI):
     import app.models.medication  # noqa
     import app.models.workflow  # noqa
 
-    if settings.INIT_DB_ON_STARTUP:
+    is_vercel_runtime = os.getenv("VERCEL") == "1"
+    if settings.INIT_DB_ON_STARTUP and not is_vercel_runtime:
         await init_db()
     yield
 

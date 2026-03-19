@@ -1,21 +1,35 @@
 """Async SQLAlchemy engine and session factory."""
 
-import ssl
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from app.core.config import settings
 
+
+def _normalize_database_url(url: str) -> str:
+    """Normalize DATABASE_URL for SQLAlchemy async engine.
+
+    - Prefer psycopg async driver on PostgreSQL for serverless compatibility.
+    """
+    normalized = url
+    if normalized.startswith("postgresql+asyncpg://"):
+        normalized = normalized.replace("postgresql+asyncpg://", "postgresql+psycopg://", 1)
+    elif normalized.startswith("postgresql://"):
+        normalized = normalized.replace("postgresql://", "postgresql+psycopg://", 1)
+
+    # asyncpg often uses "ssl=require"; psycopg expects "sslmode=require"
+    normalized = normalized.replace("?ssl=require", "?sslmode=require")
+    normalized = normalized.replace("&ssl=require", "&sslmode=require")
+
+    return normalized
+
+
+database_url = _normalize_database_url(settings.DATABASE_URL)
+
 connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
+if database_url.startswith("sqlite"):
     connect_args["check_same_thread"] = False
-elif settings.DATABASE_URL.startswith("postgresql"):
-    # Configure SSL for PostgreSQL (Neon requires SSL)
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = True
-    ssl_context.verify_mode = ssl.CERT_REQUIRED
-    connect_args["ssl"] = ssl_context
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    database_url,
     echo=settings.DEBUG,
     future=True,
     connect_args=connect_args,

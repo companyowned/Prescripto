@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 5.0.0"
+    "version": ">= 5.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -8,21 +9,13 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
       "distribution": "store"
-    },
-    "android": {
-      "image": "default"
-    }
-  },
-  "submit": {
-    "production": {
-      "android": {
-        "serviceAccount": "./service-account.json",
-        "track": "internal"
-      }
     }
   }
 }

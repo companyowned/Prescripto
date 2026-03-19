@@ -7,7 +7,8 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL =
+    process.env.EXPO_PUBLIC_API_URL || 'https://prescripto-taupe-ten.vercel.app/api/v1';
 
 const TOKEN_KEY = 'access_token';
 
