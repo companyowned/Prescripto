@@ -1,11 +1,18 @@
 """Async SQLAlchemy engine and session factory."""
 
+import ssl
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from app.core.config import settings
 
 connect_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
+elif settings.DATABASE_URL.startswith("postgresql"):
+    # Configure SSL for PostgreSQL (Neon requires SSL)
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = True
+    ssl_context.verify_mode = ssl.CERT_REQUIRED
+    connect_args["ssl"] = ssl_context
 
 engine = create_async_engine(
     settings.DATABASE_URL,

@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///./prescripto.db"
+    DATABASE_URL: str = "postgresql+asyncpg://neondb_owner:npg_4ZteHp3OVaGn@ep-still-bread-a82fvyhm-pooler.eastus2.azure.neon.tech/neondb?ssl=require"
 
     # JWT
     JWT_SECRET_KEY: str = "change-me-in-production"
