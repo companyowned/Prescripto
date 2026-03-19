@@ -153,3 +153,5 @@ DerivedData
 test-upload-output.json
 backend/.env
 mobile/.env
+.vercel
+.env*.local

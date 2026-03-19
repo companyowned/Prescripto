@@ -26,7 +26,8 @@ async def lifespan(app: FastAPI):
     import app.models.medication  # noqa
     import app.models.workflow  # noqa
 
-    await init_db()
+    if settings.INIT_DB_ON_STARTUP:
+        await init_db()
     yield
 
 
