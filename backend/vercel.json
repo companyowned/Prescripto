@@ -16,12 +16,6 @@
       "dest": "app/main.py"
     }
   ],
-  "crons": [
-    {
-      "path": "/api/v1/medication-reminders/run-cron",
-      "schedule": "* * * * *"
-    }
-  ],
   "env": {
     "PYTHONUNBUFFERED": "1"
   }
