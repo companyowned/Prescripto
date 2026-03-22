@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "app/main.py",
+      "src": "backend/app/main.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "50mb",
@@ -12,8 +12,8 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "app/main.py"
+      "src": "/api/(.*)",
+      "dest": "backend/app/main.py"
     }
   ],
   "crons": [
@@ -21,8 +21,5 @@
       "path": "/api/v1/medication-reminders/run-cron",
       "schedule": "* * * * *"
     }
-  ],
-  "env": {
-    "PYTHONUNBUFFERED": "1"
-  }
+  ]
 }
