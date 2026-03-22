@@ -18,7 +18,7 @@ router = APIRouter(prefix="/medication-insights", tags=["Medication Insights"])
 
 @router.get("/summary", response_model=InsightsSummaryResponse)
 async def get_summary(
-    range: str = Query("7d", regex="^(7d|30d|90d)$"),
+    range: str = Query("7d", pattern="^(7d|30d|90d)$"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -30,7 +30,7 @@ async def get_summary(
 
 @router.get("/trends", response_model=TrendsResponse)
 async def get_trends(
-    range: str = Query("30d", regex="^(7d|30d|90d)$"),
+    range: str = Query("30d", pattern="^(7d|30d|90d)$"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):

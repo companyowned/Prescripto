@@ -23,11 +23,12 @@ export default function InsightsScreen() {
     const router = useRouter();
     const [range, setRange] = useState<RangeOption>('7d');
 
-    const { data: summary, isLoading: summaryLoading } = useMedicationInsights(range);
-    const { data: trends, isLoading: trendsLoading } = useMedicationTrends(range);
-    const { data: riskData } = useRiskFlags();
+    const { data: summary, isLoading: summaryLoading, error: summaryError } = useMedicationInsights(range);
+    const { data: trends, isLoading: trendsLoading, error: trendsError } = useMedicationTrends(range);
+    const { data: riskData, error: riskError } = useRiskFlags();
 
     const isLoading = summaryLoading || trendsLoading;
+    const isError = summaryError || trendsError || riskError;
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -53,6 +54,12 @@ export default function InsightsScreen() {
                     {isLoading ? (
                         <View style={styles.center}>
                             <ActivityIndicator size="large" color="#0EA5E9" />
+                        </View>
+                    ) : isError ? (
+                        <View style={styles.emptyCard}>
+                            <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
+                            <Text style={styles.emptyTitle}>Error Loading Insights</Text>
+                            <Text style={styles.emptyMessage}>{String((summaryError || trendsError || riskError)?.message || 'Failed to fetch insights')}</Text>
                         </View>
                     ) : summary ? (
                         <>

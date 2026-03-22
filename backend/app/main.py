@@ -33,10 +33,29 @@ async def lifespan(app: FastAPI):
     import app.models.medication_dose_event  # noqa
     import app.models.medication_insight_snapshot  # noqa
 
+    import asyncio
+    from app.workers.reminder_tasks import generate_upcoming_doses, mark_overdue_as_missed, send_dose_reminders
+
+    async def run_scheduler():
+        while True:
+            try:
+                await generate_upcoming_doses(48)
+                await mark_overdue_as_missed()
+                await send_dose_reminders()
+            except Exception as e:
+                import logging
+                logging.getLogger("uvicorn").error(f"Background generic scheduler error: {e}")
+            await asyncio.sleep(60)
+
     is_vercel_runtime = os.getenv("VERCEL") == "1"
     if settings.INIT_DB_ON_STARTUP and not is_vercel_runtime:
         await init_db()
+        
+    scheduler_task = asyncio.create_task(run_scheduler())
+    
     yield
+    
+    scheduler_task.cancel()
 
 
 def create_app() -> FastAPI:
