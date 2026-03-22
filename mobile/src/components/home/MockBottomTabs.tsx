@@ -3,9 +3,10 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface MockBottomTabsProps {
-    activeTab?: 'home' | 'records' | 'insights' | 'settings';
+    activeTab?: 'home' | 'records' | 'reminders' | 'insights' | 'settings';
     onHomePress: () => void;
     onRecordsPress: () => void;
+    onRemindersPress?: () => void;
     onInsightsPress: () => void;
     onSettingsPress: () => void;
 }
@@ -14,6 +15,7 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
     activeTab = 'home',
     onHomePress,
     onRecordsPress,
+    onRemindersPress,
     onInsightsPress,
     onSettingsPress,
 }) => {
@@ -28,6 +30,13 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
                 <MaterialCommunityIcons name="history" size={26} color={activeTab === 'records' ? "#0EA5E9" : "#9BA6B3"} />
                 <Text style={[styles.tabText, activeTab === 'records' && { color: '#0EA5E9' }]}>RECORDS</Text>
             </TouchableOpacity>
+
+            {onRemindersPress && (
+                <TouchableOpacity style={styles.tabItem} onPress={onRemindersPress} activeOpacity={0.7}>
+                    <Ionicons name="notifications" size={24} color={activeTab === 'reminders' ? "#0EA5E9" : "#9BA6B3"} />
+                    <Text style={[styles.tabText, activeTab === 'reminders' && { color: '#0EA5E9' }]}>MEDS</Text>
+                </TouchableOpacity>
+            )}
 
             <TouchableOpacity style={styles.tabItem} onPress={onInsightsPress} activeOpacity={0.7}>
                 <Ionicons name="bar-chart" size={24} color={activeTab === 'insights' ? "#0EA5E9" : "#9BA6B3"} />

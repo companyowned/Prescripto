@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.exceptions import BadRequestError, NotFoundError
 from app.models.document import DocumentStatus, FileType
 from app.repos.document_repo import DocumentRepo, JobRepo
+from app.utils.file_storage import FileStorage
 
 
 ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".webp"}
@@ -54,17 +55,8 @@ class DocumentController:
         if len(content) > MAX_FILE_SIZE:
             raise BadRequestError(f"File too large. Max size: {MAX_FILE_SIZE // (1024 * 1024)} MB")
 
-        # Save file locally
-        upload_dir = os.path.join(settings.UPLOAD_DIR, str(user_id))
-        os.makedirs(upload_dir, exist_ok=True)
-
-        file_id = str(uuid.uuid4())
-        ext = os.path.splitext(filename)[1].lower()
-        stored_filename = f"{file_id}{ext}"
-        file_path = os.path.join(upload_dir, stored_filename)
-
-        with open(file_path, "wb") as f:
-            f.write(content)
+        # Save file locally (uses /tmp on Vercel)
+        file_path = FileStorage.save_file(content, str(user_id), filename)
 
         # Create DB records
         document = await DocumentRepo.create(

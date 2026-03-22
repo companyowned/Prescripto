@@ -68,6 +68,7 @@ export default function HomeScreen() {
                     activeTab="home"
                     onHomePress={() => { }}
                     onRecordsPress={() => router.push('/(app)/history')}
+                    onRemindersPress={() => router.push('/(app)/reminders')}
                     onInsightsPress={() => router.push('/(app)/insights')}
                     onSettingsPress={() => router.push('/(app)/settings')}
                 />

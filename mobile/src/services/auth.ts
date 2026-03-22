@@ -98,4 +98,8 @@ export const authService = {
         const response = await apiClient.put<UserResponse>('/auth/me', data);
         return response.data;
     },
+
+    async updatePushToken(token: string): Promise<void> {
+        await apiClient.post('/auth/push-token', { token });
+    },
 };

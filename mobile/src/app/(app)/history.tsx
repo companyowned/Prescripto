@@ -95,6 +95,7 @@ export default function HistoryScreen() {
                 activeTab="records"
                 onHomePress={() => router.push('/(app)/home')}
                 onRecordsPress={() => { }}
+                onRemindersPress={() => router.push('/(app)/reminders')}
                 onInsightsPress={() => router.push('/(app)/insights')}
                 onSettingsPress={() => router.push('/(app)/settings')}
             />

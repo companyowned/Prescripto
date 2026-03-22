@@ -26,10 +26,15 @@ export default function UploadScreen() {
             });
             if (!result.canceled && result.assets?.[0]) {
                 const asset = result.assets[0];
+                const type = asset.mimeType || getFileType(asset.uri);
+                let name = asset.name || getFileName(asset.uri);
+                if (!name.includes('.')) {
+                    name += type.includes('pdf') ? '.pdf' : type.includes('png') ? '.png' : '.jpg';
+                }
                 const file = {
                     uri: asset.uri,
-                    name: asset.name || getFileName(asset.uri),
-                    type: asset.mimeType || getFileType(asset.uri),
+                    name,
+                    type,
                 };
                 setSelectedFile(file);
                 setPreview(file.type.startsWith('image/') ? asset.uri : null);
@@ -42,7 +47,12 @@ export default function UploadScreen() {
             const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
             if (!result.canceled && result.assets?.[0]) {
                 const asset = result.assets[0];
-                const file = { uri: asset.uri, name: getFileName(asset.uri), type: asset.mimeType || 'image/jpeg' };
+                const type = asset.mimeType || 'image/jpeg';
+                let name = asset.fileName || getFileName(asset.uri);
+                if (!name.includes('.')) {
+                    name += type.includes('png') ? '.png' : type.includes('webp') ? '.webp' : '.jpg';
+                }
+                const file = { uri: asset.uri, name, type };
                 setSelectedFile(file);
                 setPreview(asset.uri);
             }

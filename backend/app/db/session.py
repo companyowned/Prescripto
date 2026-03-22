@@ -54,9 +54,26 @@ async def init_db():
     import app.models.prescription  # noqa
     import app.models.medication  # noqa
     import app.models.workflow  # noqa
+    import app.models.medication_reminder  # noqa
+    import app.models.medication_dose_event  # noqa
+    import app.models.medication_insight_snapshot  # noqa
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        # Migrate existing tables — add new columns safely
+        # PostgreSQL supports ADD COLUMN IF NOT EXISTS
+        from sqlalchemy import text
+
+        migration_statements = [
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS push_token VARCHAR",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS push_token_updated_at TIMESTAMP",
+        ]
+        for stmt in migration_statements:
+            try:
+                await conn.execute(text(stmt))
+            except Exception:
+                pass  # Column already exists or DB doesn't support IF NOT EXISTS
 
 
 async def get_db():

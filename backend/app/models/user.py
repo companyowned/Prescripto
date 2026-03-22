@@ -24,5 +24,12 @@ class User(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
+    # Push notification token
+    push_token = Column(String(255), nullable=True)
+    push_token_updated_at = Column(DateTime(timezone=True), nullable=True)
+
     # Relationships
     documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
+    medication_reminders = relationship(
+        "MedicationReminder", back_populates="user", cascade="all, delete-orphan"
+    )

@@ -11,9 +11,17 @@ class FileStorage:
     """Handles saving and retrieving files from local storage."""
 
     @staticmethod
+    def _base_upload_dir() -> str:
+        """Resolve writable upload dir for current runtime."""
+        # Vercel serverless filesystem is read-only except /tmp
+        if os.getenv("VERCEL") == "1":
+            return os.path.join("/tmp", settings.UPLOAD_DIR)
+        return settings.UPLOAD_DIR
+
+    @staticmethod
     def get_upload_dir(user_id: str) -> str:
         """Get the upload directory for a user, creating it if needed."""
-        upload_dir = os.path.join(settings.UPLOAD_DIR, user_id)
+        upload_dir = os.path.join(FileStorage._base_upload_dir(), user_id)
         os.makedirs(upload_dir, exist_ok=True)
         return upload_dir
 

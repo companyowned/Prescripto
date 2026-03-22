@@ -29,3 +29,6 @@ class UserResponse(BaseModel):
 
 class UserUpdateRequest(BaseModel):
     full_name: str = Field(..., min_length=2, max_length=255)
+
+class PushTokenRequest(BaseModel):
+    token: str

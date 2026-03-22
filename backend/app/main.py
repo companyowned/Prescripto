@@ -12,6 +12,9 @@ from app.views.health import router as health_router
 from app.views.auth import router as auth_router
 from app.views.documents import router as documents_router
 from app.views.prescriptions import router as prescriptions_router
+from app.views.medication_reminders import router as medication_reminders_router
+from app.views.medication_dose_events import router as medication_dose_events_router
+from app.views.medication_insights import router as medication_insights_router
 
 
 @asynccontextmanager
@@ -26,6 +29,9 @@ async def lifespan(app: FastAPI):
     import app.models.prescription  # noqa
     import app.models.medication  # noqa
     import app.models.workflow  # noqa
+    import app.models.medication_reminder  # noqa
+    import app.models.medication_dose_event  # noqa
+    import app.models.medication_insight_snapshot  # noqa
 
     is_vercel_runtime = os.getenv("VERCEL") == "1"
     if settings.INIT_DB_ON_STARTUP and not is_vercel_runtime:
@@ -74,6 +80,9 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(documents_router, prefix="/api/v1")
     app.include_router(prescriptions_router, prefix="/api/v1")
+    app.include_router(medication_reminders_router, prefix="/api/v1")
+    app.include_router(medication_dose_events_router, prefix="/api/v1")
+    app.include_router(medication_insights_router, prefix="/api/v1")
 
     return app
 

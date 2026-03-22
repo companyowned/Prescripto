@@ -22,17 +22,24 @@ export const documentsApi = {
         }
 
         const token = await authService.getToken();
-        const headers: Record<string, string> = {
-            'Content-Type': 'multipart/form-data',
-        };
+        const headers: Record<string, string> = {};
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const res = await apiClient.post<DocumentUploadResponse>('/documents', formData, {
+        const baseUrl = apiClient.defaults.baseURL || 'http://localhost:8000/api/v1';
+        const response = await fetch(`${baseUrl}/documents`, {
+            method: 'POST',
+            body: formData,
             headers,
         });
-        return res.data;
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.detail || `Upload failed with status ${response.status}`);
+        }
+
+        return await response.json();
     },
 
     async getDocument(documentId: string): Promise<DocumentResponse> {
