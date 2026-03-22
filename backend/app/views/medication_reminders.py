@@ -20,6 +20,26 @@ from app.schemas.medication_reminder import (
 router = APIRouter(prefix="/medication-reminders", tags=["Medication Reminders"])
 
 
+@router.get("/run-cron")
+async def run_cron():
+    """Vercel cron job endpoint for serverless background tasks."""
+    from app.workers.reminder_tasks import (
+        generate_upcoming_doses,
+        mark_overdue_as_missed,
+        send_dose_reminders,
+    )
+    import logging
+    logger = logging.getLogger(__name__)
+    try:
+        await generate_upcoming_doses(48)
+        await mark_overdue_as_missed()
+        await send_dose_reminders()
+        return {"status": "success", "message": "Cron executed successfully"}
+    except Exception as e:
+        logger.error(f"Vercel Cron failed: {e}")
+        return {"status": "error", "message": str(e)}
+
+
 def _to_response(r) -> ReminderResponse:
     """Convert ORM reminder to response schema."""
     return ReminderResponse(

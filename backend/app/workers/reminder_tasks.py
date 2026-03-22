@@ -92,20 +92,21 @@ async def mark_overdue_as_missed() -> int:
     return marked_count
 
 
+_sent_notifications = set()
+
 async def send_dose_reminders() -> int:
     """
-    Send push notifications for upcoming doses (within 5 minutes).
-
-    In production, run every 1-2 minutes via Celery beat.
+    Send push notifications precisely when upcoming doses are due.
     """
-    logger.info("[WORKER] Checking for upcoming dose notifications")
+    logger.info("[WORKER] Checking for exactly-due dose notifications")
     sent_count = 0
 
     async with async_session_factory() as db:
         try:
             now = datetime.now(timezone.utc)
-            window_start = now
-            window_end = now + timedelta(minutes=5)
+            # Narrow window to catch exactly-due doses (±1 minute)
+            window_start = now - timedelta(minutes=2)
+            window_end = now + timedelta(minutes=1)
 
             from sqlalchemy import select
             from app.models.medication_dose_event import MedicationDoseEvent
@@ -127,6 +128,10 @@ async def send_dose_reminders() -> int:
             events = list(result.scalars().all())
 
             for event in events:
+                event_id_str = str(event.id)
+                if event_id_str in _sent_notifications:
+                    continue
+
                 # For snoozed events, check snoozed_until
                 if event.status == "snoozed" and event.snoozed_until:
                     if event.snoozed_until > now:
@@ -147,6 +152,7 @@ async def send_dose_reminders() -> int:
                                 "type": "dose_reminder",
                             },
                         )
+                        _sent_notifications.add(event_id_str)
                         sent_count += 1
                 except Exception as notify_err:
                     logger.warning(f"[WORKER] Failed to send reminder notification: {notify_err}")

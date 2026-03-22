@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "77601037005",
+    "project_id": "prescripto-68866",
+    "storage_bucket": "prescripto-68866.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77601037005:android:069a955d808ad6865d2784",
+        "android_client_info": {
+          "package_name": "com.prescripto.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBG4li1sz_gBVzY4355b7gQ9WTGUl-HqrM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

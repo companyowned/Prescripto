@@ -95,7 +95,9 @@ async function registerForPushNotificationsAsync() {
     }
     
     const projectId =
-      Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+      Constants?.expoConfig?.extra?.eas?.projectId ?? 
+      Constants?.easConfig?.projectId ?? 
+      "f9081609-7f60-4871-b7a4-e54b68ba4eb9";
       
     try {
       token = (
