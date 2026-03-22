@@ -19,7 +19,7 @@ from app.views.medication_insights import router as medication_insights_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run on startup: create DB tables."""
+    """Run on startup: create DB tables and start background tasks (local only)."""
     # Import all models so SQLAlchemy relationships resolve
     import app.models.user  # noqa
     import app.models.document  # noqa
@@ -33,29 +33,39 @@ async def lifespan(app: FastAPI):
     import app.models.medication_dose_event  # noqa
     import app.models.medication_insight_snapshot  # noqa
 
-    import asyncio
-    from app.workers.reminder_tasks import generate_upcoming_doses, mark_overdue_as_missed, send_dose_reminders
-
-    async def run_scheduler():
-        while True:
-            try:
-                await generate_upcoming_doses(48)
-                await mark_overdue_as_missed()
-                await send_dose_reminders()
-            except Exception as e:
-                import logging
-                logging.getLogger("uvicorn").error(f"Background generic scheduler error: {e}")
-            await asyncio.sleep(60)
-
     is_vercel_runtime = os.getenv("VERCEL") == "1"
-    if settings.INIT_DB_ON_STARTUP and not is_vercel_runtime:
-        await init_db()
-        
-    scheduler_task = asyncio.create_task(run_scheduler())
     
-    yield
-    
-    scheduler_task.cancel()
+    if is_vercel_runtime:
+        # On Vercel, the environment is serverless. 
+        # Background loops in lifespan will cause the deployment to hang.
+        # We rely on Vercel Cron to hit /api/v1/medication-reminders/run-cron instead.
+        yield
+    else:
+        # Local Development: Start the background scheduler
+        import asyncio
+        from app.workers.reminder_tasks import (
+            generate_upcoming_doses, 
+            mark_overdue_as_missed, 
+            send_dose_reminders
+        )
+
+        async def run_scheduler():
+            while True:
+                try:
+                    await generate_upcoming_doses(48)
+                    await mark_overdue_as_missed()
+                    await send_dose_reminders()
+                except Exception as e:
+                    import logging
+                    logging.getLogger("uvicorn").error(f"Background generic scheduler error: {e}")
+                await asyncio.sleep(60)
+
+        if settings.INIT_DB_ON_STARTUP:
+            await init_db()
+            
+        scheduler_task = asyncio.create_task(run_scheduler())
+        yield
+        scheduler_task.cancel()
 
 
 def create_app() -> FastAPI:
