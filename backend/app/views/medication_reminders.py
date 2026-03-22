@@ -21,16 +21,20 @@ router = APIRouter(prefix="/medication-reminders", tags=["Medication Reminders"]
 
 
 @router.get("/run-cron")
-async def run_cron():
+async def run_cron(db: AsyncSession = Depends(get_db)):
     """Vercel cron job endpoint for serverless background tasks."""
     from app.workers.reminder_tasks import (
         generate_upcoming_doses,
         mark_overdue_as_missed,
         send_dose_reminders,
     )
+    from app.db.session import init_db
     import logging
     logger = logging.getLogger(__name__)
     try:
+        # Safety: Ensure tables exist in production
+        await init_db()
+        
         await generate_upcoming_doses(48)
         await mark_overdue_as_missed()
         await send_dose_reminders()

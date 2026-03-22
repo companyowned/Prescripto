@@ -11,13 +11,15 @@ def _normalize_database_url(url: str) -> str:
     """
     normalized = url
     if normalized.startswith("postgresql+asyncpg://"):
-        normalized = normalized.replace("postgresql+asyncpg://", "postgresql+psycopg://", 1)
+        # Keep asyncpg if explicitly requested, or swap if troubleshooting
+        pass 
     elif normalized.startswith("postgresql://"):
-        normalized = normalized.replace("postgresql://", "postgresql+psycopg://", 1)
+        normalized = normalized.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-    # asyncpg often uses "ssl=require"; psycopg expects "sslmode=require"
-    normalized = normalized.replace("?ssl=require", "?sslmode=require")
-    normalized = normalized.replace("&ssl=require", "&sslmode=require")
+    # Ensure SSL is handled correctly for Neon/Vercel
+    if "sslmode=" not in normalized and "ssl=require" not in normalized:
+        separator = "&" if "?" in normalized else "?"
+        normalized += f"{separator}ssl=require"
 
     return normalized
 
