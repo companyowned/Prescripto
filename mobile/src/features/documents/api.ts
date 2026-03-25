@@ -27,7 +27,7 @@ export const documentsApi = {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const baseUrl = apiClient.defaults.baseURL || 'http://localhost:8000/api/v1';
+        const baseUrl = apiClient.defaults.baseURL || 'https://prescripto-taupe-ten.vercel.app/api/v1';
         const response = await fetch(`${baseUrl}/documents`, {
             method: 'POST',
             body: formData,
