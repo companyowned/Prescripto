@@ -8,7 +8,9 @@ import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
 const API_BASE_URL =
-    process.env.EXPO_PUBLIC_API_URL || 'https://prescripto-taupe-ten.vercel.app/api/v1';
+    process.env.EXPO_PUBLIC_LOCAL_API_URL ||
+    process.env.EXPO_PUBLIC_API_URL ||
+    'https://prescripto-taupe-ten.vercel.app/api/v1';
 
 const TOKEN_KEY = 'access_token';
 

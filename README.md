@@ -68,11 +68,7 @@ npm install
 npm start
 ```
 
-Example local env (`mobile/.env`):
-
-```env
-EXPO_PUBLIC_API_URL=http://<YOUR_LOCAL_IP>:8000/api/v1
-```
+Mobile uses the fallback API URL from code by default.
 
 ---
 
@@ -94,12 +90,6 @@ Required Vercel environment variables:
 - Optional: `N8N_WEBHOOK_URL`, `N8N_AUTH_KEY`, `OPENAI_API_KEY`, `AZURE_VISION_*`
 
 ### Mobile (Android APK with EAS)
-
-Production API URL (`mobile/.env.production`):
-
-```env
-EXPO_PUBLIC_API_URL=https://prescripto-taupe-ten.vercel.app/api/v1
-```
 
 Build APK:
 
