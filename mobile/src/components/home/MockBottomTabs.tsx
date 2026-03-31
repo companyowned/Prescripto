@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { colors } from '../../theme';
+import { useRouter } from 'expo-router';
 
 interface MockBottomTabsProps {
     activeTab?: 'home' | 'records' | 'reminders' | 'insights' | 'settings';
@@ -21,6 +22,8 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
     onInsightsPress,
     onSettingsPress,
 }) => {
+    const router = useRouter();
+
     return (
         <BlurView intensity={40} tint="default" style={styles.bottomTabBar}>
             <TouchableOpacity style={[styles.tabItem, activeTab === 'home' && styles.tabItemActive]} onPress={onHomePress} activeOpacity={0.7}>
@@ -33,12 +36,10 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
                 <Text style={[styles.tabText, activeTab === 'records' && styles.tabTextActive]}>RECORDS</Text>
             </TouchableOpacity>
 
-            {onRemindersPress && (
-                <TouchableOpacity style={[styles.tabItem, activeTab === 'reminders' && styles.tabItemActive]} onPress={onRemindersPress} activeOpacity={0.7}>
-                    <Ionicons name="notifications" size={activeTab === 'reminders' ? 26 : 24} color={activeTab === 'reminders' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'reminders' && styles.iconActive} />
-                    <Text style={[styles.tabText, activeTab === 'reminders' && styles.tabTextActive]}>MEDS</Text>
-                </TouchableOpacity>
-            )}
+            <TouchableOpacity style={[styles.tabItem, activeTab === 'reminders' && styles.tabItemActive]} onPress={onRemindersPress || (() => router.push('/(app)/reminders'))} activeOpacity={0.7}>
+                <Ionicons name="notifications" size={activeTab === 'reminders' ? 26 : 24} color={activeTab === 'reminders' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'reminders' && styles.iconActive} />
+                <Text style={[styles.tabText, activeTab === 'reminders' && styles.tabTextActive]}>MEDS</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity style={[styles.tabItem, activeTab === 'insights' && styles.tabItemActive]} onPress={onInsightsPress} activeOpacity={0.7}>
                 <Ionicons name="bar-chart" size={activeTab === 'insights' ? 26 : 24} color={activeTab === 'insights' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'insights' && styles.iconActive} />
