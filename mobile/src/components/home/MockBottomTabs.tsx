@@ -22,7 +22,7 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
     onSettingsPress,
 }) => {
     return (
-        <BlurView intensity={30} tint="dark" style={styles.bottomTabBar}>
+        <BlurView intensity={40} tint="default" style={styles.bottomTabBar}>
             <TouchableOpacity style={[styles.tabItem, activeTab === 'home' && styles.tabItemActive]} onPress={onHomePress} activeOpacity={0.7}>
                 <Ionicons name="home" size={activeTab === 'home' ? 26 : 24} color={activeTab === 'home' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'home' && styles.iconActive} />
                 <Text style={[styles.tabText, activeTab === 'home' && styles.tabTextActive]}>HOME</Text>
@@ -56,19 +56,27 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
 const styles = StyleSheet.create({
     bottomTabBar: {
         position: 'absolute',
-        bottom: 0,
-        width: '100%',
+        bottom: Platform.OS === 'ios' ? 30 : 20,
+        left: 20,
+        right: 20,
+        borderRadius: 40,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingHorizontal: 30,
-        paddingTop: 16,
-        paddingBottom: Platform.OS === 'ios' ? 30 : 16,
-        borderTopWidth: 1,
-        borderTopColor: colors.glass.borderHighlight, // Lighter border
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // darker back for contrast
+        paddingHorizontal: 24,
+        paddingVertical: 14,
+        borderWidth: 1.5,
+        borderColor: 'rgba(255, 255, 255, 0.2)', // Light glass border
+        backgroundColor: 'rgba(255, 255, 255, 0.1)', // Keep transparent for glass
+        shadowColor: colors.primary[300],
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 8,
+        overflow: 'hidden',
     },
     tabItem: {
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 4,
     },
     tabItemActive: {
