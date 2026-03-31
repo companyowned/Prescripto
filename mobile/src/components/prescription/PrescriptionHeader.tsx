@@ -82,12 +82,12 @@ const styles = StyleSheet.create({
     },
     title: {
         ...typography.h2,
-        color: '#111827',
+        color: colors.white,
         fontWeight: '800',
     },
     date: {
         ...typography.caption,
-        color: '#6B7280',
+        color: colors.textSecondary,
     },
     badge: {
         flexDirection: 'row',

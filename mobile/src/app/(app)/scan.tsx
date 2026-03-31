@@ -6,7 +6,7 @@ import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Button } from '../../components/ui';
+import { Button, GlassBackground } from '../../components/ui';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { useUploadDocument } from '../../features/documents/hooks';
 
@@ -49,17 +49,19 @@ export default function ScanScreen() {
 
     if (!permission.granted) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.permissionView}>
-                    <Text style={styles.permissionIcon}>📸</Text>
-                    <Text style={styles.permissionTitle}>Camera Access Required</Text>
-                    <Text style={styles.permissionText}>
-                        We need camera access to scan your prescriptions
-                    </Text>
-                    <Button title="Grant Permission" onPress={requestPermission} style={styles.grantBtn} />
-                    <Button title="Go Back" onPress={() => router.back()} variant="ghost" />
-                </View>
-            </SafeAreaView>
+            <GlassBackground>
+                <SafeAreaView style={styles.container}>
+                    <View style={styles.permissionView}>
+                        <Text style={styles.permissionIcon}>📸</Text>
+                        <Text style={styles.permissionTitle}>Camera Access Required</Text>
+                        <Text style={styles.permissionText}>
+                            We need camera access to scan your prescriptions
+                        </Text>
+                        <Button title="Grant Permission" onPress={requestPermission} style={styles.grantBtn} />
+                        <Button title="Go Back" onPress={() => router.back()} variant="ghost" />
+                    </View>
+                </SafeAreaView>
+            </GlassBackground>
         );
     }
 
@@ -103,11 +105,11 @@ export default function ScanScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F5F6F8' },
+    container: { flex: 1, backgroundColor: 'transparent' },
     permissionView: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.xxl },
     permissionIcon: { fontSize: 64, marginBottom: spacing.xl },
-    permissionTitle: { ...typography.h2, color: '#111827', marginBottom: spacing.sm, fontWeight: '800' },
-    permissionText: { ...typography.body, color: '#6B7280', textAlign: 'center', marginBottom: spacing.xl },
+    permissionTitle: { ...typography.h2, color: colors.white, marginBottom: spacing.sm, fontWeight: '800' },
+    permissionText: { ...typography.body, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
     grantBtn: { marginBottom: spacing.md, minWidth: 200 },
     cameraContainer: { flex: 1, backgroundColor: '#000' },
     camera: { flex: 1 },
@@ -116,7 +118,7 @@ const styles = StyleSheet.create({
     backBtn: { ...typography.body, color: colors.white, fontWeight: '600' },
     scanTitle: { ...typography.h3, color: colors.white },
     guideContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    guideFrame: { width: '85%', aspectRatio: 0.7, borderWidth: 2, borderColor: '#109AE8', borderRadius: borderRadius.lg, borderStyle: 'dashed', justifyContent: 'flex-end', alignItems: 'center', paddingBottom: spacing.lg },
+    guideFrame: { width: '85%', aspectRatio: 0.7, borderWidth: 2, borderColor: colors.primary[400], borderRadius: borderRadius.lg, borderStyle: 'dashed', justifyContent: 'flex-end', alignItems: 'center', paddingBottom: spacing.lg },
     guideText: { ...typography.caption, color: colors.white, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: borderRadius.sm },
     bottomBar: { alignItems: 'center', paddingBottom: spacing.xxl },
     captureBtn: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.3)', justifyContent: 'center', alignItems: 'center' },

@@ -7,7 +7,7 @@ import { View, Text, StyleSheet, SafeAreaView, Alert, Image, Platform } from 're
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Card } from '../../components/ui';
+import { Button, Card, GlassBackground } from '../../components/ui';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { useUploadDocument } from '../../features/documents/hooks';
 import { getFileType, getFileName } from '../../utils/file';
@@ -73,48 +73,49 @@ export default function UploadScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Button title="← Back" onPress={() => router.back()} variant="ghost" size="sm" />
-                <Text style={styles.title}>Upload Document</Text>
-                <View style={{ width: 80 }} />
-            </View>
+        <GlassBackground>
+            <SafeAreaView style={styles.container}>
+                <View style={styles.header}>
+                    <Button title="← Back" onPress={() => router.back()} variant="ghost" size="sm" />
+                    <Text style={styles.title}>Upload Document</Text>
+                    <View style={{ width: 80 }} />
+                </View>
 
-            <View style={styles.content}>
-                <Card variant="elevated" style={styles.pickerCard}>
-                    <Button title="📄  Pick PDF or Image" onPress={handlePickDocument} variant="outline" size="lg" style={styles.pickerBtn} />
-                    <Text style={styles.orText}>or</Text>
-                    <Button title="🖼️  Choose from Gallery" onPress={handlePickImage} variant="outline" size="lg" style={styles.pickerBtn} />
-                </Card>
-
-                {selectedFile && (
-                    <Card variant="elevated" style={styles.previewCard}>
-                        {preview ? (
-                            <Image source={{ uri: preview }} style={styles.previewImage} resizeMode="contain" />
-                        ) : (
-                            <View style={styles.pdfPreview}><Text style={styles.pdfIcon}>📄</Text></View>
-                        )}
-                        <Text style={styles.fileName} numberOfLines={1}>{selectedFile.name}</Text>
-                        <Button title="Upload & Analyze" onPress={handleUpload} loading={uploadMutation.isPending} size="lg" style={styles.uploadBtn} />
+                <View style={styles.content}>
+                    <Card variant="elevated" style={styles.pickerCard}>
+                        <Button title="📄  Pick PDF or Image" onPress={handlePickDocument} variant="outline" size="lg" style={styles.pickerBtn} />
+                        <Text style={styles.orText}>or</Text>
+                        <Button title="🖼️  Choose from Gallery" onPress={handlePickImage} variant="outline" size="lg" style={styles.pickerBtn} />
                     </Card>
-                )}
-            </View>
-        </SafeAreaView>
+
+                    {selectedFile && (
+                        <Card variant="elevated" style={styles.previewCard}>
+                            {preview ? (
+                                <Image source={{ uri: preview }} style={styles.previewImage} resizeMode="contain" />
+                            ) : (
+                                <View style={styles.pdfPreview}><Text style={styles.pdfIcon}>📄</Text></View>
+                            )}
+                            <Text style={styles.fileName} numberOfLines={1}>{selectedFile.name}</Text>
+                            <Button title="Upload & Analyze" onPress={handleUpload} loading={uploadMutation.isPending} size="lg" />
+                        </Card>
+                    )}
+                </View>
+            </SafeAreaView>
+        </GlassBackground>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F5F6F8' },
+    container: { flex: 1, backgroundColor: 'transparent' },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingTop: Platform.OS === 'ios' ? 10 : 30, marginBottom: spacing.lg },
-    title: { ...typography.h3, color: '#111827', fontWeight: '700' },
+    title: { ...typography.h3, color: colors.white, fontWeight: '700' },
     content: { flex: 1, paddingHorizontal: spacing.xl },
-    pickerCard: { alignItems: 'center', paddingVertical: spacing.xxl, marginBottom: spacing.lg, backgroundColor: '#FFFFFF', borderRadius: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 15, elevation: 2, borderWidth: 1, borderColor: '#F3F4F6' },
+    pickerCard: { alignItems: 'center', paddingVertical: spacing.xxl, marginBottom: spacing.lg },
     pickerBtn: { width: '100%' },
-    orText: { ...typography.bodySmall, color: '#9BA6B3', marginVertical: spacing.md, fontWeight: '600' },
-    previewCard: { alignItems: 'center', backgroundColor: '#FFFFFF', padding: 20, borderRadius: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 15, elevation: 2, borderWidth: 1, borderColor: '#F3F4F6' },
+    orText: { ...typography.bodySmall, color: colors.textSecondary, marginVertical: spacing.md, fontWeight: '600' },
+    previewCard: { alignItems: 'center', padding: 20 },
     previewImage: { width: '100%', height: 200, borderRadius: borderRadius.md, marginBottom: spacing.md },
-    pdfPreview: { width: '100%', height: 120, backgroundColor: '#E0F2FE', borderRadius: borderRadius.md, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.md },
+    pdfPreview: { width: '100%', height: 120, backgroundColor: 'rgba(31, 163, 198, 0.2)', borderRadius: borderRadius.md, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.md, borderWidth: 1, borderColor: colors.glass.border },
     pdfIcon: { fontSize: 48 },
-    fileName: { ...typography.bodySmall, color: '#6B7280', marginBottom: spacing.lg },
-    uploadBtn: { width: '100%', backgroundColor: '#109AE8' },
+    fileName: { ...typography.bodySmall, color: colors.textSecondary, marginBottom: spacing.lg },
 });

@@ -1,9 +1,10 @@
 /**
- * Card — Elevated card container with dark theme support
+ * Card — Glassmorphism elevated card container
  */
 
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { colors, spacing, borderRadius } from '../../theme';
 
 interface CardProps {
@@ -14,36 +15,56 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({ children, variant = 'default', style }) => {
     return (
-        <View style={[styles.base, variantStyles[variant], style]}>
-            {children}
+        <View style={[styles.container, variantStyles[variant].container, style]}>
+            <BlurView
+                intensity={15}
+                tint="dark"
+                style={[StyleSheet.absoluteFill, styles.blur]}
+            />
+            <View style={[styles.content, variantStyles[variant].content]}>
+                {children}
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    base: {
+    container: {
         borderRadius: borderRadius.lg,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: colors.glass.border,
+        backgroundColor: colors.glass.background, // fallback/base
+    },
+    blur: {
+        borderRadius: borderRadius.lg,
+    },
+    content: {
         padding: spacing.lg,
     },
 });
 
-const variantStyles: Record<string, ViewStyle> = {
+const variantStyles: Record<string, { container: ViewStyle; content: ViewStyle }> = {
     default: {
-        backgroundColor: '#FFFFFF',
+        container: {},
+        content: {},
     },
     elevated: {
-        backgroundColor: '#FFFFFF',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 15,
-        elevation: 2,
-        borderWidth: 1,
-        borderColor: '#F3F4F6',
+        container: {
+            borderColor: colors.glass.borderHighlight,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.5,
+            shadowRadius: 20,
+            elevation: 10,
+        },
+        content: {},
     },
     outlined: {
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
+        container: {
+            backgroundColor: 'transparent',
+            borderColor: colors.glass.borderHighlight,
+        },
+        content: {},
     },
 };

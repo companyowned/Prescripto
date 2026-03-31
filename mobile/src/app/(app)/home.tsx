@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { authService } from '../../services/auth';
 import { useAuth } from '../_layout';
 import { usePrescriptionHistory } from '../../features/prescriptions/hooks';
+import { GlassBackground } from '../../components/ui';
 
 import {
     HomeHeader,
@@ -35,52 +36,55 @@ export default function HomeScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="dark-content" backgroundColor="#F5F6F8" />
+        <GlassBackground>
+            <SafeAreaView style={styles.safeArea}>
+                <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-            <View style={styles.container}>
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                >
-                    <HomeHeader
-                        userName={userData?.full_name?.split(' ')[0] || 'User'}
-                        onLogout={handleLogout}
+                <View style={styles.container}>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <HomeHeader
+                            userName={userData?.full_name?.split(' ')[0] || 'User'}
+                            onLogout={handleLogout}
+                        />
+
+                        <HeroCard
+                            onScanPress={() => router.push('/(app)/scan')}
+                            onUploadPress={() => router.push('/(app)/upload')}
+                        />
+
+                        <StatusBadge />
+
+                        <SearchBar />
+
+                        <RecentScansList
+                            scans={recentScans}
+                            onScanPress={(documentId) => router.push({ pathname: '/(app)/result', params: { documentId } })}
+                            onSeeAllPress={() => router.push('/(app)/history')}
+                            onNewScanPress={() => router.push('/(app)/scan')}
+                        />
+                    </ScrollView>
+
+                    <MockBottomTabs
+                        activeTab="home"
+                        onHomePress={() => { }}
+                        onRecordsPress={() => router.push('/(app)/history')}
+                        onRemindersPress={() => router.push('/(app)/reminders')}
+                        onInsightsPress={() => router.push('/(app)/insights')}
+                        onSettingsPress={() => router.push('/(app)/settings')}
                     />
-
-                    <HeroCard
-                        onScanPress={() => router.push('/(app)/scan')}
-                        onUploadPress={() => router.push('/(app)/upload')}
-                    />
-
-                    <StatusBadge />
-
-                    <SearchBar />
-
-                    <RecentScansList
-                        scans={recentScans}
-                        onScanPress={(documentId) => router.push({ pathname: '/(app)/result', params: { documentId } })}
-                        onSeeAllPress={() => router.push('/(app)/history')}
-                    />
-                </ScrollView>
-
-                <MockBottomTabs
-                    activeTab="home"
-                    onHomePress={() => { }}
-                    onRecordsPress={() => router.push('/(app)/history')}
-                    onRemindersPress={() => router.push('/(app)/reminders')}
-                    onInsightsPress={() => router.push('/(app)/insights')}
-                    onSettingsPress={() => router.push('/(app)/settings')}
-                />
-            </View>
-        </SafeAreaView>
+                </View>
+            </SafeAreaView>
+        </GlassBackground>
     );
 }
 
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#F5F6F8',
+        backgroundColor: 'transparent',
     },
     container: {
         flex: 1,

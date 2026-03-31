@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { colors } from '../../theme';
 
 interface HomeHeaderProps {
     userName: string;
@@ -23,7 +24,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
             </View>
 
             <TouchableOpacity onPress={onLogout} style={styles.logoutBtn}>
-                <Feather name="log-out" size={24} color="#EF4444" />
+                <Feather name="log-out" size={24} color={colors.primary[300]} />
             </TouchableOpacity>
         </View>
     );
@@ -44,14 +45,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     dashboardText: {
-        color: '#6B7280',
+        color: colors.textSecondary,
         fontSize: 11,
         fontWeight: '700',
         letterSpacing: 1.2,
         marginBottom: 2,
     },
     greetingText: {
-        color: '#111827',
+        color: colors.textPrimary,
         fontSize: 18,
         fontWeight: '800',
         letterSpacing: -0.3,

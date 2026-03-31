@@ -11,6 +11,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { MockBottomTabs } from '../../components/home';
 import { DoseTimelineItem } from '../../components/reminders';
+import { GlassBackground } from '../../components/ui';
+import { colors } from '../../theme';
 import {
     useTodayDoses,
     useMarkDoseTaken,
@@ -35,93 +37,95 @@ export default function TodayScheduleScreen() {
     const takenCount = data?.doses.filter(d => d.status === 'taken').length || 0;
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
-                <ScrollView contentContainerStyle={styles.scrollContent}>
-                    {/* Header */}
-                    <Text style={styles.title}>Today&apos;s Schedule</Text>
-                    <Text style={styles.date}>{today}</Text>
+        <GlassBackground>
+            <SafeAreaView style={styles.safeArea}>
+                <View style={styles.container}>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        {/* Header */}
+                        <Text style={styles.title}>Today&apos;s Schedule</Text>
+                        <Text style={styles.date}>{today}</Text>
 
-                    {/* Stats summary */}
-                    {data && data.doses.length > 0 && (
-                        <View style={styles.statsRow}>
-                            <View style={[styles.statBadge, { backgroundColor: '#ECFDF5' }]}>
-                                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                                <Text style={[styles.statText, { color: '#10B981' }]}>
-                                    {takenCount} taken
+                        {/* Stats summary */}
+                        {data && data.doses.length > 0 && (
+                            <View style={styles.statsRow}>
+                                <View style={[styles.statBadge, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
+                                    <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                                    <Text style={[styles.statText, { color: '#10B981' }]}>
+                                        {takenCount} taken
+                                    </Text>
+                                </View>
+                                <View style={[styles.statBadge, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
+                                    <Ionicons name="time-outline" size={16} color="#F59E0B" />
+                                    <Text style={[styles.statText, { color: '#F59E0B' }]}>
+                                        {pendingCount} remaining
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Content */}
+                        {isLoading ? (
+                            <View style={styles.center}>
+                                <ActivityIndicator size="large" color={colors.primary[300]} />
+                            </View>
+                        ) : error ? (
+                            <View style={styles.emptyCard}>
+                                <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+                                <Text style={styles.emptyTitle}>Error Loading Schedule</Text>
+                            </View>
+                        ) : data && data.doses.length > 0 ? (
+                            <View style={styles.timeline}>
+                                {data.doses.map((dose) => (
+                                    <DoseTimelineItem
+                                        key={dose.id}
+                                        dose={dose}
+                                        onMarkTaken={() => markTaken.mutate({ eventId: dose.id })}
+                                        onSkip={() => skipDose.mutate({ eventId: dose.id })}
+                                        onSnooze={(mins) =>
+                                            snoozeDose.mutate({
+                                                eventId: dose.id,
+                                                data: { snooze_minutes: mins },
+                                            })
+                                        }
+                                    />
+                                ))}
+                            </View>
+                        ) : (
+                            <View style={styles.emptyCard}>
+                                <View style={styles.emptyIconWrap}>
+                                    <Ionicons name="calendar-outline" size={48} color={colors.primary[300]} />
+                                </View>
+                                <Text style={styles.emptyTitle}>No Doses Today</Text>
+                                <Text style={styles.emptyMessage}>
+                                    You don&apos;t have any scheduled doses for today. Create a reminder to get started.
                                 </Text>
+                                <TouchableOpacity
+                                    style={styles.createBtn}
+                                    onPress={() => router.push('/(app)/reminder-form')}
+                                >
+                                    <Text style={styles.createBtnText}>Create Reminder</Text>
+                                </TouchableOpacity>
                             </View>
-                            <View style={[styles.statBadge, { backgroundColor: '#FEF3C7' }]}>
-                                <Ionicons name="time-outline" size={16} color="#F59E0B" />
-                                <Text style={[styles.statText, { color: '#F59E0B' }]}>
-                                    {pendingCount} remaining
-                                </Text>
-                            </View>
-                        </View>
-                    )}
+                        )}
+                    </ScrollView>
 
-                    {/* Content */}
-                    {isLoading ? (
-                        <View style={styles.center}>
-                            <ActivityIndicator size="large" color="#0EA5E9" />
-                        </View>
-                    ) : error ? (
-                        <View style={styles.emptyCard}>
-                            <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
-                            <Text style={styles.emptyTitle}>Error Loading Schedule</Text>
-                        </View>
-                    ) : data && data.doses.length > 0 ? (
-                        <View style={styles.timeline}>
-                            {data.doses.map((dose) => (
-                                <DoseTimelineItem
-                                    key={dose.id}
-                                    dose={dose}
-                                    onMarkTaken={() => markTaken.mutate({ eventId: dose.id })}
-                                    onSkip={() => skipDose.mutate({ eventId: dose.id })}
-                                    onSnooze={(mins) =>
-                                        snoozeDose.mutate({
-                                            eventId: dose.id,
-                                            data: { snooze_minutes: mins },
-                                        })
-                                    }
-                                />
-                            ))}
-                        </View>
-                    ) : (
-                        <View style={styles.emptyCard}>
-                            <View style={styles.emptyIconWrap}>
-                                <Ionicons name="calendar-outline" size={48} color="#0EA5E9" />
-                            </View>
-                            <Text style={styles.emptyTitle}>No Doses Today</Text>
-                            <Text style={styles.emptyMessage}>
-                                You don&apos;t have any scheduled doses for today. Create a reminder to get started.
-                            </Text>
-                            <TouchableOpacity
-                                style={styles.createBtn}
-                                onPress={() => router.push('/(app)/reminder-form')}
-                            >
-                                <Text style={styles.createBtnText}>Create Reminder</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                </ScrollView>
-
-                <MockBottomTabs
-                    activeTab="home"
-                    onHomePress={() => router.push('/(app)/home')}
-                    onRecordsPress={() => router.push('/(app)/history')}
-                    onInsightsPress={() => router.push('/(app)/insights')}
-                    onSettingsPress={() => router.push('/(app)/settings')}
-                />
-            </View>
-        </SafeAreaView>
+                    <MockBottomTabs
+                        activeTab="home"
+                        onHomePress={() => router.push('/(app)/home')}
+                        onRecordsPress={() => router.push('/(app)/history')}
+                        onInsightsPress={() => router.push('/(app)/insights')}
+                        onSettingsPress={() => router.push('/(app)/settings')}
+                    />
+                </View>
+            </SafeAreaView>
+        </GlassBackground>
     );
 }
 
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#F5F6F8',
+        backgroundColor: 'transparent',
     },
     container: {
         flex: 1,
@@ -134,11 +138,11 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: '800',
-        color: '#111827',
+        color: '#FFFFFF',
     },
     date: {
         fontSize: 15,
-        color: '#6B7280',
+        color: colors.textSecondary,
         marginTop: 4,
         marginBottom: 20,
     },
@@ -167,24 +171,19 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     emptyCard: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.background,
         borderRadius: 20,
         padding: 32,
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.03,
-        shadowRadius: 10,
-        elevation: 2,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: colors.glass.borderHighlight,
         marginTop: 20,
     },
     emptyIconWrap: {
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#E0F2FE',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
@@ -192,18 +191,18 @@ const styles = StyleSheet.create({
     emptyTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#111827',
+        color: '#FFFFFF',
         marginBottom: 8,
     },
     emptyMessage: {
         fontSize: 14,
-        color: '#6B7280',
+        color: colors.textSecondary,
         textAlign: 'center',
         lineHeight: 22,
         marginBottom: 20,
     },
     createBtn: {
-        backgroundColor: '#0EA5E9',
+        backgroundColor: colors.primary[500],
         paddingHorizontal: 24,
         paddingVertical: 12,
         borderRadius: 12,

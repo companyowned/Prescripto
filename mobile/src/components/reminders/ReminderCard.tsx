@@ -6,6 +6,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { MedicationReminder } from '../../features/reminders/types';
+import { colors } from '../../theme';
 
 interface ReminderCardProps {
     reminder: MedicationReminder;
@@ -56,7 +57,7 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
                     <MaterialCommunityIcons
                         name={formIcon as any}
                         size={24}
-                        color={isActive ? '#0EA5E9' : '#9CA3AF'}
+                        color={isActive ? colors.primary[300] : colors.textSecondary}
                     />
                 </View>
 
@@ -68,7 +69,7 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
                         <Text style={styles.dosage}>{reminder.dosage}</Text>
                     )}
                     <View style={styles.scheduleRow}>
-                        <Ionicons name="time-outline" size={14} color="#9CA3AF" />
+                        <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
                         <Text style={styles.scheduleText}>{scheduleLabel()}</Text>
                     </View>
                 </View>
@@ -96,7 +97,7 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
                         onPress={onDelete}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                        <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                        <Ionicons name="trash-outline" size={20} color={colors.error} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -112,21 +113,16 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.inputBg,
         borderRadius: 16,
         padding: 16,
         marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 8,
-        elevation: 2,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: colors.glass.borderHighlight,
     },
     cardInactive: {
-        opacity: 0.7,
-        borderColor: '#E5E7EB',
+        opacity: 0.4,
+        borderColor: colors.glass.border,
     },
     cardContent: {
         flexDirection: 'row',
@@ -136,13 +132,13 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48,
         borderRadius: 14,
-        backgroundColor: '#E0F2FE',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 14,
     },
     iconInactive: {
-        backgroundColor: '#F3F4F6',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
     },
     infoContainer: {
         flex: 1,
@@ -150,15 +146,15 @@ const styles = StyleSheet.create({
     medName: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#111827',
+        color: '#FFFFFF',
         marginBottom: 2,
     },
     textInactive: {
-        color: '#6B7280',
+        color: colors.textSecondary,
     },
     dosage: {
         fontSize: 13,
-        color: '#6B7280',
+        color: colors.textSecondary,
         marginBottom: 4,
     },
     scheduleRow: {
@@ -168,7 +164,7 @@ const styles = StyleSheet.create({
     },
     scheduleText: {
         fontSize: 12,
-        color: '#9CA3AF',
+        color: colors.textSecondary,
     },
     actionsContainer: {
         flexDirection: 'row',
@@ -183,13 +179,13 @@ const styles = StyleSheet.create({
         marginTop: 8,
         paddingHorizontal: 10,
         paddingVertical: 3,
-        backgroundColor: '#FEF3C7',
+        backgroundColor: 'rgba(245, 158, 11, 0.2)',
         borderRadius: 6,
     },
     pausedText: {
         fontSize: 10,
         fontWeight: '800',
-        color: '#D97706',
+        color: '#FCD34D',
         letterSpacing: 0.5,
     },
 });

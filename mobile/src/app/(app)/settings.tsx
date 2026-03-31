@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Pla
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { MockBottomTabs } from '../../components/home';
+import { GlassBackground } from '../../components/ui';
 import { authService } from '../../services/auth';
 import { useAuth } from '../_layout';
+import { colors } from '../../theme';
 
 export default function SettingsScreen() {
     const router = useRouter();
@@ -16,70 +18,72 @@ export default function SettingsScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
-                <ScrollView contentContainerStyle={styles.scrollContent}>
-                    <Text style={styles.title}>Settings</Text>
+        <GlassBackground>
+            <SafeAreaView style={styles.safeArea}>
+                <View style={styles.container}>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <Text style={styles.title}>Settings</Text>
 
-                    <View style={styles.card}>
-                        {/* Profile Settings */}
-                        <TouchableOpacity
-                            style={styles.cardRow}
-                            onPress={() => router.push('/(app)/profile')}
-                        >
-                            <View style={styles.rowLeft}>
-                                <View style={[styles.iconContainer, { backgroundColor: '#E0F2FE' }]}>
-                                    <Ionicons name="person-outline" size={20} color="#0EA5E9" />
+                        <View style={styles.card}>
+                            {/* Profile Settings */}
+                            <TouchableOpacity
+                                style={styles.cardRow}
+                                onPress={() => router.push('/(app)/profile')}
+                            >
+                                <View style={styles.rowLeft}>
+                                    <View style={[styles.iconContainer, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+                                        <Ionicons name="person-outline" size={20} color={colors.primary[300]} />
+                                    </View>
+                                    <Text style={styles.rowText}>Account Profile</Text>
                                 </View>
-                                <Text style={styles.rowText}>Account Profile</Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
-                        </TouchableOpacity>
+                                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                            </TouchableOpacity>
 
-                        <View style={styles.divider} />
+                            <View style={styles.divider} />
 
-                        {/* Notifications */}
-                        <TouchableOpacity style={styles.cardRow}>
-                            <View style={styles.rowLeft}>
-                                <View style={[styles.iconContainer, { backgroundColor: '#FEF3C7' }]}>
-                                    <Ionicons name="notifications-outline" size={20} color="#D97706" />
+                            {/* Notifications */}
+                            <TouchableOpacity style={styles.cardRow}>
+                                <View style={styles.rowLeft}>
+                                    <View style={[styles.iconContainer, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
+                                        <Ionicons name="notifications-outline" size={20} color="#F59E0B" />
+                                    </View>
+                                    <Text style={styles.rowText}>Notifications</Text>
                                 </View>
-                                <Text style={styles.rowText}>Notifications</Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
-                        </TouchableOpacity>
+                                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                            </TouchableOpacity>
 
-                        <View style={styles.divider} />
+                            <View style={styles.divider} />
 
-                        {/* Logout */}
-                        <TouchableOpacity style={styles.cardRow} onPress={handleLogout}>
-                            <View style={styles.rowLeft}>
-                                <View style={[styles.iconContainer, { backgroundColor: '#FEE2E2' }]}>
-                                    <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+                            {/* Logout */}
+                            <TouchableOpacity style={styles.cardRow} onPress={handleLogout}>
+                                <View style={styles.rowLeft}>
+                                    <View style={[styles.iconContainer, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
+                                        <Ionicons name="log-out-outline" size={20} color={colors.error} />
+                                    </View>
+                                    <Text style={[styles.rowText, { color: colors.error }]}>Log Out</Text>
                                 </View>
-                                <Text style={[styles.rowText, { color: '#EF4444' }]}>Log Out</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
 
-                <MockBottomTabs
-                    activeTab="settings"
-                    onHomePress={() => router.push('/(app)/home')}
-                    onRecordsPress={() => router.push('/(app)/history')}
-                    onRemindersPress={() => router.push('/(app)/reminders')}
-                    onInsightsPress={() => router.push('/(app)/insights')}
-                    onSettingsPress={() => { }}
-                />
-            </View>
-        </SafeAreaView>
+                    <MockBottomTabs
+                        activeTab="settings"
+                        onHomePress={() => router.push('/(app)/home')}
+                        onRecordsPress={() => router.push('/(app)/history')}
+                        onRemindersPress={() => router.push('/(app)/reminders')}
+                        onInsightsPress={() => router.push('/(app)/insights')}
+                        onSettingsPress={() => { }}
+                    />
+                </View>
+            </SafeAreaView>
+        </GlassBackground>
     );
 }
 
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#F5F6F8',
+        backgroundColor: 'transparent',
     },
     container: {
         flex: 1,
@@ -92,21 +96,16 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: '800',
-        color: '#111827',
+        color: '#FFFFFF',
         marginBottom: 24,
     },
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.background,
         borderRadius: 24,
         paddingHorizontal: 8,
         paddingVertical: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.03,
-        shadowRadius: 10,
-        elevation: 2,
         borderWidth: 1,
-        borderColor: '#F3F4F6'
+        borderColor: colors.glass.borderHighlight,
     },
     cardRow: {
         flexDirection: 'row',
@@ -128,13 +127,13 @@ const styles = StyleSheet.create({
         marginRight: 16,
     },
     rowText: {
-        color: '#111827',
+        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
     },
     divider: {
         height: 1,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: colors.glass.border,
         marginHorizontal: 12,
     }
 });

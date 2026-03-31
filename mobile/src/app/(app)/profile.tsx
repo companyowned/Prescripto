@@ -13,8 +13,9 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Input, Button } from '../../components/ui';
+import { Input, Button, GlassBackground } from '../../components/ui';
 import { authService } from '../../services/auth';
+import { colors } from '../../theme';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -56,77 +57,81 @@ export default function ProfileScreen() {
 
     if (isLoading) {
         return (
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.loaderContainer}>
-                    <ActivityIndicator size="large" color="#0EA5E9" />
-                </View>
-            </SafeAreaView>
+            <GlassBackground>
+                <SafeAreaView style={styles.safeArea}>
+                    <View style={styles.loaderContainer}>
+                        <ActivityIndicator size="large" color={colors.primary[300]} />
+                    </View>
+                </SafeAreaView>
+            </GlassBackground>
         );
     }
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#111827" />
-                    </TouchableOpacity>
-                    <Text style={styles.title}>Edit Profile</Text>
-                    <View style={{ width: 24 }} /> {/* Balance for back button */}
-                </View>
+        <GlassBackground>
+            <SafeAreaView style={styles.safeArea}>
+                <View style={styles.container}>
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+                        </TouchableOpacity>
+                        <Text style={styles.title}>Edit Profile</Text>
+                        <View style={{ width: 24 }} /> {/* Balance for back button */}
+                    </View>
 
-                <ScrollView contentContainerStyle={styles.scrollContent}>
-                    {/* Avatar Display */}
-                    <View style={styles.avatarContainer}>
-                        <View style={styles.avatarWrapper}>
-                            <Ionicons name="person" size={48} color="#0EA5E9" />
-                            <View style={styles.editIconBadge}>
-                                <Ionicons name="pencil" size={14} color="#FFFFFF" />
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        {/* Avatar Display */}
+                        <View style={styles.avatarContainer}>
+                            <View style={styles.avatarWrapper}>
+                                <Ionicons name="person" size={48} color={colors.primary[300]} />
+                                <View style={styles.editIconBadge}>
+                                    <Ionicons name="pencil" size={14} color="#FFFFFF" />
+                                </View>
                             </View>
+                            <Text style={styles.emailText}>{userData?.email}</Text>
                         </View>
-                        <Text style={styles.emailText}>{userData?.email}</Text>
-                    </View>
 
-                    {/* Edit Form */}
-                    <View style={styles.formContainer}>
-                        <Input
-                            label="Full Name"
-                            placeholder="Enter your full name"
-                            value={fullName}
-                            onChangeText={setFullName}
-                            autoCapitalize="words"
+                        {/* Edit Form */}
+                        <View style={styles.formContainer}>
+                            <Input
+                                label="Full Name"
+                                placeholder="Enter your full name"
+                                value={fullName}
+                                onChangeText={setFullName}
+                                autoCapitalize="words"
+                            />
+
+                            <Input
+                                label="Email Address"
+                                value={userData?.email || ''}
+                                editable={false}
+                                placeholder="Email"
+                            />
+                            <Text style={styles.helperText}>
+                                Email addresses cannot be changed directly for security reasons.
+                            </Text>
+                        </View>
+                    </ScrollView>
+
+                    {/* Fixed Action Button */}
+                    <View style={styles.footer}>
+                        <Button
+                            title={updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+                            onPress={handleSave}
+                            disabled={updateProfileMutation.isPending || fullName === userData?.full_name}
                         />
-
-                        <Input
-                            label="Email Address"
-                            value={userData?.email || ''}
-                            editable={false}
-                            placeholder="Email"
-                        />
-                        <Text style={styles.helperText}>
-                            Email addresses cannot be changed directly for security reasons.
-                        </Text>
                     </View>
-                </ScrollView>
-
-                {/* Fixed Action Button */}
-                <View style={styles.footer}>
-                    <Button
-                        title={updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
-                        onPress={handleSave}
-                        disabled={updateProfileMutation.isPending || fullName === userData?.full_name}
-                    />
                 </View>
-            </View>
-        </SafeAreaView>
+            </SafeAreaView>
+        </GlassBackground>
     );
 }
 
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#F5F6F8',
+        backgroundColor: 'transparent',
     },
     loaderContainer: {
         flex: 1,
@@ -150,7 +155,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         fontWeight: '700',
-        color: '#111827',
+        color: '#FFFFFF',
     },
     scrollContent: {
         paddingHorizontal: 20,
@@ -164,53 +169,43 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: '#E0F2FE',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 4,
-        borderColor: '#FFFFFF',
-        shadowColor: '#0EA5E9',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 5,
+        borderColor: colors.primary[500],
         marginBottom: 16,
     },
     editIconBadge: {
         position: 'absolute',
         bottom: 0,
         right: 0,
-        backgroundColor: '#0EA5E9',
+        backgroundColor: colors.primary[500],
         width: 32,
         height: 32,
         borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 3,
-        borderColor: '#FFFFFF',
+        borderColor: colors.primary[700],
     },
     emailText: {
         fontSize: 16,
-        color: '#6B7280',
+        color: colors.textSecondary,
         fontWeight: '500',
     },
     formContainer: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.background,
         padding: 24,
         borderRadius: 24,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.03,
-        shadowRadius: 10,
-        elevation: 2,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: colors.glass.borderHighlight,
         gap: 16,
     },
     helperText: {
         marginTop: -8,
         fontSize: 12,
-        color: '#9CA3AF',
+        color: colors.textSecondary,
         fontStyle: 'italic',
         marginBottom: 8,
     },
@@ -218,8 +213,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 16,
         paddingBottom: Platform.OS === 'ios' ? 32 : 16,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'transparent',
         borderTopWidth: 1,
-        borderTopColor: '#F3F4F6',
+        borderTopColor: colors.glass.borderHighlight,
     },
 });

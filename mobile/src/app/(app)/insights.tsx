@@ -11,6 +11,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { MockBottomTabs } from '../../components/home';
 import { InsightCard, AdherenceChart } from '../../components/reminders';
+import { GlassBackground } from '../../components/ui';
+import { colors } from '../../theme';
 import {
     useMedicationInsights,
     useMedicationTrends,
@@ -31,166 +33,168 @@ export default function InsightsScreen() {
     const isError = summaryError || trendsError || riskError;
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
-                <ScrollView contentContainerStyle={styles.scrollContent}>
-                    <Text style={styles.title}>Insights</Text>
+        <GlassBackground>
+            <SafeAreaView style={styles.safeArea}>
+                <View style={styles.container}>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <Text style={styles.title}>Insights</Text>
 
-                    {/* Range selector */}
-                    <View style={styles.rangeRow}>
-                        {(['7d', '30d', '90d'] as RangeOption[]).map((opt) => (
-                            <TouchableOpacity
-                                key={opt}
-                                style={[styles.rangeChip, range === opt && styles.rangeChipActive]}
-                                onPress={() => setRange(opt)}
-                            >
-                                <Text style={[styles.rangeText, range === opt && styles.rangeTextActive]}>
-                                    {opt === '7d' ? '7 Days' : opt === '30d' ? '30 Days' : '90 Days'}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                        {/* Range selector */}
+                        <View style={styles.rangeRow}>
+                            {(['7d', '30d', '90d'] as RangeOption[]).map((opt) => (
+                                <TouchableOpacity
+                                    key={opt}
+                                    style={[styles.rangeChip, range === opt && styles.rangeChipActive]}
+                                    onPress={() => setRange(opt)}
+                                >
+                                    <Text style={[styles.rangeText, range === opt && styles.rangeTextActive]}>
+                                        {opt === '7d' ? '7 Days' : opt === '30d' ? '30 Days' : '90 Days'}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
 
-                    {isLoading ? (
-                        <View style={styles.center}>
-                            <ActivityIndicator size="large" color="#0EA5E9" />
-                        </View>
-                    ) : isError ? (
-                        <View style={styles.emptyCard}>
-                            <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
-                            <Text style={styles.emptyTitle}>Error Loading Insights</Text>
-                            <Text style={styles.emptyMessage}>{String((summaryError || trendsError || riskError)?.message || 'Failed to fetch insights')}</Text>
-                        </View>
-                    ) : summary ? (
-                        <>
-                            {/* KPI Cards */}
-                            <View style={styles.cardsGrid}>
-                                <InsightCard
-                                    title="Adherence"
-                                    value={`${Math.round(summary.adherence_rate * 100)}%`}
-                                    icon="shield-checkmark"
-                                    iconColor={summary.adherence_rate >= 0.8 ? '#10B981' : summary.adherence_rate >= 0.5 ? '#F59E0B' : '#EF4444'}
-                                    iconBg={summary.adherence_rate >= 0.8 ? '#ECFDF5' : summary.adherence_rate >= 0.5 ? '#FEF3C7' : '#FEF2F2'}
-                                />
-                                <InsightCard
-                                    title="Current Streak"
-                                    value={`${summary.current_streak}d`}
-                                    subtitle={`Best: ${summary.best_streak}d`}
-                                    icon="flame"
-                                    iconColor="#F59E0B"
-                                    iconBg="#FEF3C7"
-                                />
-                                <InsightCard
-                                    title="Doses Taken"
-                                    value={summary.taken_count}
-                                    subtitle={`of ${summary.total_doses} total`}
-                                    icon="checkmark-done"
-                                    iconColor="#10B981"
-                                    iconBg="#ECFDF5"
-                                />
-                                <InsightCard
-                                    title="Missed"
-                                    value={summary.missed_count}
-                                    subtitle={`${summary.skipped_count} skipped`}
-                                    icon="alert-circle"
-                                    iconColor="#EF4444"
-                                    iconBg="#FEF2F2"
-                                />
+                        {isLoading ? (
+                            <View style={styles.center}>
+                                <ActivityIndicator size="large" color={colors.primary[300]} />
                             </View>
-
-                            {/* Adherence Trend Chart */}
-                            {trends && trends.data.length > 0 && (
-                                <View style={styles.chartSection}>
-                                    <View style={styles.sectionHeader}>
-                                        <Text style={styles.sectionTitle}>Adherence Trend</Text>
-                                        <Text style={styles.sectionSubtitle}>
-                                            Avg: {Math.round(trends.average_adherence * 100)}%
-                                        </Text>
-                                    </View>
-                                    <View style={styles.chartCard}>
-                                        <AdherenceChart data={trends.data} height={150} />
-                                    </View>
+                        ) : isError ? (
+                            <View style={styles.emptyCard}>
+                                <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+                                <Text style={styles.emptyTitle}>Error Loading Insights</Text>
+                                <Text style={styles.emptyMessage}>{String((summaryError || trendsError || riskError)?.message || 'Failed to fetch insights')}</Text>
+                            </View>
+                        ) : summary ? (
+                            <>
+                                {/* KPI Cards */}
+                                <View style={styles.cardsGrid}>
+                                    <InsightCard
+                                        title="Adherence"
+                                        value={`${Math.round(summary.adherence_rate * 100)}%`}
+                                        icon="shield-checkmark"
+                                        iconColor={summary.adherence_rate >= 0.8 ? '#10B981' : summary.adherence_rate >= 0.5 ? '#F59E0B' : colors.error}
+                                        iconBg={summary.adherence_rate >= 0.8 ? 'rgba(16, 185, 129, 0.15)' : summary.adherence_rate >= 0.5 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)'}
+                                    />
+                                    <InsightCard
+                                        title="Current Streak"
+                                        value={`${summary.current_streak}d`}
+                                        subtitle={`Best: ${summary.best_streak}d`}
+                                        icon="flame"
+                                        iconColor="#F59E0B"
+                                        iconBg="rgba(245, 158, 11, 0.15)"
+                                    />
+                                    <InsightCard
+                                        title="Doses Taken"
+                                        value={summary.taken_count}
+                                        subtitle={`of ${summary.total_doses} total`}
+                                        icon="checkmark-done"
+                                        iconColor="#10B981"
+                                        iconBg="rgba(16, 185, 129, 0.15)"
+                                    />
+                                    <InsightCard
+                                        title="Missed"
+                                        value={summary.missed_count}
+                                        subtitle={`${summary.skipped_count} skipped`}
+                                        icon="alert-circle"
+                                        iconColor={colors.error}
+                                        iconBg="rgba(239, 68, 68, 0.15)"
+                                    />
                                 </View>
-                            )}
 
-                            {/* Risk Flags */}
-                            {riskData && riskData.flags.length > 0 && (
-                                <View style={styles.riskSection}>
-                                    <Text style={styles.sectionTitle}>Alerts</Text>
-                                    {riskData.flags.map((flag, idx) => (
-                                        <View
-                                            key={idx}
-                                            style={[
-                                                styles.riskCard,
-                                                flag.severity === 'critical' ? styles.riskCritical : styles.riskWarning,
-                                            ]}
-                                        >
-                                            <Ionicons
-                                                name={flag.severity === 'critical' ? 'warning' : 'information-circle'}
-                                                size={20}
-                                                color={flag.severity === 'critical' ? '#EF4444' : '#F59E0B'}
-                                            />
-                                            <Text style={styles.riskText}>{flag.message}</Text>
+                                {/* Adherence Trend Chart */}
+                                {trends && trends.data.length > 0 && (
+                                    <View style={styles.chartSection}>
+                                        <View style={styles.sectionHeader}>
+                                            <Text style={styles.sectionTitle}>Adherence Trend</Text>
+                                            <Text style={styles.sectionSubtitle}>
+                                                Avg: {Math.round(trends.average_adherence * 100)}%
+                                            </Text>
                                         </View>
-                                    ))}
+                                        <View style={styles.chartCard}>
+                                            <AdherenceChart data={trends.data} height={150} />
+                                        </View>
+                                    </View>
+                                )}
+
+                                {/* Risk Flags */}
+                                {riskData && riskData.flags.length > 0 && (
+                                    <View style={styles.riskSection}>
+                                        <Text style={styles.sectionTitle}>Alerts</Text>
+                                        {riskData.flags.map((flag, idx) => (
+                                            <View
+                                                key={idx}
+                                                style={[
+                                                    styles.riskCard,
+                                                    flag.severity === 'critical' ? styles.riskCritical : styles.riskWarning,
+                                                ]}
+                                            >
+                                                <Ionicons
+                                                    name={flag.severity === 'critical' ? 'warning' : 'information-circle'}
+                                                    size={20}
+                                                    color={flag.severity === 'critical' ? '#EF4444' : '#F59E0B'}
+                                                />
+                                                <Text style={styles.riskText}>{flag.message}</Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                )}
+
+                                {/* Quick Actions */}
+                                <View style={styles.quickActions}>
+                                    <TouchableOpacity
+                                        style={styles.quickAction}
+                                        onPress={() => router.push('/(app)/today-schedule')}
+                                    >
+                                        <Ionicons name="today-outline" size={20} color={colors.primary[300]} />
+                                        <Text style={styles.quickActionText}>Today&apos;s Schedule</Text>
+                                        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.quickAction}
+                                        onPress={() => router.push('/(app)/reminders')}
+                                    >
+                                        <Ionicons name="notifications-outline" size={20} color={colors.primary[300]} />
+                                        <Text style={styles.quickActionText}>Manage Reminders</Text>
+                                        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                                    </TouchableOpacity>
                                 </View>
-                            )}
-
-                            {/* Quick Actions */}
-                            <View style={styles.quickActions}>
+                            </>
+                        ) : (
+                            <View style={styles.emptyCard}>
+                                <View style={styles.emptyIconWrap}>
+                                    <Ionicons name="bar-chart-outline" size={48} color={colors.primary[300]} />
+                                </View>
+                                <Text style={styles.emptyTitle}>No Data Yet</Text>
+                                <Text style={styles.emptyMessage}>
+                                    Create reminders and track your doses to see insights and analytics.
+                                </Text>
                                 <TouchableOpacity
-                                    style={styles.quickAction}
-                                    onPress={() => router.push('/(app)/today-schedule')}
+                                    style={styles.createBtn}
+                                    onPress={() => router.push('/(app)/reminder-form')}
                                 >
-                                    <Ionicons name="today-outline" size={20} color="#0EA5E9" />
-                                    <Text style={styles.quickActionText}>Today&apos;s Schedule</Text>
-                                    <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={styles.quickAction}
-                                    onPress={() => router.push('/(app)/reminders')}
-                                >
-                                    <Ionicons name="notifications-outline" size={20} color="#0EA5E9" />
-                                    <Text style={styles.quickActionText}>Manage Reminders</Text>
-                                    <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+                                    <Text style={styles.createBtnText}>Create Your First Reminder</Text>
                                 </TouchableOpacity>
                             </View>
-                        </>
-                    ) : (
-                        <View style={styles.emptyCard}>
-                            <View style={styles.emptyIconWrap}>
-                                <Ionicons name="bar-chart-outline" size={48} color="#0EA5E9" />
-                            </View>
-                            <Text style={styles.emptyTitle}>No Data Yet</Text>
-                            <Text style={styles.emptyMessage}>
-                                Create reminders and track your doses to see insights and analytics.
-                            </Text>
-                            <TouchableOpacity
-                                style={styles.createBtn}
-                                onPress={() => router.push('/(app)/reminder-form')}
-                            >
-                                <Text style={styles.createBtnText}>Create Your First Reminder</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                </ScrollView>
+                        )}
+                    </ScrollView>
 
-                <MockBottomTabs
-                    activeTab="insights"
-                    onHomePress={() => router.push('/(app)/home')}
-                    onRecordsPress={() => router.push('/(app)/history')}
-                    onInsightsPress={() => { }}
-                    onSettingsPress={() => router.push('/(app)/settings')}
-                />
-            </View>
-        </SafeAreaView>
+                    <MockBottomTabs
+                        activeTab="insights"
+                        onHomePress={() => router.push('/(app)/home')}
+                        onRecordsPress={() => router.push('/(app)/history')}
+                        onInsightsPress={() => { }}
+                        onSettingsPress={() => router.push('/(app)/settings')}
+                    />
+                </View>
+            </SafeAreaView>
+        </GlassBackground>
     );
 }
 
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#F5F6F8',
+        backgroundColor: 'transparent',
     },
     container: {
         flex: 1,
@@ -203,7 +207,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: '800',
-        color: '#111827',
+        color: '#FFFFFF',
         marginBottom: 16,
     },
     rangeRow: {
@@ -215,18 +219,18 @@ const styles = StyleSheet.create({
         paddingHorizontal: 18,
         paddingVertical: 8,
         borderRadius: 10,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.inputBg,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: colors.glass.borderHighlight,
     },
     rangeChipActive: {
-        backgroundColor: '#0EA5E9',
-        borderColor: '#0EA5E9',
+        backgroundColor: colors.primary[500],
+        borderColor: colors.primary[500],
     },
     rangeText: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#6B7280',
+        color: colors.textSecondary,
     },
     rangeTextActive: {
         color: '#FFFFFF',
@@ -253,24 +257,19 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#111827',
+        color: '#FFFFFF',
     },
     sectionSubtitle: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#6B7280',
+        color: colors.textSecondary,
     },
     chartCard: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.background,
         borderRadius: 16,
         padding: 16,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 6,
-        elevation: 1,
+        borderColor: colors.glass.borderHighlight,
     },
     riskSection: {
         marginBottom: 24,
@@ -284,20 +283,20 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     riskWarning: {
-        backgroundColor: '#FEF3C7',
+        backgroundColor: 'rgba(245, 158, 11, 0.15)',
         borderWidth: 1,
-        borderColor: '#FDE68A',
+        borderColor: 'rgba(245, 158, 11, 0.3)',
     },
     riskCritical: {
-        backgroundColor: '#FEF2F2',
+        backgroundColor: 'rgba(239, 68, 68, 0.15)',
         borderWidth: 1,
-        borderColor: '#FECACA',
+        borderColor: 'rgba(239, 68, 68, 0.3)',
     },
     riskText: {
         flex: 1,
         fontSize: 13,
         fontWeight: '600',
-        color: '#374151',
+        color: '#FFFFFF',
     },
     quickActions: {
         marginBottom: 16,
@@ -305,39 +304,34 @@ const styles = StyleSheet.create({
     quickAction: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.inputBg,
         padding: 16,
         borderRadius: 14,
         marginBottom: 8,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: colors.glass.borderHighlight,
         gap: 12,
     },
     quickActionText: {
         flex: 1,
         fontSize: 15,
         fontWeight: '600',
-        color: '#111827',
+        color: '#FFFFFF',
     },
     emptyCard: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.background,
         borderRadius: 20,
         padding: 32,
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.03,
-        shadowRadius: 10,
-        elevation: 2,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: colors.glass.borderHighlight,
         marginTop: 20,
     },
     emptyIconWrap: {
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#E0F2FE',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
@@ -345,18 +339,18 @@ const styles = StyleSheet.create({
     emptyTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#111827',
+        color: '#FFFFFF',
         marginBottom: 8,
     },
     emptyMessage: {
         fontSize: 14,
-        color: '#6B7280',
+        color: colors.textSecondary,
         textAlign: 'center',
         lineHeight: 22,
         marginBottom: 20,
     },
     createBtn: {
-        backgroundColor: '#0EA5E9',
+        backgroundColor: colors.primary[500],
         paddingHorizontal: 24,
         paddingVertical: 12,
         borderRadius: 12,

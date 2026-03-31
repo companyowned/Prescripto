@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { DoseEventWithReminder, DoseStatus } from '../../features/reminders/types';
+import { colors } from '../../theme';
 
 interface DoseTimelineItemProps {
     dose: DoseEventWithReminder;
@@ -18,8 +19,8 @@ const STATUS_CONFIG: Record<DoseStatus, { color: string; icon: string; label: st
     pending: { color: '#F59E0B', icon: 'time-outline', label: 'Pending' },
     taken: { color: '#10B981', icon: 'checkmark-circle', label: 'Taken' },
     missed: { color: '#EF4444', icon: 'close-circle', label: 'Missed' },
-    skipped: { color: '#6B7280', icon: 'remove-circle', label: 'Skipped' },
-    snoozed: { color: '#8B5CF6', icon: 'alarm-outline', label: 'Snoozed' },
+    skipped: { color: colors.textSecondary, icon: 'remove-circle', label: 'Skipped' },
+    snoozed: { color: colors.primary[400], icon: 'alarm-outline', label: 'Snoozed' },
 };
 
 export const DoseTimelineItem: React.FC<DoseTimelineItemProps> = ({
@@ -82,7 +83,7 @@ export const DoseTimelineItem: React.FC<DoseTimelineItemProps> = ({
                             style={[styles.actionBtn, styles.snoozeBtn]}
                             onPress={() => setShowSnoozeOptions(!showSnoozeOptions)}
                         >
-                            <Ionicons name="alarm-outline" size={14} color="#8B5CF6" />
+                            <Ionicons name="alarm-outline" size={14} color={colors.primary[400]} />
                             <Text style={styles.snoozeBtnText}>Snooze</Text>
                         </TouchableOpacity>
                     </View>
@@ -136,23 +137,18 @@ const styles = StyleSheet.create({
     line: {
         width: 2,
         flex: 1,
-        backgroundColor: '#E5E7EB',
+        backgroundColor: colors.glass.border,
         marginTop: 4,
     },
     content: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.background,
         borderRadius: 14,
         padding: 14,
         marginBottom: 8,
         marginLeft: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.03,
-        shadowRadius: 4,
-        elevation: 1,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: colors.glass.borderHighlight,
     },
     header: {
         flexDirection: 'row',
@@ -168,7 +164,7 @@ const styles = StyleSheet.create({
     time: {
         fontSize: 14,
         fontWeight: '700',
-        color: '#374151',
+        color: '#FFFFFF',
     },
     statusBadge: {
         flexDirection: 'row',
@@ -185,12 +181,12 @@ const styles = StyleSheet.create({
     medName: {
         fontSize: 15,
         fontWeight: '600',
-        color: '#111827',
+        color: '#FFFFFF',
         marginBottom: 2,
     },
     dosage: {
         fontSize: 13,
-        color: '#6B7280',
+        color: colors.textSecondary,
         marginBottom: 8,
     },
     actions: {
@@ -215,20 +211,24 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
     skipBtn: {
-        backgroundColor: '#F3F4F6',
+        backgroundColor: colors.glass.inputBg,
+        borderWidth: 1,
+        borderColor: colors.glass.borderHighlight,
     },
     skipBtnText: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#6B7280',
+        color: colors.textSecondary,
     },
     snoozeBtn: {
-        backgroundColor: '#F5F3FF',
+        backgroundColor: colors.glass.inputBg,
+        borderWidth: 1,
+        borderColor: colors.glass.borderHighlight,
     },
     snoozeBtnText: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#8B5CF6',
+        color: colors.primary[300],
     },
     snoozeOptions: {
         flexDirection: 'row',
@@ -238,15 +238,15 @@ const styles = StyleSheet.create({
     snoozeOption: {
         paddingHorizontal: 16,
         paddingVertical: 6,
-        backgroundColor: '#F5F3FF',
+        backgroundColor: colors.glass.inputBg,
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#DDD6FE',
+        borderColor: colors.glass.borderHighlight,
     },
     snoozeOptionText: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#7C3AED',
+        color: colors.primary[300],
     },
     takenTime: {
         fontSize: 12,
