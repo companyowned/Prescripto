@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MockBottomTabs } from '../../components/home';
-import { Card, Button, Loader, EmptyState } from '../../components/ui';
+import { Card, Button, Loader, EmptyState, GlassBackground } from '../../components/ui';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { usePrescriptionHistory } from '../../features/prescriptions/hooks';
 import type { PrescriptionListItem } from '../../features/prescriptions/types';
@@ -31,7 +31,7 @@ export default function HistoryScreen() {
     const { data, isLoading } = usePrescriptionHistory();
 
     const renderItem = ({ item }: { item: PrescriptionListItem }) => {
-        const date = new Date(item.created_at).toLocaleDateString('en-US', {
+        const dateStr = new Date(item.created_at).toLocaleDateString('en-US', {
             month: 'short', day: 'numeric', year: 'numeric',
         });
 
@@ -46,7 +46,7 @@ export default function HistoryScreen() {
                             <Text style={styles.itemDiagnosis} numberOfLines={1}>
                                 {item.diagnosis_text || 'No diagnosis'}
                             </Text>
-                            <Text style={styles.itemDate}>{date}</Text>
+                            <Text style={styles.itemDate}>{dateStr}</Text>
                         </View>
                         <View style={[styles.confidenceBadge, { backgroundColor: getConfidenceColor(item.confidence_score) + '20' }]}>
                             <Text style={[styles.confidenceText, { color: getConfidenceColor(item.confidence_score) }]}>
@@ -65,57 +65,65 @@ export default function HistoryScreen() {
         );
     };
 
-    if (isLoading) return <Loader fullScreen message="Loading history..." />;
+    if (isLoading) {
+        return (
+            <GlassBackground>
+                <Loader fullScreen message="Loading history..." />
+            </GlassBackground>
+        );
+    }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Button title="← Back" onPress={() => router.back()} variant="ghost" size="sm" />
-                <Text style={styles.title}>History</Text>
-                <View style={{ width: 80 }} />
-            </View>
+        <GlassBackground>
+            <SafeAreaView style={styles.container}>
+                <View style={styles.header}>
+                    <Button title="← Back" onPress={() => router.back()} variant="ghost" size="sm" />
+                    <Text style={styles.title}>History</Text>
+                    <View style={{ width: 80 }} />
+                </View>
 
-            <FlatList
-                data={data?.prescriptions || []}
-                keyExtractor={(item) => item.id}
-                renderItem={renderItem}
-                contentContainerStyle={styles.list}
-                showsVerticalScrollIndicator={false}
-                ListEmptyComponent={
-                    <EmptyState
-                        title="No prescriptions yet"
-                        message="Your analyzed prescriptions will appear here"
-                        actionTitle="Scan Now"
-                        onAction={() => router.back()}
-                    />
-                }
-            />
+                <FlatList
+                    data={data?.prescriptions || []}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.list}
+                    showsVerticalScrollIndicator={false}
+                    ListEmptyComponent={
+                        <EmptyState
+                            title="No prescriptions yet"
+                            message="Your analyzed prescriptions will appear here"
+                            actionTitle="Scan Now"
+                            onAction={() => router.back()}
+                        />
+                    }
+                />
 
-            <MockBottomTabs
-                activeTab="records"
-                onHomePress={() => router.push('/(app)/home')}
-                onRecordsPress={() => { }}
-                onRemindersPress={() => router.push('/(app)/reminders')}
-                onInsightsPress={() => router.push('/(app)/insights')}
-                onSettingsPress={() => router.push('/(app)/settings')}
-            />
-        </SafeAreaView>
+                <MockBottomTabs
+                    activeTab="records"
+                    onHomePress={() => router.push('/(app)/home')}
+                    onRecordsPress={() => { }}
+                    onRemindersPress={() => router.push('/(app)/reminders')}
+                    onInsightsPress={() => router.push('/(app)/insights')}
+                    onSettingsPress={() => router.push('/(app)/settings')}
+                />
+            </SafeAreaView>
+        </GlassBackground>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F5F6F8' },
+    container: { flex: 1, backgroundColor: 'transparent' },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingTop: Platform.OS === 'ios' ? 10 : 30, marginBottom: spacing.lg },
-    title: { ...typography.h3, color: '#111827', fontWeight: '700' },
+    title: { ...typography.h3, color: colors.white, fontWeight: '700' },
     list: { paddingHorizontal: spacing.xl, paddingBottom: 110 },
-    itemCard: { marginBottom: spacing.md, backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1, borderWidth: 1, borderColor: '#F3F4F6' },
+    itemCard: { marginBottom: spacing.md },
     itemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm },
     itemLeft: { flex: 1, marginRight: spacing.md },
-    itemDiagnosis: { ...typography.body, color: '#111827', fontWeight: '700' },
-    itemDate: { ...typography.caption, color: '#6B7280', marginTop: 2 },
+    itemDiagnosis: { ...typography.body, color: colors.white, fontWeight: '700' },
+    itemDate: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
     confidenceBadge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: borderRadius.sm },
     confidenceText: { ...typography.caption, fontWeight: '800' },
     itemDetails: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-    chip: { backgroundColor: '#F9FAFB', paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: borderRadius.sm, borderWidth: 1, borderColor: '#E5E7EB' },
-    chipText: { ...typography.caption, color: '#4B5563' },
+    chip: { backgroundColor: colors.glass.inputBg, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: borderRadius.sm, borderWidth: 1, borderColor: colors.glass.borderHighlight },
+    chipText: { ...typography.caption, color: colors.textSecondary },
 });

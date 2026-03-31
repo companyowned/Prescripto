@@ -5,6 +5,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../../theme';
 
 interface InsightCardProps {
     title: string;
@@ -48,17 +49,12 @@ export const InsightCard: React.FC<InsightCardProps> = ({
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.glass.background,
         borderRadius: 16,
         padding: 16,
         width: '48%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 6,
-        elevation: 1,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: colors.glass.borderHighlight,
         marginBottom: 12,
     },
     header: {
@@ -77,17 +73,17 @@ const styles = StyleSheet.create({
     value: {
         fontSize: 24,
         fontWeight: '800',
-        color: '#111827',
+        color: '#FFFFFF',
         marginBottom: 2,
     },
     title: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#6B7280',
+        color: colors.textSecondary,
     },
     subtitle: {
         fontSize: 11,
-        color: '#9CA3AF',
+        color: colors.textSecondary,
         marginTop: 2,
     },
 });

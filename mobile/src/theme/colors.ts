@@ -1,76 +1,81 @@
 /**
  * Prescripto Design System — Color Palette
- * Modern medical app with dark/light support
+ * Glassmorphism Medical UI Support
  */
 
 export const colors = {
     // Primary (teal/cyan medical accent)
     primary: {
-        50: '#E0F7FA',
-        100: '#B2EBF2',
-        200: '#80DEEA',
-        300: '#4DD0E1',
-        400: '#26C6DA',
-        500: '#00ACC1',
-        600: '#0097A7',
-        700: '#00838F',
-        800: '#006064',
-        900: '#004D40',
+        300: '#3EDBF0', // Cyan target (light)
+        400: '#1FA3C6', // Teal
+        500: '#1FA3C6',
+        600: '#0F5C73', // Deep blue
+        700: '#072A33', // Dark navy
     },
 
-    // Secondary (indigo)
+    // Secondary (glass accents)
     secondary: {
-        50: '#E8EAF6',
-        100: '#C5CAE9',
-        200: '#9FA8DA',
-        300: '#7986CB',
-        400: '#5C6BC0',
-        500: '#3F51B5',
-        600: '#3949AB',
-        700: '#303F9F',
-        800: '#283593',
-        900: '#1A237E',
+        400: '#3EDBF0',
+        500: '#1FA3C6',
     },
 
-    // Accent (amber/gold for highlights)
-    accent: {
-        400: '#FFCA28',
-        500: '#FFC107',
-        600: '#FFB300',
+    // Background gradient
+    background: {
+        top: '#0A3F4D',
+        bottom: '#072A33',
     },
 
-    // Success / Error / Warning
-    success: '#4CAF50',
-    error: '#EF5350',
-    warning: '#FF9800',
-    info: '#29B6F6',
+    // Glass variables
+    glass: {
+        background: 'rgba(255, 255, 255, 0.12)',
+        backgroundDark: 'rgba(0, 0, 0, 0.25)',
+        border: 'rgba(255, 255, 255, 0.15)',
+        borderHighlight: 'rgba(255, 255, 255, 0.25)',
+        inputBg: 'rgba(255, 255, 255, 0.1)',
+        glow: 'rgba(62, 219, 240, 0.4)', // cyan glow for active elements
+    },
 
-    // Neutrals (dark theme base)
+    // Gradients for CTA
+    gradient: {
+        primary: ['#1FA3C6', '#3EDBF0'] as const,
+    },
+
+    // Neutrals
     dark: {
-        bg: '#0F172A',
-        surface: '#1E293B',
-        surfaceElevated: '#273548',
-        border: '#334155',
-        textPrimary: '#F1F5F9',
-        textSecondary: '#94A3B8',
-        textMuted: '#64748B',
+        bg: '#0A3F4D',
+        surface: 'rgba(255, 255, 255, 0.08)',
+        surfaceElevated: 'rgba(255, 255, 255, 0.15)',
+        border: 'rgba(255, 255, 255, 0.15)',
+        textPrimary: '#FFFFFF',
+        textSecondary: 'rgba(255, 255, 255, 0.7)',
+        textMuted: 'rgba(255, 255, 255, 0.5)',
     },
-
-    // Neutrals (light theme base)
     light: {
-        bg: '#F8FAFC',
-        surface: '#FFFFFF',
-        surfaceElevated: '#F1F5F9',
-        border: '#E2E8F0',
-        textPrimary: '#0F172A',
-        textSecondary: '#475569',
-        textMuted: '#94A3B8',
+        // Fallback or mapped to dark as we only have dark glass ui
+        bg: '#0A3F4D',
+        surface: 'rgba(255, 255, 255, 0.08)',
+        surfaceElevated: 'rgba(255, 255, 255, 0.15)',
+        border: 'rgba(255, 255, 255, 0.15)',
+        textPrimary: '#FFFFFF',
+        textSecondary: 'rgba(255, 255, 255, 0.7)',
+        textMuted: 'rgba(255, 255, 255, 0.5)',
     },
 
     // Common
     white: '#FFFFFF',
     black: '#000000',
     transparent: 'transparent',
+
+    // Text overrides for light over dark
+    textPrimary: '#FFFFFF',
+    textSecondary: 'rgba(255, 255, 255, 0.7)',
+    textMuted: 'rgba(255, 255, 255, 0.5)',
+
+    // Success / Error / Warning
+    success: '#4CAF50',
+    error: '#EF5350',
+    warning: '#FF9800',
+    info: '#3EDBF0',
 
     // Confidence levels
     confidence: {

@@ -2,7 +2,7 @@
  * Register route
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -12,7 +12,9 @@ import {
     ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Button, Input } from '../../components/ui';
+import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
+import { Button, Input, GlassBackground } from '../../components/ui';
 import { colors, spacing, typography } from '../../theme';
 import { authService } from '../../services/auth';
 import { validators } from '../../utils/validators';
@@ -43,6 +45,24 @@ export default function RegisterScreen() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Floating animation for logo
+    const floatY = useSharedValue(0);
+
+    useEffect(() => {
+        floatY.value = withRepeat(
+            withSequence(
+                withTiming(-8, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+                withTiming(0, { duration: 2000, easing: Easing.inOut(Easing.ease) })
+            ),
+            -1,
+            true
+        );
+    }, []);
+
+    const floatStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: floatY.value }]
+    }));
+
     const handleRegister = async () => {
         const nameErr = validators.fullName(fullName);
         const emailErr = validators.email(email);
@@ -66,96 +86,141 @@ export default function RegisterScreen() {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-                <View style={styles.header}>
-                    <Text style={styles.title}>Create Account</Text>
-                    <Text style={styles.subtitle}>Join Prescripto to get started</Text>
-                </View>
+        <GlassBackground>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+                <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+                    
+                    <Animated.View entering={FadeInDown.duration(800).springify().damping(15)} style={styles.header}>
+                        <Animated.View style={[styles.logoWrapper, floatStyle]}>
+                            <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+                            <Text style={styles.logo}>💊</Text>
+                        </Animated.View>
+                        <Text style={styles.title}>Create Account</Text>
+                        <Text style={styles.subtitle}>Join Prescripto to digitize your records</Text>
+                    </Animated.View>
 
-                <View style={styles.form}>
-                    <Input
-                        label="Full Name"
-                        placeholder="Dr. John Doe"
-                        value={fullName}
-                        onChangeText={setFullName}
-                        autoCapitalize="words"
-                    />
-                    <Input
-                        label="Email"
-                        placeholder="you@example.com"
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                    />
-                    <Input
-                        label="Password"
-                        placeholder="At least 6 characters"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry
-                    />
+                    <Animated.View entering={FadeInDown.duration(800).delay(200).springify().damping(15)} style={styles.formWrapper}>
+                        <BlurView intensity={24} tint="dark" style={[StyleSheet.absoluteFill, styles.glassCard]} />
+                        <View style={styles.formContent}>
+                            <Input
+                                label="Full Name"
+                                placeholder="Dr. John Doe"
+                                value={fullName}
+                                onChangeText={setFullName}
+                                autoCapitalize="words"
+                            />
+                            <Input
+                                label="Email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChangeText={setEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                            />
+                            <Input
+                                label="Password"
+                                placeholder="At least 6 characters"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                            />
 
-                    {error ? <Text style={styles.error}>{error}</Text> : null}
+                            {error ? (
+                                <Animated.Text entering={FadeIn.duration(400)} style={styles.error}>
+                                    {error}
+                                </Animated.Text>
+                            ) : null}
 
-                    <Button
-                        title="Create Account"
-                        onPress={handleRegister}
-                        loading={loading}
-                        size="lg"
-                        style={styles.button}
-                    />
+                            <Button
+                                title="Create Account"
+                                onPress={handleRegister}
+                                loading={loading}
+                                size="lg"
+                                style={styles.button}
+                            />
+                        </View>
+                    </Animated.View>
 
-                    <Button
-                        title="Already have an account? Sign In"
-                        onPress={() => router.back()}
-                        variant="ghost"
-                        style={styles.loginBtn}
-                    />
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
+                    <Animated.View entering={FadeIn.duration(1000).delay(400)} style={styles.footer}>
+                        <Button
+                            title="Already have an account? Sign In"
+                            onPress={() => router.back()}
+                            variant="ghost"
+                        />
+                    </Animated.View>
+
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </GlassBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F6F8',
     },
     scroll: {
         flexGrow: 1,
         justifyContent: 'center',
         paddingHorizontal: spacing.xl,
+        paddingVertical: 50,
     },
     header: {
         alignItems: 'center',
-        marginBottom: spacing.xxxl,
+        marginBottom: 30,
+    },
+    logoWrapper: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: colors.glass.borderHighlight,
+        shadowColor: colors.primary[300],
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.6,
+        shadowRadius: 15,
+        elevation: 5,
+    },
+    logo: {
+        fontSize: 34,
+        lineHeight: 40,
     },
     title: {
         ...typography.h1,
-        color: '#111827',
+        color: '#FFFFFF',
         marginBottom: spacing.xs,
         fontWeight: '800',
+        letterSpacing: -0.5,
     },
     subtitle: {
         ...typography.bodySmall,
-        color: '#6B7280',
+        color: colors.textSecondary,
+        textAlign: 'center',
+        paddingHorizontal: 20,
     },
-    form: {
-        width: '100%',
-        backgroundColor: '#FFFFFF',
-        padding: 24,
+    formWrapper: {
         borderRadius: 24,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: colors.glass.border,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 15,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
+        elevation: 8,
+    },
+    glassCard: {
+        borderRadius: 24,
+    },
+    formContent: {
+        padding: 24,
     },
     error: {
         ...typography.bodySmall,
@@ -164,10 +229,10 @@ const styles = StyleSheet.create({
         marginBottom: spacing.lg,
     },
     button: {
-        marginTop: spacing.sm,
-        backgroundColor: '#109AE8',
+        marginTop: spacing.xs,
     },
-    loginBtn: {
-        marginTop: spacing.md,
+    footer: {
+        marginTop: spacing.lg,
+        alignItems: 'center',
     },
 });

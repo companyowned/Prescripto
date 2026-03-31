@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { colors } from '../../theme';
 
 interface MockBottomTabsProps {
     activeTab?: 'home' | 'records' | 'reminders' | 'insights' | 'settings';
@@ -20,34 +22,34 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
     onSettingsPress,
 }) => {
     return (
-        <View style={styles.bottomTabBar}>
-            <TouchableOpacity style={styles.tabItem} onPress={onHomePress} activeOpacity={0.7}>
-                <Ionicons name="home" size={24} color={activeTab === 'home' ? "#0EA5E9" : "#9BA6B3"} />
-                <Text style={[styles.tabText, activeTab === 'home' && { color: '#0EA5E9' }]}>HOME</Text>
+        <BlurView intensity={30} tint="dark" style={styles.bottomTabBar}>
+            <TouchableOpacity style={[styles.tabItem, activeTab === 'home' && styles.tabItemActive]} onPress={onHomePress} activeOpacity={0.7}>
+                <Ionicons name="home" size={activeTab === 'home' ? 26 : 24} color={activeTab === 'home' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'home' && styles.iconActive} />
+                <Text style={[styles.tabText, activeTab === 'home' && styles.tabTextActive]}>HOME</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.tabItem} onPress={onRecordsPress} activeOpacity={0.7}>
-                <MaterialCommunityIcons name="history" size={26} color={activeTab === 'records' ? "#0EA5E9" : "#9BA6B3"} />
-                <Text style={[styles.tabText, activeTab === 'records' && { color: '#0EA5E9' }]}>RECORDS</Text>
+            <TouchableOpacity style={[styles.tabItem, activeTab === 'records' && styles.tabItemActive]} onPress={onRecordsPress} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="history" size={activeTab === 'records' ? 28 : 26} color={activeTab === 'records' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'records' && styles.iconActive} />
+                <Text style={[styles.tabText, activeTab === 'records' && styles.tabTextActive]}>RECORDS</Text>
             </TouchableOpacity>
 
             {onRemindersPress && (
-                <TouchableOpacity style={styles.tabItem} onPress={onRemindersPress} activeOpacity={0.7}>
-                    <Ionicons name="notifications" size={24} color={activeTab === 'reminders' ? "#0EA5E9" : "#9BA6B3"} />
-                    <Text style={[styles.tabText, activeTab === 'reminders' && { color: '#0EA5E9' }]}>MEDS</Text>
+                <TouchableOpacity style={[styles.tabItem, activeTab === 'reminders' && styles.tabItemActive]} onPress={onRemindersPress} activeOpacity={0.7}>
+                    <Ionicons name="notifications" size={activeTab === 'reminders' ? 26 : 24} color={activeTab === 'reminders' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'reminders' && styles.iconActive} />
+                    <Text style={[styles.tabText, activeTab === 'reminders' && styles.tabTextActive]}>MEDS</Text>
                 </TouchableOpacity>
             )}
 
-            <TouchableOpacity style={styles.tabItem} onPress={onInsightsPress} activeOpacity={0.7}>
-                <Ionicons name="bar-chart" size={24} color={activeTab === 'insights' ? "#0EA5E9" : "#9BA6B3"} />
-                <Text style={[styles.tabText, activeTab === 'insights' && { color: '#0EA5E9' }]}>INSIGHTS</Text>
+            <TouchableOpacity style={[styles.tabItem, activeTab === 'insights' && styles.tabItemActive]} onPress={onInsightsPress} activeOpacity={0.7}>
+                <Ionicons name="bar-chart" size={activeTab === 'insights' ? 26 : 24} color={activeTab === 'insights' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'insights' && styles.iconActive} />
+                <Text style={[styles.tabText, activeTab === 'insights' && styles.tabTextActive]}>INSIGHTS</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.tabItem} onPress={onSettingsPress} activeOpacity={0.7}>
-                <Ionicons name="settings-sharp" size={24} color={activeTab === 'settings' ? "#0EA5E9" : "#9BA6B3"} />
-                <Text style={[styles.tabText, activeTab === 'settings' && { color: '#0EA5E9' }]}>SETTINGS</Text>
+            <TouchableOpacity style={[styles.tabItem, activeTab === 'settings' && styles.tabItemActive]} onPress={onSettingsPress} activeOpacity={0.7}>
+                <Ionicons name="settings-sharp" size={activeTab === 'settings' ? 26 : 24} color={activeTab === 'settings' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'settings' && styles.iconActive} />
+                <Text style={[styles.tabText, activeTab === 'settings' && styles.tabTextActive]}>SETTINGS</Text>
             </TouchableOpacity>
-        </View>
+        </BlurView>
     );
 };
 
@@ -56,23 +58,39 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         width: '100%',
-        backgroundColor: '#F9FAFB',
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 30,
         paddingTop: 16,
         paddingBottom: Platform.OS === 'ios' ? 30 : 16,
         borderTopWidth: 1,
-        borderTopColor: '#F3F4F6',
+        borderTopColor: colors.glass.borderHighlight, // Lighter border
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // darker back for contrast
     },
     tabItem: {
         alignItems: 'center',
         gap: 4,
     },
+    tabItemActive: {
+        transform: [{ scale: 1.05 }],
+    },
+    iconActive: {
+        shadowColor: colors.primary[300],
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 10,
+    },
     tabText: {
         fontSize: 10,
-        fontWeight: '700',
-        color: '#9BA6B3',
+        fontWeight: '600',
+        color: "rgba(255,255,255,0.6)", // base text
         marginTop: 2,
+    },
+    tabTextActive: {
+        fontWeight: '800',
+        color: colors.primary[300],
+        textShadowColor: 'rgba(62, 219, 240, 0.8)',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 8,
     },
 });

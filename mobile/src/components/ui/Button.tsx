@@ -1,16 +1,20 @@
 /**
- * Button — Premium reusable button component
+ * Button — Premium reusable button component with glassmorphism support
  */
 
 import React from 'react';
 import {
-    TouchableOpacity,
+    Pressable,
     Text,
     StyleSheet,
     ActivityIndicator,
     ViewStyle,
     TextStyle,
+    View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { colors, spacing, borderRadius, typography } from '../../theme';
 
 interface ButtonProps {
@@ -35,11 +39,29 @@ export const Button: React.FC<ButtonProps> = ({
     style,
 }) => {
     const isDisabled = disabled || loading;
+    const scale = useSharedValue(1);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ scale: scale.value }],
+        };
+    });
+
+    const handlePressIn = () => {
+        if (!isDisabled) {
+            scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
+        }
+    };
+
+    const handlePressOut = () => {
+        if (!isDisabled) {
+            scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+        }
+    };
 
     const containerStyle: ViewStyle = {
         ...styles.base,
-        ...sizeStyles[size],
-        ...variantStyles[variant],
+        ...variantContainerStyles[variant],
         ...(isDisabled && styles.disabled),
         ...style,
     };
@@ -51,34 +73,68 @@ export const Button: React.FC<ButtonProps> = ({
     };
 
     return (
-        <TouchableOpacity
-            style={containerStyle}
-            onPress={onPress}
-            disabled={isDisabled}
-            activeOpacity={0.7}
-        >
-            {loading ? (
-                <ActivityIndicator
-                    size="small"
-                    color={variant === 'outline' || variant === 'ghost' ? '#109AE8' : colors.white}
-                />
-            ) : (
-                <>
-                    {icon}
-                    <Text style={textStyle}>{title}</Text>
-                </>
-            )}
-        </TouchableOpacity>
+        <Animated.View style={[containerStyle, animatedStyle]}>
+            <Pressable
+                onPress={onPress}
+                disabled={isDisabled}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                style={[styles.pressableArea, sizeStyles[size]]}
+            >
+                {variant === 'primary' ? (
+                    <LinearGradient
+                        colors={[...colors.gradient.primary]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                    />
+                ) : variant === 'secondary' || variant === 'outline' ? (
+                    <BlurView
+                        intensity={15}
+                        tint="light"
+                        style={[StyleSheet.absoluteFill, styles.glassBorder]}
+                    />
+                ) : null}
+
+                <View style={styles.contentRow}>
+                    {loading ? (
+                        <ActivityIndicator
+                            size="small"
+                            color={variant === 'outline' || variant === 'ghost' ? colors.primary[300] : colors.white}
+                        />
+                    ) : (
+                        <>
+                            {icon}
+                            <Text style={textStyle}>{title}</Text>
+                        </>
+                    )}
+                </View>
+            </Pressable>
+        </Animated.View>
     );
 };
 
 const styles = StyleSheet.create({
     base: {
+        borderRadius: borderRadius.md,
+        overflow: 'hidden',
+    },
+    pressableArea: {
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    contentRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: borderRadius.md,
         gap: spacing.sm,
+        zIndex: 1, // ensure text is above background fills
+    },
+    glassBorder: {
+        borderRadius: borderRadius.md,
+        borderWidth: 1,
+        borderColor: colors.glass.border,
     },
     text: {
         ...typography.button,
@@ -100,16 +156,24 @@ const textSizeStyles: Record<string, TextStyle> = {
     lg: { fontSize: 18 },
 };
 
-const variantStyles: Record<string, ViewStyle> = {
-    primary: { backgroundColor: '#109AE8' },
-    secondary: { backgroundColor: colors.secondary[500] },
-    outline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#109AE8' },
+const variantContainerStyles: Record<string, ViewStyle> = {
+    primary: { // Outer glow
+        shadowColor: colors.glass.glow,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.8,
+        shadowRadius: 15,
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: colors.glass.borderHighlight,
+    },
+    secondary: { backgroundColor: 'transparent' },
+    outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.primary[300] },
     ghost: { backgroundColor: 'transparent' },
 };
 
 const variantTextStyles: Record<string, TextStyle> = {
     primary: { color: colors.white },
     secondary: { color: colors.white },
-    outline: { color: '#109AE8' },
-    ghost: { color: '#109AE8' },
+    outline: { color: colors.primary[300] },
+    ghost: { color: colors.primary[300] },
 };

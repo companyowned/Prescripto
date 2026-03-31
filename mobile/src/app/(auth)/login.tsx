@@ -2,7 +2,7 @@
  * Login route
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -12,7 +12,11 @@ import {
     ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Button, Input } from '../../components/ui';
+import { FloatingMedicalBackground } from '../../components/ui/FloatingMedicalBackground';
 import { colors, spacing, typography } from '../../theme';
 import { authService } from '../../services/auth';
 import { validators } from '../../utils/validators';
@@ -42,6 +46,24 @@ export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Floating animation for logo
+    const floatY = useSharedValue(0);
+
+    useEffect(() => {
+        floatY.value = withRepeat(
+            withSequence(
+                withTiming(-10, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+                withTiming(0, { duration: 2500, easing: Easing.inOut(Easing.ease) })
+            ),
+            -1,
+            true
+        );
+    }, []);
+
+    const floatStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: floatY.value }]
+    }));
+
     const handleLogin = async () => {
         const emailErr = validators.email(email);
         const passErr = validators.password(password);
@@ -63,94 +85,174 @@ export default function LoginScreen() {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-                <View style={styles.header}>
-                    <Text style={styles.logo}>💊</Text>
-                    <Text style={styles.title}>Prescripto</Text>
-                    <Text style={styles.subtitle}>Scan & analyze prescriptions with AI</Text>
-                </View>
+        <FloatingMedicalBackground>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+                <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+                    
+                    <Animated.View entering={FadeInDown.duration(800).springify().damping(15)} style={styles.header}>
+                        <Animated.View style={[styles.logoWrapper, floatStyle]}>
+                            {/* Force light or default tint on Web to prevent huge black squares if backdrop-filter is simulated */}
+                            <BlurView intensity={Platform.OS === 'web' ? 20 : 40} tint="default" style={StyleSheet.absoluteFill} />
+                            <LinearGradient
+                                colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.0)']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 0.5, y: 0.5 }}
+                                style={StyleSheet.absoluteFill}
+                            />
+                            <Text style={styles.logo}>�</Text>
+                        </Animated.View>
+                        <Text style={[styles.title, styles.titleGlow]}>Welcome Back</Text>
+                        <Text style={styles.subtitle}>Sign in to manage your medications intelligently</Text>
+                    </Animated.View>
 
-                <View style={styles.form}>
-                    <Input
-                        label="Email"
-                        placeholder="you@example.com"
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                    />
-                    <Input
-                        label="Password"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry
-                    />
+                    <Animated.View entering={FadeInDown.duration(800).delay(200).springify().damping(15)} style={styles.formWrapper}>
+                        {/* On Web, Dark tint sets a heavy rgba(0,0,0,0.5) that ruins the Glassmorphism base layer */}
+                        <BlurView intensity={24} tint="default" style={[StyleSheet.absoluteFill, styles.glassCard]} />
+                        
+                        {/* Inner Top-Left Edge Reflection for 3D glassy curve */}
+                        <LinearGradient
+                            colors={['rgba(255,255,255,0.25)', 'transparent', 'transparent']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={[StyleSheet.absoluteFill, styles.glassHighlight]}
+                            pointerEvents="none"
+                        />
 
-                    {error ? <Text style={styles.error}>{error}</Text> : null}
+                        <View style={styles.formContent}>
+                            <Input
+                                label="Email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChangeText={setEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                autoComplete="off" // Stop basic autofill formatting
+                            />
+                            <Input
+                                label="Password"
+                                placeholder="Enter your password"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                autoComplete="off"
+                            />
 
-                    <Button
-                        title="Sign In"
-                        onPress={handleLogin}
-                        loading={loading}
-                        size="lg"
-                        style={styles.button}
-                    />
+                            {error ? (
+                                <Animated.Text entering={FadeIn.duration(400)} style={styles.error}>
+                                    {error}
+                                </Animated.Text>
+                            ) : null}
 
-                    <Button
-                        title="Create Account"
-                        onPress={() => router.push('/(auth)/register')}
-                        variant="ghost"
-                        style={styles.registerBtn}
-                    />
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
+                            <Button
+                                title="Sign In"
+                                onPress={handleLogin}
+                                loading={loading}
+                                size="lg"
+                                style={styles.button}
+                            />
+                        </View>
+                    </Animated.View>
+
+                    <Animated.View entering={FadeIn.duration(1000).delay(400)} style={styles.footer}>
+                        <Button
+                            title="Create Account"
+                            onPress={() => router.push('/(auth)/register')}
+                            variant="ghost"
+                        />
+                        <Button
+                            title="Forgot Password?"
+                            onPress={() => {}}
+                            variant="ghost"
+                        />
+                    </Animated.View>
+
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </FloatingMedicalBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F6F8',
     },
     scroll: {
         flexGrow: 1,
         justifyContent: 'center',
         paddingHorizontal: spacing.xl,
+        paddingVertical: 60,
     },
     header: {
         alignItems: 'center',
-        marginBottom: spacing.xxxl,
+        marginBottom: 40,
+    },
+    logoWrapper: {
+        width: 86,
+        height: 86,
+        borderRadius: 43,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.lg,
+        overflow: 'hidden',
+        borderWidth: 1.5,
+        borderColor: 'rgba(255, 255, 255, 0.4)',
+        shadowColor: colors.primary[300], // Cyan Glow
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.8,
+        shadowRadius: 20,
+        elevation: 10,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
     },
     logo: {
-        fontSize: 56,
-        marginBottom: spacing.md,
+        fontSize: 42,
+        lineHeight: 52,
+        textShadowColor: 'rgba(62, 219, 240, 0.8)',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 20, // Glow around the pill emoji itself
     },
     title: {
         ...typography.h1,
-        color: '#111827',
+        color: '#FFFFFF',
         marginBottom: spacing.xs,
         fontWeight: '800',
+        letterSpacing: -0.5,
+    },
+    titleGlow: {
+        textShadowColor: 'rgba(62, 219, 240, 0.6)',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 15, // Premium glowing typography
     },
     subtitle: {
         ...typography.bodySmall,
-        color: '#6B7280',
+        color: colors.textSecondary,
+        textAlign: 'center',
+        paddingHorizontal: 20,
+        opacity: 0.9,
     },
-    form: {
-        width: '100%',
-        backgroundColor: '#FFFFFF',
-        padding: 24,
+    formWrapper: {
         borderRadius: 24,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.15)', // Light glass border
+        backgroundColor: 'rgba(255, 255, 255, 0.08)', // Keep strictly transparent
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 15,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 20 },
+        shadowOpacity: 0.4,
+        shadowRadius: 30,
+        elevation: 8,
+    },
+    glassCard: {
+        borderRadius: 24,
+    },
+    glassHighlight: {
+        borderRadius: 24,
+    },
+    formContent: {
+        padding: 24,
+        zIndex: 2,
     },
     error: {
         ...typography.bodySmall,
@@ -159,10 +261,12 @@ const styles = StyleSheet.create({
         marginBottom: spacing.lg,
     },
     button: {
-        marginTop: spacing.sm,
-        backgroundColor: '#109AE8',
+        marginBottom: spacing.xs,
     },
-    registerBtn: {
-        marginTop: spacing.md,
+    footer: {
+        marginTop: spacing.xl,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: spacing.md,
     },
 });

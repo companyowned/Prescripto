@@ -5,6 +5,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { TrendDataPoint } from '../../features/reminders/types';
+import { colors } from '../../theme';
 
 interface AdherenceChartProps {
     data: TrendDataPoint[];
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     },
     yLabel: {
         fontSize: 10,
-        color: '#9CA3AF',
+        color: colors.textSecondary,
         textAlign: 'right',
         paddingRight: 4,
     },
@@ -105,21 +106,21 @@ const styles = StyleSheet.create({
         flex: 1,
         borderLeftWidth: 1,
         borderBottomWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: colors.glass.border,
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
     },
     emptyText: {
         fontSize: 13,
-        color: '#9CA3AF',
+        color: colors.textSecondary,
     },
     gridLine: {
         position: 'absolute',
         left: 0,
         right: 0,
         height: 1,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: colors.glass.border,
     },
     barsContainer: {
         flexDirection: 'row',
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     },
     xLabel: {
         fontSize: 9,
-        color: '#9CA3AF',
+        color: colors.textSecondary,
         marginTop: 4,
     },
 });
