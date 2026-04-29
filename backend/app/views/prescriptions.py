@@ -26,6 +26,7 @@ def _to_response(p) -> PrescriptionResponse:
     """Convert ORM prescription to response schema."""
     return PrescriptionResponse(
         id=str(p.id),
+        profile_id=str(p.profile_id) if p.profile_id else None,
         document_id=str(p.document_id),
         doctor=DoctorSchema(
             id=str(p.doctor.id), name=p.doctor.name, license_no=p.doctor.license_no
@@ -53,6 +54,7 @@ def _to_response(p) -> PrescriptionResponse:
 
 @router.get("", response_model=PrescriptionListResponse)
 async def list_prescriptions(
+    profile_id: UUID | None = Query(default=None),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -60,11 +62,12 @@ async def list_prescriptions(
 ):
     """Get paginated prescription history for the current user."""
     prescriptions, total = await PrescriptionController.get_history(
-        db, current_user.id, skip, limit
+        db, current_user.id, current_user.full_name, profile_id, skip, limit
     )
     items = [
         PrescriptionListItem(
             id=str(p.id),
+            profile_id=str(p.profile_id) if p.profile_id else None,
             document_id=str(p.document_id),
             diagnosis_text=p.diagnosis_text,
             doctor_name=p.doctor.name if p.doctor else None,
@@ -81,11 +84,12 @@ async def list_prescriptions(
 @router.get("/{document_id}", response_model=PrescriptionResponse)
 async def get_prescription(
     document_id: UUID,
+    profile_id: UUID | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Get the full prescription analysis result for a document."""
-    p = await PrescriptionController.get_by_document(db, document_id, current_user.id)
+    p = await PrescriptionController.get_by_document(db, document_id, current_user.id, profile_id)
     return _to_response(p)
 
 

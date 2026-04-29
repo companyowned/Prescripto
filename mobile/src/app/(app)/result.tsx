@@ -14,11 +14,16 @@ import {
 } from '../../components/prescription';
 import { colors, spacing } from '../../theme';
 import { usePrescription } from '../../features/prescriptions/hooks';
+import { useActiveProfile } from '../../contexts/profile-context';
 
 export default function ResultScreen() {
     const router = useRouter();
     const { documentId } = useLocalSearchParams<{ documentId: string }>();
-    const { data: prescription, isLoading, error } = usePrescription(documentId || '');
+    const { activeProfile } = useActiveProfile();
+    const { data: prescription, isLoading, error } = usePrescription(
+        documentId || '',
+        activeProfile?.id
+    );
 
     if (isLoading) {
         return (

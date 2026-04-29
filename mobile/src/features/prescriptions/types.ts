@@ -25,6 +25,7 @@ export interface FacilityType {
 
 export interface PrescriptionResponse {
     id: string;
+    profile_id: string | null;
     document_id: string;
     doctor: DoctorType | null;
     facility: FacilityType | null;
@@ -37,6 +38,7 @@ export interface PrescriptionResponse {
 
 export interface PrescriptionListItem {
     id: string;
+    profile_id: string | null;
     document_id: string;
     diagnosis_text: string | null;
     doctor_name: string | null;

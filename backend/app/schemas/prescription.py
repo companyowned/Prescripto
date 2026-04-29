@@ -41,6 +41,7 @@ class ConfidenceSchema(BaseModel):
 # --- Prescription schemas ---
 class PrescriptionResponse(BaseModel):
     id: str
+    profile_id: Optional[str] = None
     document_id: str
     doctor: Optional[DoctorSchema] = None
     facility: Optional[FacilitySchema] = None
@@ -62,6 +63,7 @@ class PrescriptionUpdateRequest(BaseModel):
 
 class PrescriptionListItem(BaseModel):
     id: str
+    profile_id: Optional[str] = None
     document_id: str
     diagnosis_text: Optional[str] = None
     doctor_name: Optional[str] = None

@@ -71,6 +71,7 @@ class WorkflowController:
 
             prescription = await PrescriptionRepo.create(
                 db,
+                profile_id=doc.profile_id,
                 document_id=document_id,
                 doctor_id=doctor.id if doctor else None,
                 facility_id=facility.id if facility else None,
@@ -83,6 +84,30 @@ class WorkflowController:
             if normalized.medications:
                 meds_data = [med.model_dump() for med in normalized.medications]
                 await MedicationRepo.bulk_create(db, prescription.id, meds_data)
+
+                # Auto-generate MedicationReminders
+                from app.utils.parsing import parse_frequency_to_schedule
+                from app.controllers.medication_reminder_controller import MedicationReminderController
+                from app.schemas.medication_reminder import ReminderCreateRequest
+                from datetime import datetime, timezone
+                
+                for med in normalized.medications:
+                    schedule_data = parse_frequency_to_schedule(med.frequency)
+                    req_data = {
+                        "medication_name": med.name,
+                        "dosage": med.dose,
+                        "form": None,
+                        "instructions": med.notes,
+                        "prescription_id": str(prescription.id),
+                        "start_date": datetime.now(timezone.utc),
+                        "timezone": "UTC",
+                        **schedule_data
+                    }
+                    try:
+                        req_obj = ReminderCreateRequest(**req_data)
+                        await MedicationReminderController.create_reminder(db, doc.user_id, req_obj)
+                    except Exception as err:
+                        logger.error(f"Failed to auto-create reminder for {med.name}: {err}")
 
             # 6. Done
             await JobRepo.update_status(db, job_id, JobStatus.DONE, progress=100)

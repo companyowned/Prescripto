@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.exceptions import BadRequestError, NotFoundError
 from app.models.document import DocumentStatus, FileType
+from app.controllers.profile_controller import PatientProfileController
 from app.repos.document_repo import DocumentRepo, JobRepo
 from app.utils.file_storage import FileStorage
 
@@ -43,7 +44,9 @@ class DocumentController:
     async def upload_document(
         db: AsyncSession,
         user_id: uuid.UUID,
+        owner_full_name: str,
         file: UploadFile,
+        profile_id: Optional[uuid.UUID] = None,
     ) -> dict:
         """Upload a document file, create Document + Job records, trigger processing."""
         filename = file.filename or "unknown"
@@ -55,6 +58,11 @@ class DocumentController:
         if len(content) > MAX_FILE_SIZE:
             raise BadRequestError(f"File too large. Max size: {MAX_FILE_SIZE // (1024 * 1024)} MB")
 
+        if profile_id:
+            profile = await PatientProfileController.get_profile(db, user_id, profile_id)
+        else:
+            profile = await PatientProfileController.ensure_default_profile(db, user_id, owner_full_name)
+
         # Save file locally (uses /tmp on Vercel)
         file_path = FileStorage.save_file(content, str(user_id), filename)
 
@@ -62,6 +70,7 @@ class DocumentController:
         document = await DocumentRepo.create(
             db,
             user_id=user_id,
+            profile_id=profile.id,
             file_url=file_path,
             file_type=file_type,
             original_filename=filename,
@@ -88,6 +97,7 @@ class DocumentController:
 
         return {
             "document_id": str(document.id),
+            "profile_id": str(profile.id),
             "job_id": str(job.id),
             "status": document.status.value,
         }
@@ -101,9 +111,12 @@ class DocumentController:
         return doc
 
     @staticmethod
-    async def get_job_status(db: AsyncSession, job_id: uuid.UUID):
+    async def get_job_status(db: AsyncSession, job_id: uuid.UUID, user_id: uuid.UUID):
         """Get job processing status."""
         job = await JobRepo.get_by_id(db, job_id)
         if not job:
+            raise NotFoundError("Job not found")
+        doc = await DocumentRepo.get_by_id(db, job.document_id)
+        if not doc or doc.user_id != user_id:
             raise NotFoundError("Job not found")
         return job

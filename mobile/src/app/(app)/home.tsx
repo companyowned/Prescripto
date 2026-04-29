@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { authService } from '../../services/auth';
 import { useAuth } from '../_layout';
 import { usePrescriptionHistory } from '../../features/prescriptions/hooks';
+import { useActiveProfile } from '../../contexts/profile-context';
 import { GlassBackground } from '../../components/ui';
 
 import {
@@ -14,11 +15,13 @@ import {
     SearchBar,
     RecentScansList,
     MockBottomTabs,
+    ProfileSwitcher,
 } from '../../components/home';
 
 export default function HomeScreen() {
     const router = useRouter();
     const { signOut } = useAuth();
+    const { activeProfile } = useActiveProfile();
 
     // Fetch logged-in user profile
     const { data: userData } = useQuery({
@@ -27,7 +30,7 @@ export default function HomeScreen() {
     });
 
     // Fetch recent prescriptions (limit to 3 for the dashboard)
-    const { data: historyData } = usePrescriptionHistory(0, 3);
+    const { data: historyData } = usePrescriptionHistory(0, 3, activeProfile?.id);
     const recentScans = historyData?.prescriptions || [];
 
     const handleLogout = async () => {
@@ -49,6 +52,7 @@ export default function HomeScreen() {
                             userName={userData?.full_name?.split(' ')[0] || 'User'}
                             onLogout={handleLogout}
                         />
+                        <ProfileSwitcher />
 
                         <HeroCard
                             onScanPress={() => router.push('/(app)/scan')}

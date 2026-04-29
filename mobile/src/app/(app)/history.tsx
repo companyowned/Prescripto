@@ -18,6 +18,8 @@ import { Card, Button, Loader, EmptyState, GlassBackground } from '../../compone
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { usePrescriptionHistory } from '../../features/prescriptions/hooks';
 import type { PrescriptionListItem } from '../../features/prescriptions/types';
+import { useActiveProfile } from '../../contexts/profile-context';
+import { ProfileSwitcher } from '../../components/home';
 
 const getConfidenceColor = (score: number | null): string => {
     if (score == null) return colors.dark.textMuted;
@@ -28,7 +30,8 @@ const getConfidenceColor = (score: number | null): string => {
 
 export default function HistoryScreen() {
     const router = useRouter();
-    const { data, isLoading } = usePrescriptionHistory();
+    const { activeProfile } = useActiveProfile();
+    const { data, isLoading } = usePrescriptionHistory(0, 20, activeProfile?.id);
 
     const renderItem = ({ item }: { item: PrescriptionListItem }) => {
         const dateStr = new Date(item.created_at).toLocaleDateString('en-US', {
@@ -81,6 +84,9 @@ export default function HistoryScreen() {
                     <Text style={styles.title}>History</Text>
                     <View style={{ width: 80 }} />
                 </View>
+                <View style={styles.switcherWrap}>
+                    <ProfileSwitcher />
+                </View>
 
                 <FlatList
                     data={data?.prescriptions || []}
@@ -91,7 +97,7 @@ export default function HistoryScreen() {
                     ListEmptyComponent={
                         <EmptyState
                             title="No prescriptions yet"
-                            message="Your analyzed prescriptions will appear here"
+                            message="No records for the selected profile yet"
                             actionTitle="Scan Now"
                             onAction={() => router.back()}
                         />
@@ -116,6 +122,7 @@ const styles = StyleSheet.create({
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingTop: Platform.OS === 'ios' ? 10 : 30, marginBottom: spacing.lg },
     title: { ...typography.h3, color: colors.white, fontWeight: '700' },
     list: { paddingHorizontal: spacing.xl, paddingBottom: 110 },
+    switcherWrap: { paddingHorizontal: spacing.xl },
     itemCard: { marginBottom: spacing.md },
     itemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm },
     itemLeft: { flex: 1, marginRight: spacing.md },

@@ -16,12 +16,14 @@ class DocumentRepo:
     async def create(
         db: AsyncSession,
         user_id: UUID,
+        profile_id: UUID,
         file_url: str,
         file_type: FileType,
         original_filename: Optional[str] = None,
     ) -> Document:
         doc = Document(
             user_id=user_id,
+            profile_id=profile_id,
             file_url=file_url,
             file_type=file_type,
             original_filename=original_filename,
@@ -38,16 +40,21 @@ class DocumentRepo:
 
     @staticmethod
     async def get_user_documents(
-        db: AsyncSession, user_id: UUID, skip: int = 0, limit: int = 20
+        db: AsyncSession,
+        user_id: UUID,
+        profile_id: Optional[UUID] = None,
+        skip: int = 0,
+        limit: int = 20,
     ) -> tuple[list[Document], int]:
-        count_result = await db.execute(
-            select(func.count()).select_from(Document).where(Document.user_id == user_id)
-        )
+        filters = [Document.user_id == user_id]
+        if profile_id:
+            filters.append(Document.profile_id == profile_id)
+        count_result = await db.execute(select(func.count()).select_from(Document).where(*filters))
         total = count_result.scalar()
 
         result = await db.execute(
             select(Document)
-            .where(Document.user_id == user_id)
+            .where(*filters)
             .order_by(Document.created_at.desc())
             .offset(skip)
             .limit(limit)

@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import hash_password, verify_password, create_access_token, get_current_user
 from app.db.session import get_db
 from app.repos.user_repo import UserRepo
+from app.controllers.profile_controller import PatientProfileController
 from app.schemas.user import UserRegisterRequest, UserLoginRequest, TokenResponse, UserResponse, UserUpdateRequest, PushTokenRequest
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -23,6 +24,7 @@ async def register(data: UserRegisterRequest, db: AsyncSession = Depends(get_db)
 
     hashed = hash_password(data.password)
     user = await UserRepo.create(db, email=data.email, full_name=data.full_name, hashed_password=hashed)
+    await PatientProfileController.ensure_default_profile(db, user.id, user.full_name)
 
     return UserResponse(id=str(user.id), email=user.email, full_name=user.full_name)
 

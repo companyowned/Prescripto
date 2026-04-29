@@ -108,7 +108,13 @@ class MedicationDoseEventRepo:
         """Get pending dose events that are past their scheduled time + grace period."""
         cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
         result = await db.execute(
-            select(MedicationDoseEvent).where(
+            select(MedicationDoseEvent)
+            .options(
+                selectinload(MedicationDoseEvent.reminder).selectinload(
+                    MedicationReminder.user
+                )
+            )
+            .where(
                 MedicationDoseEvent.status == "pending",
                 MedicationDoseEvent.scheduled_at < cutoff,
             )

@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, DateTime, Boolean, Uuid
+from sqlalchemy import Column, String, DateTime, Boolean, Uuid, ForeignKey
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -28,8 +28,17 @@ class User(Base):
     push_token = Column(String(255), nullable=True)
     push_token_updated_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Family Management
+    managed_by_id = Column(Uuid, ForeignKey("users.id"), nullable=True)
+
     # Relationships
     documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
+    patient_profiles = relationship(
+        "PatientProfile", 
+        back_populates="owner", 
+        cascade="all, delete-orphan",
+        foreign_keys="[PatientProfile.owner_user_id]"
+    )
     medication_reminders = relationship(
         "MedicationReminder", back_populates="user", cascade="all, delete-orphan"
     )

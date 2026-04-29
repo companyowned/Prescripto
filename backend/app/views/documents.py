@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import get_current_user
@@ -18,11 +18,14 @@ router = APIRouter(tags=["Documents"])
 @router.post("/documents", response_model=DocumentUploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
     file: UploadFile = File(...),
+    profile_id: UUID | None = Form(default=None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Upload a prescription document (image or PDF) for analysis."""
-    result = await DocumentController.upload_document(db, current_user.id, file)
+    result = await DocumentController.upload_document(
+        db, current_user.id, current_user.full_name, file, profile_id
+    )
     return DocumentUploadResponse(**result)
 
 
@@ -37,6 +40,7 @@ async def get_document(
     return DocumentResponse(
         id=str(doc.id),
         user_id=str(doc.user_id),
+        profile_id=str(doc.profile_id) if doc.profile_id else None,
         file_url=doc.file_url,
         file_type=doc.file_type.value,
         original_filename=doc.original_filename,
@@ -52,7 +56,7 @@ async def get_job_status(
     current_user: User = Depends(get_current_user),
 ):
     """Get processing job status and progress."""
-    job = await DocumentController.get_job_status(db, job_id)
+    job = await DocumentController.get_job_status(db, job_id, current_user.id)
     return JobStatusResponse(
         id=str(job.id),
         document_id=str(job.document_id),

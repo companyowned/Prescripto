@@ -27,6 +27,7 @@ class Document(Base):
 
     id = Column(Uuid, primary_key=True, default=uuid.uuid4)
     user_id = Column(Uuid, ForeignKey("users.id"), nullable=False, index=True)
+    profile_id = Column(Uuid, ForeignKey("patient_profiles.id"), nullable=True, index=True)
     file_url = Column(String(500), nullable=False)
     file_type = Column(SAEnum(FileType), nullable=False)
     original_filename = Column(String(255), nullable=True)
@@ -35,6 +36,7 @@ class Document(Base):
 
     # Relationships
     user = relationship("User", back_populates="documents")
+    profile = relationship("PatientProfile", back_populates="documents")
     jobs = relationship("Job", back_populates="document", cascade="all, delete-orphan")
     prescription = relationship(
         "Prescription", back_populates="document", uselist=False, cascade="all, delete-orphan"

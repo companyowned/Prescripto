@@ -41,6 +41,21 @@ export default function SettingsScreen() {
 
                             <View style={styles.divider} />
 
+                            <TouchableOpacity
+                                style={styles.cardRow}
+                                onPress={() => router.push('/(app)/profiles')}
+                            >
+                                <View style={styles.rowLeft}>
+                                    <View style={[styles.iconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
+                                        <Ionicons name="people-outline" size={20} color="#10B981" />
+                                    </View>
+                                    <Text style={styles.rowText}>Family Profiles</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                            </TouchableOpacity>
+
+                            <View style={styles.divider} />
+
                             {/* Notifications */}
                             <TouchableOpacity style={styles.cardRow}>
                                 <View style={styles.rowLeft}>

@@ -7,8 +7,13 @@ import { documentsApi } from './api';
 
 export const useUploadDocument = () => {
     return useMutation({
-        mutationFn: (file: { uri: string; name: string; type: string }) =>
-            documentsApi.upload(file),
+        mutationFn: ({
+            file,
+            profileId,
+        }: {
+            file: { uri: string; name: string; type: string };
+            profileId?: string;
+        }) => documentsApi.upload(file, profileId),
     });
 };
 

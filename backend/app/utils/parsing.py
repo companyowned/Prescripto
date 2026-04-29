@@ -128,3 +128,28 @@ def parse_workflow_output(raw_output: dict[str, Any]) -> NormalizedPrescriptionO
         logger.error(f"Failed to parse workflow output: {e}")
         # Return empty but valid output on parse failure
         return NormalizedPrescriptionOutput()
+
+
+def parse_frequency_to_schedule(frequency: str | None) -> dict:
+    """Heuristic parser to map free-text frequency to structured reminder schedule."""
+    if not frequency:
+        return {"schedule_type": "as_needed"}
+    
+    freq_lower = frequency.lower()
+    
+    if any(x in freq_lower for x in ["four times", "4 times", "qid"]):
+        return {"schedule_type": "fixed_times", "times": ["08:00", "12:00", "16:00", "20:00"], "times_per_day": 4}
+    elif any(x in freq_lower for x in ["three times", "3 times", "tid", "tds"]):
+        return {"schedule_type": "fixed_times", "times": ["08:00", "14:00", "20:00"], "times_per_day": 3}
+    elif any(x in freq_lower for x in ["twice", "2 times", "bid", "bd"]):
+        return {"schedule_type": "fixed_times", "times": ["09:00", "21:00"], "times_per_day": 2}
+    elif any(x in freq_lower for x in ["once", "1 time", "daily", "every day", "qd"]):
+        return {"schedule_type": "fixed_times", "times": ["09:00"], "times_per_day": 1}
+    elif "every" in freq_lower and "hour" in freq_lower:
+        import re
+        match = re.search(r"every\s*(\d+)\s*hour", freq_lower)
+        if match:
+            hours = int(match.group(1))
+            return {"schedule_type": "interval", "interval_hours": float(hours)}
+            
+    return {"schedule_type": "as_needed"}
