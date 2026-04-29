@@ -13,6 +13,7 @@ class Prescription(Base):
     __tablename__ = "prescriptions"
 
     id = Column(Uuid, primary_key=True, default=uuid.uuid4)
+    profile_id = Column(Uuid, ForeignKey("patient_profiles.id"), nullable=True, index=True)
     document_id = Column(
         Uuid, ForeignKey("documents.id"), nullable=False, unique=True, index=True
     )
@@ -24,6 +25,7 @@ class Prescription(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Relationships
+    profile = relationship("PatientProfile", back_populates="prescriptions")
     document = relationship("Document", back_populates="prescription")
     doctor = relationship("Doctor", back_populates="prescriptions")
     facility = relationship("Facility", back_populates="prescriptions")

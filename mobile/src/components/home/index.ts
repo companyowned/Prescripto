@@ -4,3 +4,4 @@ export * from './StatusBadge';
 export * from './SearchBar';
 export * from './RecentScansList';
 export * from './MockBottomTabs';
+export * from './ProfileSwitcher';

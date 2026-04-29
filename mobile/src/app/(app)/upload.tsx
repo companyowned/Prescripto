@@ -11,12 +11,14 @@ import { Button, Card, GlassBackground } from '../../components/ui';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { useUploadDocument } from '../../features/documents/hooks';
 import { getFileType, getFileName } from '../../utils/file';
+import { useActiveProfile } from '../../contexts/profile-context';
 
 export default function UploadScreen() {
     const router = useRouter();
     const [selectedFile, setSelectedFile] = useState<{ uri: string; name: string; type: string } | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const uploadMutation = useUploadDocument();
+    const { activeProfile } = useActiveProfile();
 
     const handlePickDocument = async () => {
         try {
@@ -61,8 +63,15 @@ export default function UploadScreen() {
 
     const handleUpload = async () => {
         if (!selectedFile) return;
+        if (!activeProfile?.id) {
+            Alert.alert('Profile Required', 'Please select a family profile before uploading.');
+            return;
+        }
         try {
-            const result = await uploadMutation.mutateAsync(selectedFile);
+            const result = await uploadMutation.mutateAsync({
+                file: selectedFile,
+                profileId: activeProfile.id,
+            });
             router.replace({
                 pathname: '/(app)/processing',
                 params: { jobId: result.job_id, documentId: result.document_id },

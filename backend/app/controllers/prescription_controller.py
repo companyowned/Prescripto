@@ -5,7 +5,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError
+from app.controllers.profile_controller import PatientProfileController
+from app.core.exceptions import NotFoundError, BadRequestError
 from app.repos.prescription_repo import (
     PrescriptionRepo,
     DoctorRepo,
@@ -17,12 +18,16 @@ from app.schemas.prescription import PrescriptionUpdateRequest
 
 class PrescriptionController:
     @staticmethod
-    async def get_by_document(db: AsyncSession, document_id: UUID, user_id: UUID):
+    async def get_by_document(
+        db: AsyncSession, document_id: UUID, user_id: UUID, profile_id: Optional[UUID] = None
+    ):
         """Get prescription result for a document, checking ownership."""
         from app.repos.document_repo import DocumentRepo
 
         doc = await DocumentRepo.get_by_id(db, document_id)
         if not doc or doc.user_id != user_id:
+            raise NotFoundError("Document not found")
+        if profile_id and doc.profile_id != profile_id:
             raise NotFoundError("Document not found")
 
         prescription = await PrescriptionRepo.get_by_document_id(db, document_id)
@@ -31,9 +36,26 @@ class PrescriptionController:
         return prescription
 
     @staticmethod
-    async def get_history(db: AsyncSession, user_id: UUID, skip: int = 0, limit: int = 20):
+    async def get_history(
+        db: AsyncSession,
+        user_id: UUID,
+        owner_full_name: str,
+        profile_id: Optional[UUID] = None,
+        skip: int = 0,
+        limit: int = 20,
+    ):
         """Get paginated prescription history for a user."""
-        return await PrescriptionRepo.get_user_prescriptions(db, user_id, skip, limit)
+        resolved_profile_id = profile_id
+        if resolved_profile_id:
+            await PatientProfileController.get_profile(db, user_id, resolved_profile_id)
+        else:
+            default_profile = await PatientProfileController.ensure_default_profile(
+                db, user_id, owner_full_name
+            )
+            resolved_profile_id = default_profile.id
+        return await PrescriptionRepo.get_user_prescriptions(
+            db, user_id, resolved_profile_id, skip, limit
+        )
 
     @staticmethod
     async def update_prescription(
@@ -53,6 +75,8 @@ class PrescriptionController:
         doc = await DocumentRepo.get_by_id(db, prescription.document_id)
         if not doc or doc.user_id != user_id:
             raise NotFoundError("Prescription not found")
+        if doc.profile_id is None:
+            raise BadRequestError("Prescription is not linked to a profile")
 
         # Update diagnosis
         if data.diagnosis_text is not None:

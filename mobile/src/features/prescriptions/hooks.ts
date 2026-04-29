@@ -6,18 +6,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { prescriptionsApi } from './api';
 import { PrescriptionUpdateRequest } from './types';
 
-export const usePrescription = (documentId: string) => {
+export const usePrescription = (documentId: string, profileId?: string) => {
     return useQuery({
-        queryKey: ['prescription', documentId],
-        queryFn: () => prescriptionsApi.getByDocument(documentId),
+        queryKey: ['prescription', documentId, profileId],
+        queryFn: () => prescriptionsApi.getByDocument(documentId, profileId),
         enabled: !!documentId,
     });
 };
 
-export const usePrescriptionHistory = (skip = 0, limit = 20) => {
+export const usePrescriptionHistory = (skip = 0, limit = 20, profileId?: string) => {
     return useQuery({
-        queryKey: ['prescriptions', 'history', skip, limit],
-        queryFn: () => prescriptionsApi.getHistory(skip, limit),
+        queryKey: ['prescriptions', 'history', profileId, skip, limit],
+        queryFn: () => prescriptionsApi.getHistory(skip, limit, profileId),
+        enabled: !!profileId,
     });
 };
 

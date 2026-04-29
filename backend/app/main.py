@@ -15,6 +15,7 @@ from app.views.prescriptions import router as prescriptions_router
 from app.views.medication_reminders import router as medication_reminders_router
 from app.views.medication_dose_events import router as medication_dose_events_router
 from app.views.medication_insights import router as medication_insights_router
+from app.views.profiles import router as profiles_router
 
 
 @asynccontextmanager
@@ -23,6 +24,7 @@ async def lifespan(app: FastAPI):
     # Import all models so SQLAlchemy relationships resolve
     import app.models.user  # noqa
     import app.models.document  # noqa
+    import app.models.patient_profile  # noqa
     import app.models.job  # noqa
     import app.models.doctor  # noqa
     import app.models.facility  # noqa
@@ -109,6 +111,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(documents_router, prefix="/api/v1")
     app.include_router(prescriptions_router, prefix="/api/v1")
+    app.include_router(profiles_router, prefix="/api/v1")
     app.include_router(medication_reminders_router, prefix="/api/v1")
     app.include_router(medication_dose_events_router, prefix="/api/v1")
     app.include_router(medication_insights_router, prefix="/api/v1")

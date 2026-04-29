@@ -23,8 +23,12 @@ class UserRepo:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def create(db: AsyncSession, email: str, full_name: str, hashed_password: str) -> User:
-        user = User(email=email, full_name=full_name, hashed_password=hashed_password)
+    async def create(
+        db: AsyncSession, email: str, full_name: str, hashed_password: str, managed_by_id: Optional[UUID] = None
+    ) -> User:
+        user = User(
+            email=email, full_name=full_name, hashed_password=hashed_password, managed_by_id=managed_by_id
+        )
         db.add(user)
         await db.flush()
         await db.refresh(user)

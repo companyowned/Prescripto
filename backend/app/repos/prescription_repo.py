@@ -17,6 +17,7 @@ class PrescriptionRepo:
     @staticmethod
     async def create(
         db: AsyncSession,
+        profile_id: UUID,
         document_id: UUID,
         doctor_id: Optional[UUID] = None,
         facility_id: Optional[UUID] = None,
@@ -25,6 +26,7 @@ class PrescriptionRepo:
         confidence_score: Optional[float] = None,
     ) -> Prescription:
         prescription = Prescription(
+            profile_id=profile_id,
             document_id=document_id,
             doctor_id=doctor_id,
             facility_id=facility_id,
@@ -65,15 +67,23 @@ class PrescriptionRepo:
 
     @staticmethod
     async def get_user_prescriptions(
-        db: AsyncSession, user_id: UUID, skip: int = 0, limit: int = 20
+        db: AsyncSession,
+        user_id: UUID,
+        profile_id: Optional[UUID] = None,
+        skip: int = 0,
+        limit: int = 20,
     ) -> tuple[list[Prescription], int]:
         from app.models.document import Document
+
+        filters = [Document.user_id == user_id]
+        if profile_id:
+            filters.append(Prescription.profile_id == profile_id)
 
         count_result = await db.execute(
             select(func.count())
             .select_from(Prescription)
             .join(Document)
-            .where(Document.user_id == user_id)
+            .where(*filters)
         )
         total = count_result.scalar()
 
@@ -85,7 +95,7 @@ class PrescriptionRepo:
                 selectinload(Prescription.facility),
                 selectinload(Prescription.medications),
             )
-            .where(Document.user_id == user_id)
+            .where(*filters)
             .order_by(Prescription.created_at.desc())
             .offset(skip)
             .limit(limit)

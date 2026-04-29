@@ -4,6 +4,7 @@
 
 export interface DocumentUploadResponse {
     document_id: string;
+    profile_id: string;
     job_id: string;
     status: string;
     message: string;
@@ -12,6 +13,7 @@ export interface DocumentUploadResponse {
 export interface DocumentResponse {
     id: string;
     user_id: string;
+    profile_id: string | null;
     file_url: string;
     file_type: 'pdf' | 'image';
     original_filename: string | null;

@@ -16,11 +16,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Input, Button, GlassBackground } from '../../components/ui';
 import { authService } from '../../services/auth';
 import { colors } from '../../theme';
+import { useActiveProfile } from '../../contexts/profile-context';
 
 export default function ProfileScreen() {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [fullName, setFullName] = useState('');
+    const { activeProfile } = useActiveProfile();
 
     // Fetch user profile
     const { data: userData, isLoading } = useQuery({
@@ -94,6 +96,20 @@ export default function ProfileScreen() {
 
                         {/* Edit Form */}
                         <View style={styles.formContainer}>
+                            <Input
+                                label="Active Medical Profile"
+                                value={
+                                    activeProfile
+                                        ? `${activeProfile.full_name} (${activeProfile.relationship_to_owner})`
+                                        : 'No profile selected'
+                                }
+                                editable={false}
+                            />
+                            <Button
+                                title="Manage Family Profiles"
+                                variant="outline"
+                                onPress={() => router.push('/(app)/profiles')}
+                            />
                             <Input
                                 label="Full Name"
                                 placeholder="Enter your full name"

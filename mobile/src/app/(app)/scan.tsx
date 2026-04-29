@@ -9,6 +9,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Button, GlassBackground } from '../../components/ui';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { useUploadDocument } from '../../features/documents/hooks';
+import { useActiveProfile } from '../../contexts/profile-context';
 
 export default function ScanScreen() {
     const router = useRouter();
@@ -16,9 +17,14 @@ export default function ScanScreen() {
     const cameraRef = useRef<CameraView>(null);
     const [capturing, setCapturing] = useState(false);
     const uploadMutation = useUploadDocument();
+    const { activeProfile } = useActiveProfile();
 
     const handleCapture = async () => {
         if (!cameraRef.current || capturing) return;
+        if (!activeProfile?.id) {
+            Alert.alert('Profile Required', 'Please select a family profile before scanning.');
+            return;
+        }
 
         setCapturing(true);
         try {
@@ -29,9 +35,12 @@ export default function ScanScreen() {
             }
 
             const result = await uploadMutation.mutateAsync({
-                uri: photo.uri,
-                name: `scan_${Date.now()}.jpg`,
-                type: 'image/jpeg',
+                file: {
+                    uri: photo.uri,
+                    name: `scan_${Date.now()}.jpg`,
+                    type: 'image/jpeg',
+                },
+                profileId: activeProfile?.id,
             });
 
             router.replace({

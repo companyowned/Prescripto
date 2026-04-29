@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 class DocumentUploadResponse(BaseModel):
     document_id: str
+    profile_id: str
     job_id: str
     status: str
     message: str = "Document uploaded successfully"
@@ -16,6 +17,7 @@ class DocumentUploadResponse(BaseModel):
 class DocumentResponse(BaseModel):
     id: str
     user_id: str
+    profile_id: Optional[str] = None
     file_url: str
     file_type: str
     original_filename: Optional[str] = None

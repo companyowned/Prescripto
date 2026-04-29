@@ -4,7 +4,10 @@ import { authService } from '../../services/auth';
 import { DocumentUploadResponse, DocumentResponse, JobStatusResponse } from './types';
 
 export const documentsApi = {
-    async upload(file: { uri: string; name: string; type: string }): Promise<DocumentUploadResponse> {
+    async upload(
+        file: { uri: string; name: string; type: string },
+        profileId?: string
+    ): Promise<DocumentUploadResponse> {
         const formData = new FormData();
 
         if (Platform.OS === 'web') {
@@ -19,6 +22,10 @@ export const documentsApi = {
                 name: file.name,
                 type: file.type,
             } as any);
+        }
+
+        if (profileId) {
+            formData.append('profile_id', profileId);
         }
 
         const token = await authService.getToken();
