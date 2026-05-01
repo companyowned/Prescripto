@@ -1,6 +1,7 @@
 """Parsing utility — normalize SkepticGen workflow output to structured schema."""
 
 import logging
+import re
 from typing import Any
 
 from app.schemas.prescription import (
@@ -9,9 +10,184 @@ from app.schemas.prescription import (
     FacilitySchema,
     MedicationSchema,
     ConfidenceSchema,
+    FollowUpRequestSchema,
 )
 
 logger = logging.getLogger(__name__)
+
+
+LAB_PATTERNS = {
+    "CBC": r"\b(cbc|complete blood count)\b",
+    "Blood glucose": r"\b(fbs|fasting blood sugar|blood glucose|blood sugar|rbs)\b",
+    "HbA1c": r"\b(hba1c|a1c)\b",
+    "Liver function tests": r"\b(lft|liver function)\b",
+    "Kidney function tests": r"\b(kft|renal function|kidney function|creatinine|urea)\b",
+    "Lipid profile": r"\b(lipid profile|cholesterol|triglycerides)\b",
+    "Thyroid profile": r"\b(tsh|thyroid profile|t3|t4)\b",
+    "Urine analysis": r"\b(urine analysis|urinalysis|urine test)\b",
+    "Inflammatory markers": r"\b(crp|esr)\b",
+    "Coagulation profile": r"\b(pt|inr|ptt|coagulation profile)\b",
+    "Laboratory tests": r"\b(lab tests?|laboratory tests?|blood tests?|investigations?)\b",
+}
+
+RADIOLOGY_PATTERNS = {
+    "X-ray": r"\b(x[- ]?ray|xray)\b",
+    "Ultrasound": r"\b(ultrasound|u/s|usg|sonography)\b",
+    "CT scan": r"\b(ct scan|computed tomography)\b",
+    "MRI": r"\b(mri|magnetic resonance)\b",
+    "Mammography": r"\b(mammogram|mammography)\b",
+    "Doppler study": r"\b(doppler)\b",
+    "Radiology report": r"\b(radiology|imaging|radiograph|scan report)\b",
+}
+
+
+def _flatten_text(data: Any) -> str:
+    if isinstance(data, dict):
+        return " ".join(_flatten_text(value) for value in data.values())
+    if isinstance(data, list):
+        return " ".join(_flatten_text(item) for item in data)
+    if isinstance(data, str):
+        return data
+    return ""
+
+
+def _normalize_follow_up_item(item: Any, kind: str) -> FollowUpRequestSchema | None:
+    if isinstance(item, str):
+        name = item.strip()
+        return FollowUpRequestSchema(
+            kind=kind,
+            name=name or ("Laboratory tests" if kind == "lab" else "Radiology report"),
+            confidence=0.85,
+            source="workflow",
+        )
+
+    if not isinstance(item, dict):
+        return None
+
+    item_kind = (
+        item.get("kind")
+        or item.get("type")
+        or item.get("category")
+        or item.get("request_type")
+        or kind
+    )
+    item_kind = str(item_kind).lower()
+    if item_kind in {"laboratory", "labs", "lab_test", "lab tests"}:
+        item_kind = "lab"
+    if item_kind in {"radiology_report", "imaging", "scan", "xray", "x-ray"}:
+        item_kind = "radiology"
+    if item_kind not in {"lab", "radiology"}:
+        item_kind = kind
+
+    name = item.get("name") or item.get("test") or item.get("exam") or item.get("request")
+    if not name:
+        name = "Laboratory tests" if item_kind == "lab" else "Radiology report"
+
+    confidence = item.get("confidence", 0.85)
+    try:
+        confidence = float(confidence)
+    except (TypeError, ValueError):
+        confidence = 0.85
+
+    return FollowUpRequestSchema(
+        kind=item_kind,
+        name=str(name),
+        instructions=item.get("instructions") or item.get("notes"),
+        confidence=confidence,
+        source=item.get("source") or "workflow",
+    )
+
+
+def _add_request(
+    requests: list[FollowUpRequestSchema],
+    seen: set[tuple[str, str]],
+    request: FollowUpRequestSchema | None,
+) -> None:
+    if not request:
+        return
+    key = (request.kind, request.name.strip().lower())
+    if key not in seen:
+        seen.add(key)
+        requests.append(request)
+
+
+def extract_follow_up_requests(raw_output: dict[str, Any] | None) -> list[FollowUpRequestSchema]:
+    """Extract requested lab and radiology follow-ups from structured output or OCR text."""
+    if not raw_output:
+        return []
+
+    requests: list[FollowUpRequestSchema] = []
+    seen: set[tuple[str, str]] = set()
+
+    structured_keys = {
+        "follow_up_requests": None,
+        "requested_tests": None,
+        "investigations": None,
+        "lab_tests": "lab",
+        "laboratory_tests": "lab",
+        "labs": "lab",
+        "radiology_requests": "radiology",
+        "radiology": "radiology",
+        "imaging": "radiology",
+        "imaging_requests": "radiology",
+    }
+
+    def visit(data: Any) -> None:
+        if isinstance(data, dict):
+            for key, value in data.items():
+                normalized_key = key.lower()
+                if normalized_key in structured_keys:
+                    default_kind = structured_keys[normalized_key]
+                    values = value if isinstance(value, list) else [value]
+                    for item in values:
+                        inferred_kind = default_kind
+                        if inferred_kind is None and isinstance(item, dict):
+                            inferred_kind = item.get("kind") or item.get("type") or item.get("category")
+                        inferred_kind = str(inferred_kind or "lab").lower()
+                        if inferred_kind in {"laboratory", "labs", "lab_test", "lab tests"}:
+                            inferred_kind = "lab"
+                        if inferred_kind in {"radiology_report", "imaging", "scan", "xray", "x-ray"}:
+                            inferred_kind = "radiology"
+                        if inferred_kind not in {"lab", "radiology"}:
+                            inferred_kind = "lab"
+                        _add_request(requests, seen, _normalize_follow_up_item(item, inferred_kind))
+                visit(value)
+        elif isinstance(data, list):
+            for item in data:
+                visit(item)
+
+    visit(raw_output)
+
+    flattened = _flatten_text(raw_output).lower()
+    for name, pattern in LAB_PATTERNS.items():
+        if re.search(pattern, flattened, re.IGNORECASE):
+            _add_request(
+                requests,
+                seen,
+                FollowUpRequestSchema(
+                    kind="lab",
+                    name=name,
+                    instructions="Upload the completed lab result PDF or scan the result page.",
+                    confidence=0.65,
+                    source="keyword",
+                ),
+            )
+
+    for name, pattern in RADIOLOGY_PATTERNS.items():
+        if re.search(pattern, flattened, re.IGNORECASE):
+            _add_request(
+                requests,
+                seen,
+                FollowUpRequestSchema(
+                    kind="radiology",
+                    name=name,
+                    instructions="Upload the finalized radiology report when it is available.",
+                    confidence=0.65,
+                    source="keyword",
+                ),
+            )
+
+    return requests
 
 
 def parse_workflow_output(raw_output: dict[str, Any]) -> NormalizedPrescriptionOutput:
@@ -25,11 +201,24 @@ def parse_workflow_output(raw_output: dict[str, Any]) -> NormalizedPrescriptionO
         import json
 
         def _find_json_with_meds(data: Any) -> dict | None:
-            """Recursively search for a dictionary containing 'medications' or 'doctor',
-               even if it's buried in a string like Gemini's content.parts[0].text"""
+            """Recursively search for a dictionary containing prescription output,
+               even if it's buried in a string like Gemini's content.parts[0].text.
+               Skips 'error' objects like {'doctor': {'name': 'JSON ERROR'}}."""
             if isinstance(data, dict):
-                # If this dict has what we want, return it!
-                if "doctor" in data or "medications" in data:
+                # If this dict has actual content (medications or follow-ups), return it!
+                # But skip it if the doctor name is "JSON ERROR"
+                has_content = any(
+                    key in data
+                    for key in (
+                        "medications",
+                        "follow_up_requests",
+                        "lab_tests",
+                        "radiology_requests",
+                    )
+                )
+                is_error = "JSON ERROR" in str(data.get("doctor", {}).get("name", ""))
+                
+                if has_content and not is_error:
                     return data
                 
                 # Otherwise, search its values
@@ -43,14 +232,15 @@ def parse_workflow_output(raw_output: dict[str, Any]) -> NormalizedPrescriptionO
                     if res: return res
 
             elif isinstance(data, str):
-                # Is it an encoded JSON string?
+                # Is it an encoded JSON string? (Very common when n8n fails to parse but AI output is correct)
                 try:
                     if "{" in data and "}" in data:
                         start = data.find("{")
                         end = data.rfind("}") + 1
-                        parsed = json.loads(data[start:end])
-                        if isinstance(parsed, dict) and ("doctor" in parsed or "medications" in parsed):
-                            return parsed
+                        candidate = data[start:end]
+                        parsed = json.loads(candidate)
+                        # Recurse into the parsed JSON to handle double-nesting
+                        return _find_json_with_meds(parsed)
                 except Exception:
                     pass
             return None
@@ -121,6 +311,7 @@ def parse_workflow_output(raw_output: dict[str, Any]) -> NormalizedPrescriptionO
             facility=facility,
             diagnosis=diagnosis,
             medications=medications,
+            follow_up_requests=extract_follow_up_requests(raw_output),
             confidence=ConfidenceSchema(overall=overall),
         )
 

@@ -4,15 +4,22 @@
 
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Button, GlassBackground } from '../../components/ui';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { useUploadDocument } from '../../features/documents/hooks';
+import type { DocumentPurpose } from '../../features/documents/types';
 import { useActiveProfile } from '../../contexts/profile-context';
 
 export default function ScanScreen() {
     const router = useRouter();
+    const { purpose, parentDocumentId } = useLocalSearchParams<{
+        purpose?: DocumentPurpose;
+        parentDocumentId?: string;
+    }>();
+    const documentPurpose = purpose || 'prescription';
+    const isLabResult = documentPurpose === 'lab_result';
     const [permission, requestPermission] = useCameraPermissions();
     const cameraRef = useRef<CameraView>(null);
     const [capturing, setCapturing] = useState(false);
@@ -37,15 +44,22 @@ export default function ScanScreen() {
             const result = await uploadMutation.mutateAsync({
                 file: {
                     uri: photo.uri,
-                    name: `scan_${Date.now()}.jpg`,
+                    name: `${isLabResult ? 'lab_results' : 'scan'}_${Date.now()}.jpg`,
                     type: 'image/jpeg',
                 },
                 profileId: activeProfile?.id,
+                purpose: documentPurpose,
+                parentDocumentId,
             });
 
             router.replace({
                 pathname: '/(app)/processing',
-                params: { jobId: result.job_id, documentId: result.document_id },
+                params: {
+                    jobId: result.job_id,
+                    documentId: result.document_id,
+                    purpose: documentPurpose,
+                    parentDocumentId,
+                },
             });
         } catch (err: any) {
             Alert.alert('Upload Failed', err?.message || 'Could not upload the scan.');
@@ -82,14 +96,16 @@ export default function ScanScreen() {
                         <TouchableOpacity onPress={() => router.back()}>
                             <Text style={styles.backBtn}>← Back</Text>
                         </TouchableOpacity>
-                        <Text style={styles.scanTitle}>Scan Prescription</Text>
+                        <Text style={styles.scanTitle}>{isLabResult ? 'Scan Lab Results' : 'Scan Prescription'}</Text>
                         <View style={{ width: 60 }} />
                     </View>
 
                     <View style={styles.guideContainer}>
                         <View style={styles.guideFrame}>
                             <Text style={styles.guideText}>
-                                Position the prescription within the frame
+                                {isLabResult
+                                    ? 'Position the lab result page within the frame'
+                                    : 'Position the prescription within the frame'}
                             </Text>
                         </View>
                     </View>

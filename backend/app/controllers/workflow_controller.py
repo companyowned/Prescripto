@@ -50,6 +50,7 @@ class WorkflowController:
             client = N8nClient()
             raw_output = await client.run_workflow(
                 file_path=doc.file_url,
+                extra_data={"purpose": doc.purpose}
             )
 
             # 4. Parse output

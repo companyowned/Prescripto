@@ -4,3 +4,4 @@ export { DiagnosisCard } from './DiagnosisCard';
 export { MedicationItem } from './MedicationItem';
 export type { MedicationData } from './MedicationItem';
 export { MedicationList } from './MedicationList';
+export { FollowUpRequestsCard } from './FollowUpRequestsCard';

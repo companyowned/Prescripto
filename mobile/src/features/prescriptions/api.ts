@@ -18,10 +18,11 @@ export const prescriptionsApi = {
         return response.data;
     },
 
-    async getHistory(skip = 0, limit = 20, profileId?: string): Promise<PrescriptionListResponse> {
-        const response = await apiClient.get<PrescriptionListResponse>('/prescriptions', {
-            params: { skip, limit, profile_id: profileId },
-        });
+    async getHistory(skip = 0, limit = 20, profileId?: string, purpose?: string): Promise<PrescriptionListResponse> {
+        const params: Record<string, any> = { skip, limit };
+        if (profileId) params.profile_id = profileId;
+        if (purpose) params.purpose = purpose;
+        const response = await apiClient.get<PrescriptionListResponse>('/prescriptions', { params });
         return response.data;
     },
 

@@ -14,10 +14,10 @@ export const usePrescription = (documentId: string, profileId?: string) => {
     });
 };
 
-export const usePrescriptionHistory = (skip = 0, limit = 20, profileId?: string) => {
+export const usePrescriptionHistory = (skip = 0, limit = 20, profileId?: string, purpose?: string) => {
     return useQuery({
-        queryKey: ['prescriptions', 'history', profileId, skip, limit],
-        queryFn: () => prescriptionsApi.getHistory(skip, limit, profileId),
+        queryKey: ['prescriptions', 'history', profileId, purpose, skip, limit],
+        queryFn: () => prescriptionsApi.getHistory(skip, limit, profileId, purpose),
         enabled: !!profileId,
     });
 };

@@ -70,6 +70,8 @@ async def init_db():
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS push_token_updated_at TIMESTAMP",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS managed_by_id UUID",
             "ALTER TABLE documents ADD COLUMN IF NOT EXISTS profile_id UUID",
+            "ALTER TABLE documents ADD COLUMN IF NOT EXISTS purpose VARCHAR DEFAULT 'prescription'",
+            "ALTER TABLE documents ADD COLUMN IF NOT EXISTS parent_document_id UUID",
             "ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS profile_id UUID",
             "ALTER TABLE patient_profiles ADD COLUMN IF NOT EXISTS linked_user_id UUID",
             "ALTER TABLE patient_profiles ADD COLUMN IF NOT EXISTS sharing_level VARCHAR DEFAULT 'FULL_ACCESS'",
@@ -177,4 +179,3 @@ async def get_db():
             raise
         finally:
             await session.close()
-

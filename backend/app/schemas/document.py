@@ -11,6 +11,7 @@ class DocumentUploadResponse(BaseModel):
     profile_id: str
     job_id: str
     status: str
+    purpose: str = "prescription"
     message: str = "Document uploaded successfully"
 
 
@@ -21,6 +22,8 @@ class DocumentResponse(BaseModel):
     file_url: str
     file_type: str
     original_filename: Optional[str] = None
+    purpose: str = "prescription"
+    parent_document_id: Optional[str] = None
     status: str
     created_at: datetime
 

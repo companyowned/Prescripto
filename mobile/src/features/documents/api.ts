@@ -1,12 +1,13 @@
 import { Platform } from 'react-native';
 import apiClient from '../../services/apiClient';
 import { authService } from '../../services/auth';
-import { DocumentUploadResponse, DocumentResponse, JobStatusResponse } from './types';
+import { DocumentPurpose, DocumentUploadResponse, DocumentResponse, JobStatusResponse } from './types';
 
 export const documentsApi = {
     async upload(
         file: { uri: string; name: string; type: string },
-        profileId?: string
+        profileId?: string,
+        options?: { purpose?: DocumentPurpose; parentDocumentId?: string }
     ): Promise<DocumentUploadResponse> {
         const formData = new FormData();
 
@@ -26,6 +27,10 @@ export const documentsApi = {
 
         if (profileId) {
             formData.append('profile_id', profileId);
+        }
+        formData.append('purpose', options?.purpose || 'prescription');
+        if (options?.parentDocumentId) {
+            formData.append('parent_document_id', options.parentDocumentId);
         }
 
         const token = await authService.getToken();

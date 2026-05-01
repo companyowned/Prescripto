@@ -25,6 +25,7 @@ class N8nClient:
         self,
         file_path: Optional[str] = None,
         text_input: Optional[str] = None,
+        extra_data: Optional[dict] = None,
     ) -> dict:
         """
         Execute an n8n workflow and return the JSON output.
@@ -32,9 +33,7 @@ class N8nClient:
         Args:
             file_path: Path to the file to process
             text_input: Alternative text input (for text trigger)
-
-        Returns:
-            JSON output from the n8n webhook
+            extra_data: Additional fields to send to the webhook
         """
         if not self.webhook_url:
             logger.warning("[STUB MODE] No n8n webhook URL configured — returning mock output")
@@ -52,13 +51,15 @@ class N8nClient:
                     with open(file_path, "rb") as f:
                         # Send as "data" so n8n OCR node finds it in the binary 'data' field
                         files = {"data": f}
+                        data = extra_data or {}
                         response = await client.post(
                             self.webhook_url,
                             headers=headers,
                             files=files,
+                            data=data,
                         )
                 elif text_input:
-                    payload = {"input": text_input}
+                    payload = {"input": text_input, **(extra_data or {})}
                     response = await client.post(
                         self.webhook_url,
                         headers=headers,
@@ -110,6 +111,20 @@ class N8nClient:
                     "frequency": "3 times daily",
                     "duration": "7 days",
                 }
+            ],
+            "follow_up_requests": [
+                {
+                    "kind": "lab",
+                    "name": "CBC",
+                    "instructions": "Upload the completed lab result PDF or scan the result page.",
+                    "confidence": 0.89,
+                },
+                {
+                    "kind": "radiology",
+                    "name": "Chest X-ray",
+                    "instructions": "Upload the finalized radiology report when it is available.",
+                    "confidence": 0.82,
+                },
             ],
             "confidence": {"overall": 0.87},
         }

@@ -20,6 +20,7 @@ from app.utils.file_storage import FileStorage
 
 ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".webp"}
 MAX_FILE_SIZE = 20 * 1024 * 1024  # 20 MB
+ALLOWED_PURPOSES = {"prescription", "lab_result", "radiology_report"}
 
 
 class DocumentController:
@@ -47,11 +48,15 @@ class DocumentController:
         owner_full_name: str,
         file: UploadFile,
         profile_id: Optional[uuid.UUID] = None,
+        purpose: str = "prescription",
+        parent_document_id: Optional[uuid.UUID] = None,
     ) -> dict:
         """Upload a document file, create Document + Job records, trigger processing."""
         filename = file.filename or "unknown"
         DocumentController._validate_extension(filename)
         file_type = DocumentController._get_file_type(filename)
+        if purpose not in ALLOWED_PURPOSES:
+            raise BadRequestError(f"Unsupported document purpose: {purpose}")
 
         # Read file content
         content = await file.read()
@@ -62,6 +67,11 @@ class DocumentController:
             profile = await PatientProfileController.get_profile(db, user_id, profile_id)
         else:
             profile = await PatientProfileController.ensure_default_profile(db, user_id, owner_full_name)
+
+        if parent_document_id:
+            parent = await DocumentRepo.get_by_id(db, parent_document_id)
+            if not parent or parent.user_id != user_id:
+                raise NotFoundError("Parent document not found")
 
         # Save file locally (uses /tmp on Vercel)
         file_path = FileStorage.save_file(content, str(user_id), filename)
@@ -74,6 +84,8 @@ class DocumentController:
             file_url=file_path,
             file_type=file_type,
             original_filename=filename,
+            purpose=purpose,
+            parent_document_id=parent_document_id,
         )
         job = await JobRepo.create(
             db,
@@ -100,6 +112,7 @@ class DocumentController:
             "profile_id": str(profile.id),
             "job_id": str(job.id),
             "status": document.status.value,
+            "purpose": document.purpose,
         }
 
     @staticmethod

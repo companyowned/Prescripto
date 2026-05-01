@@ -7,8 +7,11 @@ export interface DocumentUploadResponse {
     profile_id: string;
     job_id: string;
     status: string;
+    purpose: DocumentPurpose;
     message: string;
 }
+
+export type DocumentPurpose = 'prescription' | 'lab_result' | 'radiology_report';
 
 export interface DocumentResponse {
     id: string;
@@ -17,6 +20,8 @@ export interface DocumentResponse {
     file_url: string;
     file_type: 'pdf' | 'image';
     original_filename: string | null;
+    purpose: DocumentPurpose;
+    parent_document_id: string | null;
     status: 'uploaded' | 'processing' | 'done' | 'failed';
     created_at: string;
 }

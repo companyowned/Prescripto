@@ -72,12 +72,15 @@ class PrescriptionRepo:
         profile_id: Optional[UUID] = None,
         skip: int = 0,
         limit: int = 20,
+        purpose: Optional[str] = None,
     ) -> tuple[list[Prescription], int]:
         from app.models.document import Document
 
         filters = [Document.user_id == user_id]
         if profile_id:
             filters.append(Prescription.profile_id == profile_id)
+        if purpose:
+            filters.append(Document.purpose == purpose)
 
         count_result = await db.execute(
             select(func.count())
@@ -94,6 +97,7 @@ class PrescriptionRepo:
                 selectinload(Prescription.doctor),
                 selectinload(Prescription.facility),
                 selectinload(Prescription.medications),
+                selectinload(Prescription.document),
             )
             .where(*filters)
             .order_by(Prescription.created_at.desc())

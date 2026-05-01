@@ -31,6 +31,8 @@ class Document(Base):
     file_url = Column(String(500), nullable=False)
     file_type = Column(SAEnum(FileType), nullable=False)
     original_filename = Column(String(255), nullable=True)
+    purpose = Column(String(50), default="prescription", nullable=False)
+    parent_document_id = Column(Uuid, nullable=True, index=True)
     status = Column(SAEnum(DocumentStatus), default=DocumentStatus.UPLOADED, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 

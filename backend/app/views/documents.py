@@ -19,12 +19,20 @@ router = APIRouter(tags=["Documents"])
 async def upload_document(
     file: UploadFile = File(...),
     profile_id: UUID | None = Form(default=None),
+    purpose: str = Form(default="prescription"),
+    parent_document_id: UUID | None = Form(default=None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Upload a prescription document (image or PDF) for analysis."""
     result = await DocumentController.upload_document(
-        db, current_user.id, current_user.full_name, file, profile_id
+        db,
+        current_user.id,
+        current_user.full_name,
+        file,
+        profile_id,
+        purpose,
+        parent_document_id,
     )
     return DocumentUploadResponse(**result)
 
@@ -44,6 +52,8 @@ async def get_document(
         file_url=doc.file_url,
         file_type=doc.file_type.value,
         original_filename=doc.original_filename,
+        purpose=doc.purpose,
+        parent_document_id=str(doc.parent_document_id) if doc.parent_document_id else None,
         status=doc.status.value,
         created_at=doc.created_at,
     )

@@ -43,6 +43,7 @@ class PrescriptionController:
         profile_id: Optional[UUID] = None,
         skip: int = 0,
         limit: int = 20,
+        purpose: Optional[str] = None,
     ):
         """Get paginated prescription history for a user."""
         resolved_profile_id = profile_id
@@ -54,7 +55,7 @@ class PrescriptionController:
             )
             resolved_profile_id = default_profile.id
         return await PrescriptionRepo.get_user_prescriptions(
-            db, user_id, resolved_profile_id, skip, limit
+            db, user_id, resolved_profile_id, skip, limit, purpose
         )
 
     @staticmethod

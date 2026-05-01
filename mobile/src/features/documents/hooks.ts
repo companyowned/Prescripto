@@ -4,16 +4,21 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { documentsApi } from './api';
+import type { DocumentPurpose } from './types';
 
 export const useUploadDocument = () => {
     return useMutation({
         mutationFn: ({
             file,
             profileId,
+            purpose,
+            parentDocumentId,
         }: {
             file: { uri: string; name: string; type: string };
             profileId?: string;
-        }) => documentsApi.upload(file, profileId),
+            purpose?: DocumentPurpose;
+            parentDocumentId?: string;
+        }) => documentsApi.upload(file, profileId, { purpose, parentDocumentId }),
     });
 };
 

@@ -20,6 +20,8 @@ class DocumentRepo:
         file_url: str,
         file_type: FileType,
         original_filename: Optional[str] = None,
+        purpose: str = "prescription",
+        parent_document_id: Optional[UUID] = None,
     ) -> Document:
         doc = Document(
             user_id=user_id,
@@ -27,6 +29,8 @@ class DocumentRepo:
             file_url=file_url,
             file_type=file_type,
             original_filename=original_filename,
+            purpose=purpose,
+            parent_document_id=parent_document_id,
         )
         db.add(doc)
         await db.flush()

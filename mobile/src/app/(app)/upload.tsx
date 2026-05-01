@@ -4,26 +4,51 @@
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Alert, Image, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 import { Button, Card, GlassBackground } from '../../components/ui';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { useUploadDocument } from '../../features/documents/hooks';
+import type { DocumentPurpose } from '../../features/documents/types';
 import { getFileType, getFileName } from '../../utils/file';
 import { useActiveProfile } from '../../contexts/profile-context';
 
 export default function UploadScreen() {
     const router = useRouter();
+    const { purpose, parentDocumentId } = useLocalSearchParams<{
+        purpose?: DocumentPurpose;
+        parentDocumentId?: string;
+    }>();
+    const documentPurpose = purpose || 'prescription';
+    const isLabResult = documentPurpose === 'lab_result';
+    const isRadiologyReport = documentPurpose === 'radiology_report';
     const [selectedFile, setSelectedFile] = useState<{ uri: string; name: string; type: string } | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const uploadMutation = useUploadDocument();
     const { activeProfile } = useActiveProfile();
 
+    const title = isLabResult
+        ? 'Upload Lab Results'
+        : isRadiologyReport
+            ? 'Upload Radiology Report'
+            : 'Upload Document';
+    const primaryPickLabel = isLabResult
+        ? 'Pick Lab Results PDF'
+        : isRadiologyReport
+            ? 'Pick Report File'
+            : 'Pick PDF or Image';
+    const submitLabel = isLabResult
+        ? 'Upload Lab Results'
+        : isRadiologyReport
+            ? 'Upload Report'
+            : 'Upload & Analyze';
+
     const handlePickDocument = async () => {
         try {
             const result = await DocumentPicker.getDocumentAsync({
-                type: ['application/pdf', 'image/*'],
+                type: isLabResult ? ['application/pdf'] : ['application/pdf', 'image/*'],
                 copyToCacheDirectory: true,
             });
             if (!result.canceled && result.assets?.[0]) {
@@ -71,10 +96,17 @@ export default function UploadScreen() {
             const result = await uploadMutation.mutateAsync({
                 file: selectedFile,
                 profileId: activeProfile.id,
+                purpose: documentPurpose,
+                parentDocumentId,
             });
             router.replace({
                 pathname: '/(app)/processing',
-                params: { jobId: result.job_id, documentId: result.document_id },
+                params: {
+                    jobId: result.job_id,
+                    documentId: result.document_id,
+                    purpose: documentPurpose,
+                    parentDocumentId,
+                },
             });
         } catch (err: any) {
             Alert.alert('Upload Failed', err?.message || 'Could not upload the file.');
@@ -86,15 +118,33 @@ export default function UploadScreen() {
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
                     <Button title="← Back" onPress={() => router.back()} variant="ghost" size="sm" />
-                    <Text style={styles.title}>Upload Document</Text>
+                    <Text style={styles.title}>{title}</Text>
                     <View style={{ width: 80 }} />
                 </View>
 
                 <View style={styles.content}>
                     <Card variant="elevated" style={styles.pickerCard}>
-                        <Button title="📄  Pick PDF or Image" onPress={handlePickDocument} variant="outline" size="lg" style={styles.pickerBtn} />
-                        <Text style={styles.orText}>or</Text>
-                        <Button title="🖼️  Choose from Gallery" onPress={handlePickImage} variant="outline" size="lg" style={styles.pickerBtn} />
+                        <Button
+                            title={primaryPickLabel}
+                            onPress={handlePickDocument}
+                            variant="outline"
+                            size="lg"
+                            style={styles.pickerBtn}
+                            icon={<Ionicons name="document-attach-outline" size={20} color={colors.primary[300]} />}
+                        />
+                        {!isLabResult && (
+                            <>
+                                <Text style={styles.orText}>or</Text>
+                                <Button
+                                    title="Choose from Gallery"
+                                    onPress={handlePickImage}
+                                    variant="outline"
+                                    size="lg"
+                                    style={styles.pickerBtn}
+                                    icon={<Ionicons name="images-outline" size={20} color={colors.primary[300]} />}
+                                />
+                            </>
+                        )}
                     </Card>
 
                     {selectedFile && (
@@ -102,10 +152,12 @@ export default function UploadScreen() {
                             {preview ? (
                                 <Image source={{ uri: preview }} style={styles.previewImage} resizeMode="contain" />
                             ) : (
-                                <View style={styles.pdfPreview}><Text style={styles.pdfIcon}>📄</Text></View>
+                                <View style={styles.pdfPreview}>
+                                    <Ionicons name="document-text-outline" size={48} color={colors.primary[300]} />
+                                </View>
                             )}
                             <Text style={styles.fileName} numberOfLines={1}>{selectedFile.name}</Text>
-                            <Button title="Upload & Analyze" onPress={handleUpload} loading={uploadMutation.isPending} size="lg" />
+                            <Button title={submitLabel} onPress={handleUpload} loading={uploadMutation.isPending} size="lg" />
                         </Card>
                     )}
                 </View>

@@ -23,6 +23,14 @@ export interface FacilityType {
     address?: string | null;
 }
 
+export interface FollowUpRequestType {
+    kind: 'lab' | 'radiology';
+    name: string;
+    instructions?: string | null;
+    confidence: number;
+    source?: string | null;
+}
+
 export interface PrescriptionResponse {
     id: string;
     profile_id: string | null;
@@ -31,15 +39,21 @@ export interface PrescriptionResponse {
     facility: FacilityType | null;
     diagnosis_text: string | null;
     medications: MedicationType[];
+    follow_up_requests?: FollowUpRequestType[];
+    has_lab_requests?: boolean;
+    has_radiology_requests?: boolean;
     confidence_score: number | null;
     raw_output_json: any;
     created_at: string;
 }
 
+export type RecordPurpose = 'prescription' | 'lab_result' | 'radiology_report';
+
 export interface PrescriptionListItem {
     id: string;
     profile_id: string | null;
     document_id: string;
+    purpose: RecordPurpose;
     diagnosis_text: string | null;
     doctor_name: string | null;
     facility_name: string | null;

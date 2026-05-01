@@ -3,15 +3,22 @@
  */
 
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { Alert, View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 import { useJobStatus } from '../../features/documents/hooks';
 import { GlassBackground } from '../../components/ui';
+import type { DocumentPurpose } from '../../features/documents/types';
 
 export default function ProcessingScreen() {
     const router = useRouter();
-    const { jobId, documentId } = useLocalSearchParams<{ jobId: string; documentId: string }>();
+    const { jobId, documentId, purpose } = useLocalSearchParams<{
+        jobId: string;
+        documentId: string;
+        purpose?: DocumentPurpose;
+    }>();
+    const documentPurpose = purpose || 'prescription';
+    const isFollowUpDocument = documentPurpose === 'lab_result' || documentPurpose === 'radiology_report';
     const { data: job } = useJobStatus(jobId || '');
 
     const [progress, setProgress] = React.useState(0);
@@ -20,12 +27,22 @@ export default function ProcessingScreen() {
         if (job?.status === 'done' && documentId) {
             setProgress(100);
             setTimeout(() => {
-                router.replace({ pathname: '/(app)/result', params: { documentId } });
+                if (isFollowUpDocument) {
+                    Alert.alert(
+                        'Document Uploaded',
+                        documentPurpose === 'lab_result'
+                            ? 'Your lab results were uploaded successfully.'
+                            : 'Your radiology report was uploaded successfully.'
+                    );
+                    router.replace('/(app)/home');
+                } else {
+                    router.replace({ pathname: '/(app)/result', params: { documentId, fromProcessing: 'true' } });
+                }
             }, 500);
         } else if (job?.status === 'failed') {
             router.back();
         }
-    }, [job?.status, documentId]);
+    }, [job?.status, documentId, documentPurpose, isFollowUpDocument, router]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -50,8 +67,8 @@ export default function ProcessingScreen() {
         if (job?.status === 'queued') return 'Waiting in queue...';
         if (job?.status === 'processing' || progress > 0) {
             if (progress < 30) return 'Extracting text from image...';
-            if (progress < 70) return 'Analyzing prescription with AI...';
-            if (progress < 95) return 'Classification & Structuring...';
+            if (progress < 70) return isFollowUpDocument ? 'Reviewing follow-up document...' : 'Analyzing prescription with AI...';
+            if (progress < 95) return isFollowUpDocument ? 'Saving document details...' : 'Classification & Structuring...';
             return 'Finalizing results...';
         }
         return 'Starting analysis...';
@@ -62,7 +79,9 @@ export default function ProcessingScreen() {
             <SafeAreaView style={styles.container}>
                 <View style={styles.content}>
                     <Text style={styles.icon}>🔬</Text>
-                    <Text style={styles.title}>Analyzing Prescription</Text>
+                    <Text style={styles.title}>
+                        {isFollowUpDocument ? 'Uploading Follow-up' : 'Analyzing Prescription'}
+                    </Text>
                     <Text style={styles.status}>{getStatusMessage()}</Text>
 
                     <View style={styles.progressContainer}>
@@ -74,8 +93,16 @@ export default function ProcessingScreen() {
 
                     <View style={styles.steps}>
                         <StepItem label="OCR Extraction" active={progress >= 10} done={progress >= 30} />
-                        <StepItem label="Medical Text Analysis" active={progress >= 30} done={progress >= 70} />
-                        <StepItem label="Classification & Structuring" active={progress >= 70} done={progress >= 100} />
+                        <StepItem
+                            label={isFollowUpDocument ? 'Document Review' : 'Medical Text Analysis'}
+                            active={progress >= 30}
+                            done={progress >= 70}
+                        />
+                        <StepItem
+                            label={isFollowUpDocument ? 'Secure Storage' : 'Classification & Structuring'}
+                            active={progress >= 70}
+                            done={progress >= 100}
+                        />
                     </View>
                 </View>
             </SafeAreaView>

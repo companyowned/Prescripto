@@ -1,7 +1,7 @@
 """Prescription Pydantic schemas."""
 
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -38,6 +38,14 @@ class ConfidenceSchema(BaseModel):
     overall: float = 0.0
 
 
+class FollowUpRequestSchema(BaseModel):
+    kind: Literal["lab", "radiology"]
+    name: str
+    instructions: Optional[str] = None
+    confidence: float = 0.0
+    source: Optional[str] = None
+
+
 # --- Prescription schemas ---
 class PrescriptionResponse(BaseModel):
     id: str
@@ -47,6 +55,9 @@ class PrescriptionResponse(BaseModel):
     facility: Optional[FacilitySchema] = None
     diagnosis_text: Optional[str] = None
     medications: list[MedicationSchema] = []
+    follow_up_requests: list[FollowUpRequestSchema] = []
+    has_lab_requests: bool = False
+    has_radiology_requests: bool = False
     confidence_score: Optional[float] = None
     raw_output_json: Optional[dict] = None
     created_at: datetime
@@ -65,6 +76,7 @@ class PrescriptionListItem(BaseModel):
     id: str
     profile_id: Optional[str] = None
     document_id: str
+    purpose: str = "prescription"
     diagnosis_text: Optional[str] = None
     doctor_name: Optional[str] = None
     facility_name: Optional[str] = None
@@ -86,4 +98,5 @@ class NormalizedPrescriptionOutput(BaseModel):
     facility: Optional[FacilitySchema] = None
     diagnosis: Optional[str] = None
     medications: list[MedicationSchema] = []
+    follow_up_requests: list[FollowUpRequestSchema] = []
     confidence: ConfidenceSchema = Field(default_factory=ConfidenceSchema)

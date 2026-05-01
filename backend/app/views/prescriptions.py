@@ -18,12 +18,14 @@ from app.schemas.prescription import (
     DoctorSchema,
     FacilitySchema,
 )
+from app.utils.parsing import extract_follow_up_requests
 
 router = APIRouter(prefix="/prescriptions", tags=["Prescriptions"])
 
 
 def _to_response(p) -> PrescriptionResponse:
     """Convert ORM prescription to response schema."""
+    follow_up_requests = extract_follow_up_requests(p.raw_output_json)
     return PrescriptionResponse(
         id=str(p.id),
         profile_id=str(p.profile_id) if p.profile_id else None,
@@ -46,6 +48,11 @@ def _to_response(p) -> PrescriptionResponse:
             )
             for m in (p.medications or [])
         ],
+        follow_up_requests=follow_up_requests,
+        has_lab_requests=any(request.kind == "lab" for request in follow_up_requests),
+        has_radiology_requests=any(
+            request.kind == "radiology" for request in follow_up_requests
+        ),
         confidence_score=p.confidence_score,
         raw_output_json=p.raw_output_json,
         created_at=p.created_at,
@@ -55,6 +62,7 @@ def _to_response(p) -> PrescriptionResponse:
 @router.get("", response_model=PrescriptionListResponse)
 async def list_prescriptions(
     profile_id: UUID | None = Query(default=None),
+    purpose: str | None = Query(default=None),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -62,13 +70,14 @@ async def list_prescriptions(
 ):
     """Get paginated prescription history for the current user."""
     prescriptions, total = await PrescriptionController.get_history(
-        db, current_user.id, current_user.full_name, profile_id, skip, limit
+        db, current_user.id, current_user.full_name, profile_id, skip, limit, purpose
     )
     items = [
         PrescriptionListItem(
             id=str(p.id),
             profile_id=str(p.profile_id) if p.profile_id else None,
             document_id=str(p.document_id),
+            purpose=p.document.purpose if p.document else "prescription",
             diagnosis_text=p.diagnosis_text,
             doctor_name=p.doctor.name if p.doctor else None,
             facility_name=p.facility.name if p.facility else None,
