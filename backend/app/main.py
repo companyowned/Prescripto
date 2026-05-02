@@ -16,6 +16,7 @@ from app.views.medication_reminders import router as medication_reminders_router
 from app.views.medication_dose_events import router as medication_dose_events_router
 from app.views.medication_insights import router as medication_insights_router
 from app.views.profiles import router as profiles_router
+from app.views.chat import router as chat_router
 
 
 @asynccontextmanager
@@ -115,9 +116,9 @@ def create_app() -> FastAPI:
     app.include_router(medication_reminders_router, prefix="/api/v1")
     app.include_router(medication_dose_events_router, prefix="/api/v1")
     app.include_router(medication_insights_router, prefix="/api/v1")
+    app.include_router(chat_router, prefix="/api/v1")
 
     return app
 
 
 app = create_app()
-

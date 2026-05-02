@@ -56,6 +56,21 @@ export default function SettingsScreen() {
 
                             <View style={styles.divider} />
 
+                            <TouchableOpacity
+                                style={styles.cardRow}
+                                onPress={() => router.push('/(app)/chat')}
+                            >
+                                <View style={styles.rowLeft}>
+                                    <View style={[styles.iconContainer, { backgroundColor: 'rgba(62, 219, 240, 0.15)' }]}>
+                                        <Ionicons name="chatbubbles-outline" size={20} color={colors.primary[300]} />
+                                    </View>
+                                    <Text style={styles.rowText}>Medical Assistant</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                            </TouchableOpacity>
+
+                            <View style={styles.divider} />
+
                             {/* Notifications */}
                             <TouchableOpacity style={styles.cardRow}>
                                 <View style={styles.rowLeft}>
@@ -86,6 +101,7 @@ export default function SettingsScreen() {
                         onHomePress={() => router.push('/(app)/home')}
                         onRecordsPress={() => router.push('/(app)/history')}
                         onRemindersPress={() => router.push('/(app)/reminders')}
+                        onChatPress={() => router.push('/(app)/chat')}
                         onInsightsPress={() => router.push('/(app)/insights')}
                         onSettingsPress={() => { }}
                     />

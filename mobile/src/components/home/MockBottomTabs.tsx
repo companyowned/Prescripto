@@ -6,10 +6,11 @@ import { colors } from '../../theme';
 import { useRouter } from 'expo-router';
 
 interface MockBottomTabsProps {
-    activeTab?: 'home' | 'records' | 'reminders' | 'insights' | 'settings';
+    activeTab?: 'home' | 'records' | 'reminders' | 'chat' | 'insights' | 'settings';
     onHomePress: () => void;
     onRecordsPress: () => void;
     onRemindersPress?: () => void;
+    onChatPress?: () => void;
     onInsightsPress: () => void;
     onSettingsPress: () => void;
 }
@@ -19,6 +20,7 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
     onHomePress,
     onRecordsPress,
     onRemindersPress,
+    onChatPress,
     onInsightsPress,
     onSettingsPress,
 }) => {
@@ -41,9 +43,14 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
                 <Text style={[styles.tabText, activeTab === 'reminders' && styles.tabTextActive]}>MEDS</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity style={[styles.tabItem, activeTab === 'chat' && styles.tabItemActive]} onPress={onChatPress || (() => router.push('/(app)/chat'))} activeOpacity={0.7}>
+                <Ionicons name="chatbubbles" size={activeTab === 'chat' ? 26 : 24} color={activeTab === 'chat' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'chat' && styles.iconActive} />
+                <Text style={[styles.tabText, activeTab === 'chat' && styles.tabTextActive]}>CHAT</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity style={[styles.tabItem, activeTab === 'insights' && styles.tabItemActive]} onPress={onInsightsPress} activeOpacity={0.7}>
                 <Ionicons name="bar-chart" size={activeTab === 'insights' ? 26 : 24} color={activeTab === 'insights' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'insights' && styles.iconActive} />
-                <Text style={[styles.tabText, activeTab === 'insights' && styles.tabTextActive]}>INSIGHTS</Text>
+                <Text style={[styles.tabText, activeTab === 'insights' && styles.tabTextActive]}>INSIGHT</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={[styles.tabItem, activeTab === 'settings' && styles.tabItemActive]} onPress={onSettingsPress} activeOpacity={0.7}>
@@ -63,8 +70,8 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingHorizontal: 24,
-        paddingVertical: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
         borderWidth: 1.5,
         borderColor: 'rgba(255, 255, 255, 0.2)', // Light glass border
         backgroundColor: 'rgba(255, 255, 255, 0.1)', // Keep transparent for glass
@@ -90,7 +97,7 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
     },
     tabText: {
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: '600',
         color: "rgba(255,255,255,0.6)", // base text
         marginTop: 2,

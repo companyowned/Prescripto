@@ -113,6 +113,7 @@ export default function TodayScheduleScreen() {
                         activeTab="home"
                         onHomePress={() => router.push('/(app)/home')}
                         onRecordsPress={() => router.push('/(app)/history')}
+                        onChatPress={() => router.push('/(app)/chat')}
                         onInsightsPress={() => router.push('/(app)/insights')}
                         onSettingsPress={() => router.push('/(app)/settings')}
                     />

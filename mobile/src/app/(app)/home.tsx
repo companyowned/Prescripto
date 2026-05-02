@@ -1,12 +1,14 @@
 import React from 'react';
-import { View, StyleSheet, SafeAreaView, StatusBar, ScrollView, Platform } from 'react-native';
+import { View, StyleSheet, SafeAreaView, StatusBar, ScrollView, Platform, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../services/auth';
 import { useAuth } from '../_layout';
 import { usePrescriptionHistory } from '../../features/prescriptions/hooks';
 import { useActiveProfile } from '../../contexts/profile-context';
 import { GlassBackground } from '../../components/ui';
+import { colors } from '../../theme';
 
 import {
     HomeHeader,
@@ -61,6 +63,23 @@ export default function HomeScreen() {
 
                         <StatusBadge />
 
+                        <TouchableOpacity
+                            style={styles.assistantCard}
+                            onPress={() => router.push('/(app)/chat')}
+                            activeOpacity={0.85}
+                        >
+                            <View style={styles.assistantIcon}>
+                                <Ionicons name="chatbubbles" size={22} color={colors.primary[300]} />
+                            </View>
+                            <View style={styles.assistantTextBlock}>
+                                <Text style={styles.assistantTitle}>Medical Assistant</Text>
+                                <Text style={styles.assistantSubtitle}>
+                                    Ask about symptoms, doctors, prescriptions, and reminders
+                                </Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                        </TouchableOpacity>
+
                         <SearchBar />
 
                         <RecentScansList
@@ -76,6 +95,7 @@ export default function HomeScreen() {
                         onHomePress={() => { }}
                         onRecordsPress={() => router.push('/(app)/history')}
                         onRemindersPress={() => router.push('/(app)/reminders')}
+                        onChatPress={() => router.push('/(app)/chat')}
                         onInsightsPress={() => router.push('/(app)/insights')}
                         onSettingsPress={() => router.push('/(app)/settings')}
                     />
@@ -97,5 +117,38 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: Platform.OS === 'ios' ? 10 : 30,
         paddingBottom: 110,
+    },
+    assistantCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        marginBottom: 16,
+        borderRadius: 20,
+        backgroundColor: colors.glass.background,
+        borderWidth: 1,
+        borderColor: colors.glass.borderHighlight,
+    },
+    assistantIcon: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 14,
+        backgroundColor: 'rgba(62, 219, 240, 0.14)',
+    },
+    assistantTextBlock: {
+        flex: 1,
+    },
+    assistantTitle: {
+        color: colors.white,
+        fontSize: 16,
+        fontWeight: '800',
+    },
+    assistantSubtitle: {
+        color: colors.textSecondary,
+        fontSize: 13,
+        lineHeight: 18,
+        marginTop: 2,
     },
 });

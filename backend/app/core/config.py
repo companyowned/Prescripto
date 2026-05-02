@@ -1,7 +1,7 @@
 """Application configuration loaded from environment variables."""
 
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -37,12 +37,26 @@ class Settings(BaseSettings):
     AZURE_VISION_ENDPOINT: str = ""
     AZURE_VISION_KEY: str = ""
 
-    # OpenAI
-    OPENAI_API_KEY: str = ""
+    # Gemini / Google GenAI
+    GOOGLE_API_KEY: str = ""
+    CHAT_LLM_MODEL: str = "gemini-2.5-flash"
+    CHAT_TEMPERATURE: float = 0.2
 
     # Celery
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/1"
+
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def normalize_debug(cls, value):
+        """Accept deployment-style DEBUG values like release/production."""
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"release", "prod", "production"}:
+                return False
+            if normalized in {"debug", "dev", "development"}:
+                return True
+        return value
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
