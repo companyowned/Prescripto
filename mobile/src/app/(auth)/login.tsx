@@ -9,6 +9,7 @@ import {
     Text,
     StyleSheet,
     KeyboardAvoidingView,
+    Image,
     Platform,
     ScrollView,
 } from 'react-native';
@@ -85,7 +86,7 @@ export default function LoginScreen() {
         return new Promise((resolve) => {
             Alert.alert(
                 'Enable Fingerprint Login?',
-                'Use your fingerprint to sign in to this Prescripto account on this device.',
+                'Use your fingerprint to sign in to this Dawini account on this device.',
                 [
                     { text: 'Not Now', style: 'cancel', onPress: () => resolve(false) },
                     { text: 'Enable', onPress: () => resolve(true) },
@@ -173,7 +174,11 @@ export default function LoginScreen() {
                                 end={{ x: 0.5, y: 0.5 }}
                                 style={StyleSheet.absoluteFill}
                             />
-                            <Text style={styles.logo}>�</Text>
+                            <Image
+                                source={require('../../assets/Logo for Dawini.png')}
+                                style={styles.logoImage}
+                                resizeMode="contain"
+                            />
                         </Animated.View>
                         <Text style={[styles.title, styles.titleGlow]}>Welcome Back</Text>
                         <Text style={styles.subtitle}>Sign in to manage your medications intelligently</Text>
@@ -290,12 +295,10 @@ const styles = StyleSheet.create({
         elevation: 10,
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
     },
-    logo: {
-        fontSize: 42,
-        lineHeight: 52,
-        textShadowColor: 'rgba(62, 219, 240, 0.8)',
-        textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 20, // Glow around the pill emoji itself
+    logoImage: {
+        width: 66,
+        height: 66,
+        borderRadius: 33,
     },
     title: {
         ...typography.h1,

@@ -72,7 +72,7 @@ export default function HomeScreen() {
                                 <Ionicons name="chatbubbles" size={22} color={colors.primary[300]} />
                             </View>
                             <View style={styles.assistantTextBlock}>
-                                <Text style={styles.assistantTitle}>Medical Assistant</Text>
+                                <Text style={styles.assistantTitle}>Dawini</Text>
                                 <Text style={styles.assistantSubtitle}>
                                     Ask about symptoms, doctors, prescriptions, and reminders
                                 </Text>

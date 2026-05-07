@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Prescripto",
-    "slug": "prescripto",
+    "name": "Dawini",
+    "slug": "dawini",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./src/assets/Logo for Dawini.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "prescripto",
+    "scheme": "dawini",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./src/assets/Logo for Dawini.png",
       "resizeMode": "contain",
       "backgroundColor": "#0F172A"
     },
@@ -19,12 +19,12 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.prescripto.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "Prescripto needs camera access to scan prescriptions."
+        "NSCameraUsageDescription": "Dawini needs camera access to scan prescriptions."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./src/assets/Logo for Dawini.png",
         "backgroundColor": "#0F172A"
       },
       "permissions": [
@@ -43,13 +43,13 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Prescripto needs camera access to scan prescriptions."
+          "cameraPermission": "Dawini needs camera access to scan prescriptions."
         }
       ],
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Allow Prescripto to use Face ID or fingerprint for account sign in."
+          "faceIDPermission": "Allow Dawini to use Face ID or fingerprint for account sign in."
         }
       ],
       "expo-secure-store",

@@ -1,4 +1,4 @@
-"""Business logic for the Prescripto chat assistant."""
+"""Business logic for the Dawini chat assistant."""
 
 import logging
 from dataclasses import dataclass
@@ -18,7 +18,7 @@ from app.utils.parsing import extract_follow_up_requests
 logger = logging.getLogger(__name__)
 
 SAFETY_DISCLAIMER = (
-    "Prescripto can explain saved prescription records and provide general medical "
+    "Dawini can explain saved prescription records and provide general medical "
     "education, but it is not a doctor and cannot diagnose, prescribe, or change "
     "treatment. For urgent symptoms or suspected overdose, contact local emergency "
     "services immediately."
@@ -297,7 +297,7 @@ def _urgent_safety_response(question: str) -> str | None:
     lowered = question.lower()
     if any(term in lowered for term in URGENT_TERMS):
         return (
-            "This could be urgent. Prescripto cannot assess emergencies in chat. "
+            "This could be urgent. Dawini cannot assess emergencies in chat. "
             "Please contact local emergency services now, or seek immediate medical care. "
             "If this involves a medication overdose or severe allergic reaction, do not wait "
             "for an app response."
@@ -324,7 +324,7 @@ def _fallback_answer(question: str, context: ChatContext) -> str:
     if not context.text:
         return (
             "I can answer general medical education questions, and I can also answer "
-            "questions about saved Prescripto records once you scan or upload a prescription. "
+            "questions about saved Dawini records once you scan or upload a prescription. "
             "Ask something like: what kind of doctor should I see for fever?"
         )
 

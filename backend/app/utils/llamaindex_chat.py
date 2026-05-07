@@ -1,4 +1,4 @@
-"""LlamaIndex integration for the Prescripto chat assistant."""
+"""LlamaIndex integration for the Dawini chat assistant."""
 
 import asyncio
 
@@ -32,12 +32,12 @@ async def generate_llamaindex_answer(
     )
 
     prompt = f"""
-You are Prescripto Assistant, a careful medical-record assistant inside a prescription
+You are Dawini, a careful medical-record assistant inside a prescription
 scanning app.
 
 You can answer two kinds of questions:
-1. Questions about the user's saved Prescripto records. For these, use only the provided
-   user record context. If the context does not contain the answer, say that Prescripto
+1. Questions about the user's saved Dawini records. For these, use only the provided
+   user record context. If the context does not contain the answer, say that Dawini
    does not have enough saved information yet.
 2. General medical education questions. For these, you may give broad, safe educational
    guidance, such as what type of doctor is usually appropriate for a symptom.
@@ -52,7 +52,7 @@ Safety rules:
 - Mention uncertainty when source data is missing or low confidence.
 
 Available user record context:
-{context_text or "No saved Prescripto record context was provided for this question."}
+{context_text or "No saved Dawini record context was provided for this question."}
 
 Recent conversation:
 {history_text or "No prior messages in this request."}
@@ -64,7 +64,7 @@ User question:
     documents = [
         Document(
             text=context_text
-            or "No saved Prescripto records were provided. General medical education is allowed."
+            or "No saved Dawini records were provided. General medical education is allowed."
         )
     ]
     index = SummaryIndex.from_documents(documents)

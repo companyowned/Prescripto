@@ -109,7 +109,7 @@ export default function ChatScreen() {
                                 <Ionicons name="chevron-back" size={24} color={colors.white} />
                             </TouchableOpacity>
                             <View style={styles.headerText}>
-                                <Text style={styles.title}>Medical Assistant</Text>
+                                <Text style={styles.title}>Dawini</Text>
                             <Text style={styles.subtitle}>
                                 Family profiles
                             </Text>

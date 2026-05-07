@@ -64,7 +64,7 @@ export default function SettingsScreen() {
                                     <View style={[styles.iconContainer, { backgroundColor: 'rgba(62, 219, 240, 0.15)' }]}>
                                         <Ionicons name="chatbubbles-outline" size={20} color={colors.primary[300]} />
                                     </View>
-                                    <Text style={styles.rowText}>Medical Assistant</Text>
+                                    <Text style={styles.rowText}>Dawini</Text>
                                 </View>
                                 <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
                             </TouchableOpacity>

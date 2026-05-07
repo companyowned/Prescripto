@@ -51,7 +51,7 @@ export const biometricAuthService = {
         }
 
         const result = await LocalAuthentication.authenticateAsync({
-            promptMessage: 'Link fingerprint to Prescripto',
+            promptMessage: 'Link fingerprint to Dawini',
             cancelLabel: 'Cancel',
             disableDeviceFallback: false,
         });
@@ -74,7 +74,7 @@ export const biometricAuthService = {
         if (!linkedEmail) return null;
 
         const result = await LocalAuthentication.authenticateAsync({
-            promptMessage: 'Sign in to Prescripto',
+            promptMessage: 'Sign in to Dawini',
             cancelLabel: 'Cancel',
             disableDeviceFallback: false,
         });

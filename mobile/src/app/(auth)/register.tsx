@@ -99,7 +99,7 @@ export default function RegisterScreen() {
                             <Text style={styles.logo}>💊</Text>
                         </Animated.View>
                         <Text style={styles.title}>Create Account</Text>
-                        <Text style={styles.subtitle}>Join Prescripto to digitize your records</Text>
+                        <Text style={styles.subtitle}>Join Dawini to digitize your records</Text>
                     </Animated.View>
 
                     <Animated.View entering={FadeInDown.duration(800).delay(200).springify().damping(15)} style={styles.formWrapper}>
