@@ -23,6 +23,10 @@ export interface TokenResponse {
     token_type: string;
 }
 
+export interface MessageResponse {
+    detail: string;
+}
+
 export interface UserResponse {
     id: string;
     email: string;
@@ -73,6 +77,20 @@ export const authService = {
 
     async register(data: RegisterRequest): Promise<UserResponse> {
         const response = await apiClient.post<UserResponse>('/auth/register', data);
+        return response.data;
+    },
+
+    async requestPasswordReset(email: string): Promise<MessageResponse> {
+        const response = await apiClient.post<MessageResponse>('/auth/password-reset/request', { email });
+        return response.data;
+    },
+
+    async confirmPasswordReset(data: {
+        email: string;
+        otp: string;
+        new_password: string;
+    }): Promise<MessageResponse> {
+        const response = await apiClient.post<MessageResponse>('/auth/password-reset/confirm', data);
         return response.data;
     },
 

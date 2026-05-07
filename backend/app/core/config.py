@@ -21,6 +21,19 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Password reset email / OTP
+    PASSWORD_RESET_OTP_EXPIRE_MINUTES: int = 10
+    PASSWORD_RESET_OTP_LENGTH: int = 6
+    PASSWORD_RESET_MAX_ATTEMPTS: int = 5
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = ""
+    SMTP_FROM_NAME: str = "Prescripto"
+    SMTP_USE_TLS: bool = True
+    SMTP_USE_SSL: bool = False
+
     # Storage
     STORAGE_BACKEND: str = "local"  # "local" or "s3"
     UPLOAD_DIR: str = "uploads"

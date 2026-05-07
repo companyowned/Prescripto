@@ -58,6 +58,12 @@ DATABASE_URL=postgresql+asyncpg://<user>:<password>@<host>/<db>?ssl=require
 JWT_SECRET_KEY=change-me-in-production
 N8N_WEBHOOK_URL=
 N8N_AUTH_KEY=
+SMTP_HOST=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_USERNAME=no-reply@your-domain.com
+SMTP_PASSWORD=<smtp-password>
+SMTP_FROM_EMAIL=no-reply@your-domain.com
+SMTP_FROM_NAME=Prescripto
 ```
 
 ### Mobile
@@ -87,7 +93,10 @@ Required Vercel environment variables:
 - `DATABASE_URL`
 - `JWT_SECRET_KEY`
 - `INIT_DB_ON_STARTUP=false`
+- Password reset email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME`
 - Optional: `N8N_WEBHOOK_URL`, `N8N_AUTH_KEY`, `OPENAI_API_KEY`, `AZURE_VISION_*`
+
+Password reset emails are sent through the configured SMTP account. To improve inbox delivery and avoid junk folders, use a verified sender domain and configure SPF, DKIM, and DMARC with your mail provider.
 
 ### Mobile (Android APK with EAS)
 

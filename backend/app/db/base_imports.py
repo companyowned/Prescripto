@@ -15,3 +15,4 @@ from app.models.facility import Facility  # noqa: F401
 from app.models.prescription import Prescription  # noqa: F401
 from app.models.medication import Medication  # noqa: F401
 from app.models.workflow import Workflow  # noqa: F401
+from app.models.password_reset_otp import PasswordResetOtp  # noqa: F401

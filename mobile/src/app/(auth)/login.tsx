@@ -164,7 +164,7 @@ export default function LoginScreen() {
                         />
                         <Button
                             title="Forgot Password?"
-                            onPress={() => {}}
+                            onPress={() => router.push('/(auth)/forgot-password')}
                             variant="ghost"
                         />
                     </Animated.View>

@@ -35,6 +35,7 @@ async def lifespan(app: FastAPI):
     import app.models.medication_reminder  # noqa
     import app.models.medication_dose_event  # noqa
     import app.models.medication_insight_snapshot  # noqa
+    import app.models.password_reset_otp  # noqa
 
     is_vercel_runtime = os.getenv("VERCEL") == "1"
     

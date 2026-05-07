@@ -1,13 +1,29 @@
-"""Auth API router — register and login endpoints."""
+"""Auth API router — register, login, and password reset endpoints."""
+
+import secrets
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.security import hash_password, verify_password, create_access_token, get_current_user
 from app.db.session import get_db
+from app.repos.password_reset_repo import PasswordResetRepo
 from app.repos.user_repo import UserRepo
 from app.controllers.profile_controller import PatientProfileController
-from app.schemas.user import UserRegisterRequest, UserLoginRequest, TokenResponse, UserResponse, UserUpdateRequest, PushTokenRequest
+from app.schemas.user import (
+    MessageResponse,
+    PasswordResetConfirmRequest,
+    PasswordResetRequest,
+    PushTokenRequest,
+    TokenResponse,
+    UserLoginRequest,
+    UserRegisterRequest,
+    UserResponse,
+    UserUpdateRequest,
+)
+from app.utils.email_service import EmailConfigurationError, send_password_reset_otp
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -41,6 +57,91 @@ async def login(data: UserLoginRequest, db: AsyncSession = Depends(get_db)):
 
     token = create_access_token(data={"sub": str(user.id)})
     return TokenResponse(access_token=token)
+
+
+@router.post("/password-reset/request", response_model=MessageResponse)
+async def request_password_reset(data: PasswordResetRequest, db: AsyncSession = Depends(get_db)):
+    """Create a password reset OTP and email it to the user."""
+    email = str(data.email).strip().lower()
+    user = await UserRepo.get_by_email(db, email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with that email",
+        )
+
+    otp_length = max(settings.PASSWORD_RESET_OTP_LENGTH, 4)
+    otp = "".join(secrets.choice("0123456789") for _ in range(otp_length))
+    expires_at = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.PASSWORD_RESET_OTP_EXPIRE_MINUTES
+    )
+
+    await PasswordResetRepo.ensure_table()
+    await PasswordResetRepo.create(
+        db,
+        user_id=user.id,
+        email=email,
+        otp_hash=hash_password(otp),
+        expires_at=expires_at,
+    )
+    await db.commit()
+
+    try:
+        await send_password_reset_otp(email, otp)
+    except EmailConfigurationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Could not send reset email. Please try again later.",
+        ) from exc
+
+    return MessageResponse(detail="Password reset code sent to your email")
+
+
+@router.post("/password-reset/confirm", response_model=MessageResponse)
+async def confirm_password_reset(data: PasswordResetConfirmRequest, db: AsyncSession = Depends(get_db)):
+    """Validate a password reset OTP and set a new password."""
+    email = str(data.email).strip().lower()
+    user = await UserRepo.get_by_email(db, email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with that email",
+        )
+
+    await PasswordResetRepo.ensure_table()
+    reset_otp = await PasswordResetRepo.get_latest_active(db, user.id, email)
+    if not reset_otp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reset code is invalid or expired",
+        )
+
+    if reset_otp.attempts >= settings.PASSWORD_RESET_MAX_ATTEMPTS:
+        reset_otp.used_at = datetime.now(timezone.utc)
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Too many incorrect attempts. Request a new code.",
+        )
+
+    if not verify_password(data.otp.strip(), reset_otp.otp_hash):
+        reset_otp.attempts += 1
+        remaining = settings.PASSWORD_RESET_MAX_ATTEMPTS - reset_otp.attempts
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid reset code. {max(remaining, 0)} attempts remaining.",
+        )
+
+    reset_otp.used_at = datetime.now(timezone.utc)
+    await UserRepo.update(db, user, hashed_password=hash_password(data.new_password))
+
+    return MessageResponse(detail="Password updated successfully")
 
 
 @router.get("/me", response_model=UserResponse)
