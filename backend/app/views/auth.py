@@ -16,6 +16,7 @@ from app.schemas.user import (
     MessageResponse,
     PasswordResetConfirmRequest,
     PasswordResetRequest,
+    PasswordResetVerifyRequest,
     PushTokenRequest,
     TokenResponse,
     UserLoginRequest,
@@ -142,6 +143,45 @@ async def confirm_password_reset(data: PasswordResetConfirmRequest, db: AsyncSes
     await UserRepo.update(db, user, hashed_password=hash_password(data.new_password))
 
     return MessageResponse(detail="Password updated successfully")
+
+
+@router.post("/password-reset/verify", response_model=MessageResponse)
+async def verify_password_reset_code(data: PasswordResetVerifyRequest, db: AsyncSession = Depends(get_db)):
+    """Validate a password reset OTP before showing the new password form."""
+    email = str(data.email).strip().lower()
+    user = await UserRepo.get_by_email(db, email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with that email",
+        )
+
+    await PasswordResetRepo.ensure_table()
+    reset_otp = await PasswordResetRepo.get_latest_active(db, user.id, email)
+    if not reset_otp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reset code is invalid or expired",
+        )
+
+    if reset_otp.attempts >= settings.PASSWORD_RESET_MAX_ATTEMPTS:
+        reset_otp.used_at = datetime.now(timezone.utc)
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Too many incorrect attempts. Request a new code.",
+        )
+
+    if not verify_password(data.otp.strip(), reset_otp.otp_hash):
+        reset_otp.attempts += 1
+        remaining = settings.PASSWORD_RESET_MAX_ATTEMPTS - reset_otp.attempts
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid reset code. {max(remaining, 0)} attempts remaining.",
+        )
+
+    return MessageResponse(detail="Reset code verified")
 
 
 @router.get("/me", response_model=UserResponse)

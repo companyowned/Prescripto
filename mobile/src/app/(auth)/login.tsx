@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
+    Alert,
     View,
     Text,
     StyleSheet,
@@ -19,6 +20,7 @@ import { Button, Input } from '../../components/ui';
 import { FloatingMedicalBackground } from '../../components/ui/FloatingMedicalBackground';
 import { colors, spacing, typography } from '../../theme';
 import { authService } from '../../services/auth';
+import { biometricAuthService } from '../../services/biometricAuth';
 import { validators } from '../../utils/validators';
 import { useAuth } from '../_layout';
 
@@ -44,6 +46,9 @@ export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [biometricLoading, setBiometricLoading] = useState(false);
+    const [biometricAvailable, setBiometricAvailable] = useState(false);
+    const [biometricEmail, setBiometricEmail] = useState<string | null>(null);
     const [error, setError] = useState('');
 
     // Floating animation for logo
@@ -60,9 +65,53 @@ export default function LoginScreen() {
         );
     }, []);
 
+    useEffect(() => {
+        const loadBiometricState = async () => {
+            const canUseBiometrics = await biometricAuthService.canUseBiometrics();
+            setBiometricAvailable(canUseBiometrics);
+            if (canUseBiometrics) {
+                setBiometricEmail(await biometricAuthService.getLinkedEmail());
+            }
+        };
+
+        loadBiometricState();
+    }, []);
+
     const floatStyle = useAnimatedStyle(() => ({
         transform: [{ translateY: floatY.value }]
     }));
+
+    const askToEnableBiometricLogin = (): Promise<boolean> => {
+        return new Promise((resolve) => {
+            Alert.alert(
+                'Enable Fingerprint Login?',
+                'Use your fingerprint to sign in to this Prescripto account on this device.',
+                [
+                    { text: 'Not Now', style: 'cancel', onPress: () => resolve(false) },
+                    { text: 'Enable', onPress: () => resolve(true) },
+                ]
+            );
+        });
+    };
+
+    const refreshBiometricState = async () => {
+        setBiometricAvailable(await biometricAuthService.canUseBiometrics());
+        setBiometricEmail(await biometricAuthService.getLinkedEmail());
+    };
+
+    const maybeEnableBiometricLogin = async (loginEmail: string, loginPassword: string) => {
+        if (!(await biometricAuthService.shouldOfferSetup(loginEmail))) return;
+
+        const shouldEnable = await askToEnableBiometricLogin();
+        if (!shouldEnable) return;
+
+        try {
+            await biometricAuthService.enable(loginEmail, loginPassword);
+            await refreshBiometricState();
+        } catch (err: any) {
+            setError(err?.message || 'Could not enable fingerprint login.');
+        }
+    };
 
     const handleLogin = async () => {
         const emailErr = validators.email(email);
@@ -75,12 +124,34 @@ export default function LoginScreen() {
         setLoading(true);
         setError('');
         try {
-            await authService.login({ email, password });
+            const normalizedEmail = email.trim().toLowerCase();
+            await authService.login({ email: normalizedEmail, password });
+            await maybeEnableBiometricLogin(normalizedEmail, password);
             signIn(); // Update AuthGate state → triggers navigation to home
         } catch (err: any) {
             setError(getApiErrorMessage(err, 'Login failed. Please try again.'));
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleBiometricLogin = async () => {
+        if (!biometricEmail) return;
+
+        setBiometricLoading(true);
+        setError('');
+        try {
+            const credentials = await biometricAuthService.getCredentialsWithPrompt();
+            if (!credentials) {
+                setError('Fingerprint login was cancelled.');
+                return;
+            }
+            await authService.login(credentials);
+            signIn();
+        } catch (err: any) {
+            setError(getApiErrorMessage(err, 'Fingerprint login failed. Please sign in with your password.'));
+        } finally {
+            setBiometricLoading(false);
         }
     };
 
@@ -153,6 +224,16 @@ export default function LoginScreen() {
                                 size="lg"
                                 style={styles.button}
                             />
+                            {biometricAvailable ? (
+                                <Button
+                                    title="Fingerprint Login"
+                                    onPress={handleBiometricLogin}
+                                    loading={biometricLoading}
+                                    disabled={!biometricEmail || loading}
+                                    variant="outline"
+                                    size="lg"
+                                />
+                            ) : null}
                         </View>
                     </Animated.View>
 

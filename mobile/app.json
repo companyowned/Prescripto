@@ -46,6 +46,12 @@
           "cameraPermission": "Prescripto needs camera access to scan prescriptions."
         }
       ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Prescripto to use Face ID or fingerprint for account sign in."
+        }
+      ],
       "expo-secure-store",
       "@react-native-community/datetimepicker"
     ],

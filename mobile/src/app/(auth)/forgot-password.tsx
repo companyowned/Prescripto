@@ -2,13 +2,15 @@
  * Forgot password route
  */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     KeyboardAvoidingView,
     Platform,
+    Pressable,
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -21,7 +23,9 @@ import { authService } from '../../services/auth';
 import { colors, spacing, typography } from '../../theme';
 import { validators } from '../../utils/validators';
 
-type ResetStep = 'email' | 'otp' | 'done';
+const OTP_LENGTH = 6;
+
+type ResetStep = 'email' | 'otp' | 'password' | 'done';
 
 function getApiErrorMessage(err: any, fallback: string): string {
     const detail = err?.response?.data?.detail;
@@ -41,6 +45,7 @@ function getApiErrorMessage(err: any, fallback: string): string {
 
 export default function ForgotPasswordScreen() {
     const router = useRouter();
+    const otpInputRef = useRef<TextInput>(null);
     const [step, setStep] = useState<ResetStep>('email');
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
@@ -63,6 +68,9 @@ export default function ForgotPasswordScreen() {
         try {
             const result = await authService.requestPasswordReset(email.trim().toLowerCase());
             setMessage(result.detail);
+            setOtp('');
+            setNewPassword('');
+            setConfirmPassword('');
             setStep('otp');
         } catch (err: any) {
             setError(getApiErrorMessage(err, 'Could not send reset code. Please try again.'));
@@ -71,10 +79,40 @@ export default function ForgotPasswordScreen() {
         }
     };
 
+    const handleOtpChange = (value: string) => {
+        const digitsOnly = value.replace(/\D/g, '').slice(0, OTP_LENGTH);
+        setOtp(digitsOnly);
+        setError('');
+    };
+
+    const handleContinueFromOtp = async () => {
+        if (otp.length !== OTP_LENGTH) {
+            setError(`Enter the ${OTP_LENGTH}-digit reset code`);
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+        setMessage('');
+        try {
+            const result = await authService.verifyPasswordResetCode({
+                email: email.trim().toLowerCase(),
+                otp,
+            });
+            setMessage(result.detail);
+            setStep('password');
+        } catch (err: any) {
+            setError(getApiErrorMessage(err, 'Invalid reset code. Please try again.'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleResetPassword = async () => {
         const passErr = validators.password(newPassword);
-        if (!otp.trim()) {
-            setError('Reset code is required');
+        if (otp.length !== OTP_LENGTH) {
+            setStep('otp');
+            setError(`Enter the ${OTP_LENGTH}-digit reset code`);
             return;
         }
         if (passErr) {
@@ -117,8 +155,10 @@ export default function ForgotPasswordScreen() {
                             {step === 'email'
                                 ? 'Enter your account email to receive a reset code.'
                                 : step === 'otp'
-                                  ? 'Enter the code from your email and choose a new password.'
-                                  : 'Your password has been updated.'}
+                                  ? 'Enter the 6-digit code from your email.'
+                                  : step === 'password'
+                                    ? 'Choose a new password for your account.'
+                                    : 'Your password has been updated.'}
                         </Text>
                     </Animated.View>
 
@@ -155,22 +195,60 @@ export default function ForgotPasswordScreen() {
 
                             {step === 'otp' ? (
                                 <>
-                                    <Input
-                                        label="Email"
-                                        value={email}
-                                        onChangeText={setEmail}
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        autoComplete="email"
+                                    <Text style={styles.codeLabel}>Reset Code</Text>
+                                    <Pressable
+                                        style={styles.otpWrapper}
+                                        onPress={() => otpInputRef.current?.focus()}
+                                    >
+                                        <TextInput
+                                            ref={otpInputRef}
+                                            value={otp}
+                                            onChangeText={handleOtpChange}
+                                            keyboardType="number-pad"
+                                            autoComplete="one-time-code"
+                                            textContentType="oneTimeCode"
+                                            maxLength={OTP_LENGTH}
+                                            caretHidden
+                                            autoFocus
+                                            style={styles.otpHiddenInput}
+                                        />
+                                        {Array.from({ length: OTP_LENGTH }).map((_, index) => {
+                                            const digit = otp[index] || '';
+                                            const active = index === otp.length && otp.length < OTP_LENGTH;
+                                            return (
+                                                <View
+                                                    key={index}
+                                                    style={[
+                                                        styles.otpBox,
+                                                        active && styles.otpBoxActive,
+                                                        digit && styles.otpBoxFilled,
+                                                    ]}
+                                                >
+                                                    <Text style={styles.otpDigit}>{digit}</Text>
+                                                </View>
+                                            );
+                                        })}
+                                    </Pressable>
+                                    <Button
+                                        title="Continue"
+                                        onPress={handleContinueFromOtp}
+                                        disabled={otp.length !== OTP_LENGTH || loading}
+                                        loading={loading}
+                                        size="lg"
+                                        style={styles.primaryButton}
                                     />
-                                    <Input
-                                        label="Reset Code"
-                                        placeholder="6-digit code"
-                                        value={otp}
-                                        onChangeText={setOtp}
-                                        keyboardType="number-pad"
-                                        autoComplete="one-time-code"
+                                    <Button
+                                        title="Resend Code"
+                                        onPress={handleRequestCode}
+                                        disabled={loading}
+                                        loading={loading}
+                                        variant="ghost"
                                     />
+                                </>
+                            ) : null}
+
+                            {step === 'password' ? (
+                                <>
                                     <Input
                                         label="New Password"
                                         placeholder="At least 6 characters"
@@ -195,8 +273,12 @@ export default function ForgotPasswordScreen() {
                                         style={styles.primaryButton}
                                     />
                                     <Button
-                                        title="Resend Code"
-                                        onPress={handleRequestCode}
+                                        title="Back to Code"
+                                        onPress={() => {
+                                            setError('');
+                                            setMessage('');
+                                            setStep('otp');
+                                        }}
                                         disabled={loading}
                                         variant="ghost"
                                     />
@@ -293,6 +375,52 @@ const styles = StyleSheet.create({
     },
     primaryButton: {
         marginBottom: spacing.xs,
+    },
+    codeLabel: {
+        ...typography.label,
+        color: colors.textSecondary,
+        marginBottom: spacing.sm,
+        fontWeight: '600',
+    },
+    otpWrapper: {
+        position: 'relative',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        marginBottom: spacing.lg,
+    },
+    otpHiddenInput: {
+        position: 'absolute',
+        width: 1,
+        height: 1,
+        opacity: 0,
+    },
+    otpBox: {
+        width: 46,
+        height: 54,
+        borderRadius: 10,
+        borderWidth: 1.5,
+        borderColor: 'rgba(255, 255, 255, 0.22)',
+        backgroundColor: 'rgba(31, 163, 198, 0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: colors.primary[300],
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+    },
+    otpBoxActive: {
+        borderColor: colors.primary[300],
+        shadowOpacity: 0.8,
+    },
+    otpBoxFilled: {
+        borderColor: colors.primary[300],
+        backgroundColor: 'rgba(62, 219, 240, 0.18)',
+    },
+    otpDigit: {
+        ...typography.h2,
+        color: colors.textPrimary,
+        fontWeight: '800',
     },
     message: {
         ...typography.bodySmall,

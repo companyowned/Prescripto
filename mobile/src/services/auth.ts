@@ -94,6 +94,14 @@ export const authService = {
         return response.data;
     },
 
+    async verifyPasswordResetCode(data: {
+        email: string;
+        otp: string;
+    }): Promise<MessageResponse> {
+        const response = await apiClient.post<MessageResponse>('/auth/password-reset/verify', data);
+        return response.data;
+    },
+
     async logout(): Promise<void> {
         await removeToken();
     },

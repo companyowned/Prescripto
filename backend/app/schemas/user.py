@@ -24,6 +24,11 @@ class PasswordResetConfirmRequest(BaseModel):
     new_password: str = Field(..., min_length=6, max_length=128)
 
 
+class PasswordResetVerifyRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=4, max_length=12)
+
+
 class MessageResponse(BaseModel):
     detail: str
 
