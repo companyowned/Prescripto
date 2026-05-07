@@ -217,23 +217,26 @@ export default function LoginScreen() {
                                 </Animated.Text>
                             ) : null}
 
-                            <Button
-                                title="Sign In"
-                                onPress={handleLogin}
-                                loading={loading}
-                                size="lg"
-                                style={styles.button}
-                            />
-                            {biometricAvailable ? (
+                            <View style={styles.loginActions}>
                                 <Button
-                                    title="Fingerprint Login"
-                                    onPress={handleBiometricLogin}
-                                    loading={biometricLoading}
-                                    disabled={!biometricEmail || loading}
-                                    variant="outline"
+                                    title="Sign In"
+                                    onPress={handleLogin}
+                                    loading={loading}
                                     size="lg"
+                                    style={styles.signInButton}
                                 />
-                            ) : null}
+                                {biometricAvailable ? (
+                                    <Button
+                                        title="⌾"
+                                        onPress={handleBiometricLogin}
+                                        loading={biometricLoading}
+                                        disabled={!biometricEmail || loading}
+                                        variant="outline"
+                                        size="lg"
+                                        style={styles.fingerprintButton}
+                                    />
+                                ) : null}
+                            </View>
                         </View>
                     </Animated.View>
 
@@ -341,7 +344,17 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: spacing.lg,
     },
-    button: {
+    loginActions: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+        gap: spacing.md,
+    },
+    signInButton: {
+        flex: 1,
+        marginBottom: spacing.xs,
+    },
+    fingerprintButton: {
+        width: 64,
         marginBottom: spacing.xs,
     },
     footer: {
