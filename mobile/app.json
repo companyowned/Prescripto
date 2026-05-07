@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Dawini",
-    "slug": "dawini",
+    "slug": "prescripto",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/Logo for Dawini.png",
