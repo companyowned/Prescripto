@@ -24,6 +24,12 @@ SAFETY_DISCLAIMER = (
     "services immediately."
 )
 
+ARABIC_SAFETY_DISCLAIMER = (
+    "يمكن لدَوّيني شرح السجلات الطبية المحفوظة وتقديم معلومات طبية عامة، لكنه ليس "
+    "طبيبًا ولا يستطيع التشخيص أو وصف العلاج أو تغيير الخطة العلاجية. عند الأعراض "
+    "الطارئة أو الاشتباه في جرعة زائدة، تواصل مع الطوارئ فورًا."
+)
+
 URGENT_TERMS = (
     "can't breathe",
     "cannot breathe",
@@ -36,6 +42,20 @@ URGENT_TERMS = (
     "anaphylaxis",
 )
 
+ARABIC_URGENT_TERMS = (
+    "مش قادر اتنفس",
+    "مش قادر أتنفس",
+    "صعوبة في التنفس",
+    "الم في الصدر",
+    "ألم في الصدر",
+    "جرعة زائدة",
+    "انتحار",
+    "اغماء",
+    "إغماء",
+    "حساسية شديدة",
+    "تورم الحلق",
+)
+
 CHANGE_TREATMENT_TERMS = (
     "stop",
     "change dose",
@@ -45,6 +65,20 @@ CHANGE_TREATMENT_TERMS = (
     "skip",
     "replace",
     "instead of",
+)
+
+ARABIC_CHANGE_TREATMENT_TERMS = (
+    "أوقف",
+    "اوقف",
+    "أغير الجرعة",
+    "اغير الجرعة",
+    "زيادة الجرعة",
+    "تقليل الجرعة",
+    "ضاعف",
+    "أتخطى",
+    "اتخطى",
+    "استبدل",
+    "بدل",
 )
 
 
@@ -65,6 +99,7 @@ class ChatController:
         data: ChatRequest,
     ) -> ChatResponse:
         context = await _build_context(db, user, data)
+        safety_disclaimer = _safety_disclaimer_for_question(data.message)
 
         urgent_response = _urgent_safety_response(data.message)
         if urgent_response:
@@ -78,7 +113,7 @@ class ChatController:
                         metadata={"matched": "urgent_symptoms"},
                     )
                 ],
-                safety_disclaimer=SAFETY_DISCLAIMER,
+                safety_disclaimer=safety_disclaimer,
             )
 
         history_text = "\n".join(
@@ -96,7 +131,7 @@ class ChatController:
                     message=_append_treatment_caution(data.message, answer),
                     mode="llamaindex",
                     sources=_sources_for_answer(data.message, context),
-                    safety_disclaimer=SAFETY_DISCLAIMER,
+                    safety_disclaimer=safety_disclaimer,
                 )
         except LlamaIndexUnavailable:
             pass
@@ -107,7 +142,7 @@ class ChatController:
             message=_fallback_answer(data.message, context),
             mode="fallback",
             sources=context.sources,
-            safety_disclaimer=SAFETY_DISCLAIMER,
+            safety_disclaimer=safety_disclaimer,
         )
 
 
@@ -295,7 +330,15 @@ def _format_datetime(value: datetime | None) -> str:
 
 def _urgent_safety_response(question: str) -> str | None:
     lowered = question.lower()
-    if any(term in lowered for term in URGENT_TERMS):
+    is_arabic = _is_arabic_text(question)
+    urgent_terms = ARABIC_URGENT_TERMS if is_arabic else URGENT_TERMS
+    if any(term in lowered for term in urgent_terms):
+        if is_arabic:
+            return (
+                "قد يكون هذا موقفًا طارئًا. دَوّيني لا يستطيع تقييم الحالات الطارئة عبر الدردشة. "
+                "يرجى التواصل مع الطوارئ فورًا أو التوجه لأقرب رعاية عاجلة. إذا كان الأمر متعلقًا "
+                "بجرعة زائدة أو حساسية شديدة، لا تنتظر رد التطبيق."
+            )
         return (
             "This could be urgent. Dawini cannot assess emergencies in chat. "
             "Please contact local emergency services now, or seek immediate medical care. "
@@ -307,7 +350,14 @@ def _urgent_safety_response(question: str) -> str | None:
 
 def _append_treatment_caution(question: str, answer: str) -> str:
     lowered = question.lower()
-    if any(term in lowered for term in CHANGE_TREATMENT_TERMS):
+    is_arabic = _is_arabic_text(question)
+    treatment_terms = ARABIC_CHANGE_TREATMENT_TERMS if is_arabic else CHANGE_TREATMENT_TERMS
+    if any(term in lowered for term in treatment_terms):
+        if is_arabic:
+            return (
+                f"{answer}\n\nلا تغيّر أو توقف أو تتخطى أو تعدّل أي دواء اعتمادًا على هذه "
+                "الدردشة فقط. أكّد أي تغيير علاجي مع الطبيب أو الصيدلي."
+            )
         return (
             f"{answer}\n\nDo not change, stop, skip, or adjust medication based only on "
             "this chat. Confirm treatment changes with your doctor or pharmacist."
@@ -317,34 +367,65 @@ def _append_treatment_caution(question: str, answer: str) -> str:
 
 def _fallback_answer(question: str, context: ChatContext) -> str:
     lowered = question.lower()
-    general_answer = _general_medical_fallback(lowered)
+    is_arabic = _is_arabic_text(question)
+    general_answer = _general_medical_fallback(lowered, is_arabic)
     if general_answer:
         return general_answer
 
+    if _is_name_question(lowered):
+        return "اسمي دَوّيني." if is_arabic else "My name is Dawini."
+
     if not context.text:
+        if is_arabic:
+            return (
+                "أستطيع الإجابة عن أسئلة التثقيف الطبي العامة، ويمكنني أيضًا الإجابة عن "
+                "أسئلة تخص سجلات دَوّيني المحفوظة بعد مسح أو رفع وصفة طبية. يمكنك أن تسأل مثلًا: "
+                "أي طبيب أراجع عند وجود حرارة؟"
+            )
         return (
             "I can answer general medical education questions, and I can also answer "
             "questions about saved Dawini records once you scan or upload a prescription. "
             "Ask something like: what kind of doctor should I see for fever?"
         )
 
-    if any(term in lowered for term in CHANGE_TREATMENT_TERMS):
+    treatment_terms = ARABIC_CHANGE_TREATMENT_TERMS if is_arabic else CHANGE_TREATMENT_TERMS
+    if any(term in lowered for term in treatment_terms):
+        if is_arabic:
+            return (
+                "يمكنني عرض ما هو محفوظ في سجلاتك، لكن لا أستطيع أن أخبرك بتغيير أو إيقاف "
+                "أو تخطي أو تعديل أي دواء. يرجى تأكيد أي تغيير علاجي مع الطبيب أو الصيدلي."
+            )
         return (
             "I can show what is saved in your records, but I cannot tell you to change, stop, "
             "skip, or adjust a medication. Please confirm treatment changes with your doctor "
             "or pharmacist."
         )
 
-    if any(term in lowered for term in ("today", "schedule", "reminder", "dose", "when")):
-        return _schedule_summary(context)
+    schedule_terms = (
+        ("اليوم", "جدول", "تذكير", "جرعة", "موعد", "متى")
+        if is_arabic
+        else ("today", "schedule", "reminder", "dose", "when")
+    )
+    if any(term in lowered for term in schedule_terms):
+        return _schedule_summary(context, is_arabic)
 
-    if any(term in lowered for term in ("medicine", "medication", "drug", "taking", "take")):
-        return _record_summary(context, include_counts=False)
+    medicine_terms = (
+        ("دواء", "علاج", "ادوية", "أدوية", "باخد", "آخذ", "اخد")
+        if is_arabic
+        else ("medicine", "medication", "drug", "taking", "take")
+    )
+    if any(term in lowered for term in medicine_terms):
+        return _record_summary(context, include_counts=False, is_arabic=is_arabic)
 
-    if any(term in lowered for term in ("diagnosis", "condition", "why")):
-        return _record_summary(context, include_counts=False)
+    diagnosis_terms = (
+        ("تشخيص", "حالة", "لماذا", "ليه")
+        if is_arabic
+        else ("diagnosis", "condition", "why")
+    )
+    if any(term in lowered for term in diagnosis_terms):
+        return _record_summary(context, include_counts=False, is_arabic=is_arabic)
 
-    return _record_summary(context, include_counts=True)
+    return _record_summary(context, include_counts=True, is_arabic=is_arabic)
 
 
 def _sources_for_answer(question: str, context: ChatContext) -> list[ChatSource]:
@@ -376,11 +457,63 @@ def _is_general_medical_question(question: str) -> bool:
         "pain",
         "symptom",
         "symptoms",
+        "طبيب",
+        "دكتور",
+        "حرارة",
+        "حمى",
+        "سخونية",
+        "صداع",
+        "كحة",
+        "سعال",
+        "معدة",
+        "بطن",
+        "طفح",
+        "ألم",
+        "الم",
+        "عرض",
+        "أعراض",
     )
     return any(term in lowered for term in terms)
 
 
-def _general_medical_fallback(lowered_question: str) -> str | None:
+def _general_medical_fallback(lowered_question: str, is_arabic: bool) -> str | None:
+    if is_arabic:
+        if "حرارة" in lowered_question or "حمى" in lowered_question or "سخونية" in lowered_question:
+            return (
+                "عند وجود حرارة، يكون طبيب الأسرة أو الطبيب العام أو طبيب الباطنة عادةً نقطة البداية. "
+                "للأطفال، راجع طبيب أطفال.\n\n"
+                "اذهب للرعاية العاجلة أو الطوارئ إذا كانت الحرارة عالية جدًا، أو مستمرة عدة أيام، "
+                "أو معها صعوبة تنفس، ألم صدر، تشوش، تيبس رقبة، صداع شديد، جفاف، قيء مستمر، "
+                "طفح بنفسجي، تشنجات، أو ضعف شديد.\n\n"
+                "هذه معلومات عامة وليست تشخيصًا."
+            )
+        if "طفح" in lowered_question or "حساسية" in lowered_question:
+            return (
+                "بالنسبة للطفح الجلدي، يمكن لطبيب الأسرة أو الطبيب العام تقييم الحالة أولًا. "
+                "طبيب الجلدية هو المختص إذا كان الطفح مستمرًا أو متكررًا أو غير واضح. اطلب رعاية "
+                "عاجلة إذا انتشر الطفح بسرعة، أو كان مؤلمًا، أو صاحبه حرارة، أو أثر على العين أو الفم، "
+                "أو ظهر معه صعوبة تنفس أو تورم في الوجه أو الحلق."
+            )
+        if "صداع" in lowered_question:
+            return (
+                "للصداع، ابدأ عادةً بطبيب الأسرة أو الطبيب العام إذا لم تكن الأعراض شديدة. "
+                "طبيب الأعصاب هو المختص للصداع المتكرر أو غير المعتاد. اطلب الطوارئ عند صداع مفاجئ "
+                "وشديد جدًا، أو مع تشوش، ضعف، فقدان نظر، تيبس رقبة مع حرارة، إصابة بالرأس، أو صعوبة كلام."
+            )
+        if "كحة" in lowered_question or "سعال" in lowered_question:
+            return (
+                "للكحة، طبيب الأسرة أو الطبيب العام هو غالبًا البداية. طبيب الصدر مناسب إذا كانت الكحة "
+                "مزمنة أو متكررة أو مرتبطة بالربو أو أمراض الرئة. اطلب رعاية عاجلة عند ضيق التنفس، "
+                "ألم الصدر، ازرقاق الشفاه، خروج دم مع الكحة، أو حرارة عالية مع تدهور الأعراض."
+            )
+        if "معدة" in lowered_question or "بطن" in lowered_question or "مغص" in lowered_question:
+            return (
+                "لأعراض المعدة أو البطن، ابدأ بطبيب الأسرة أو الطبيب العام. طبيب الجهاز الهضمي هو "
+                "المختص للمشاكل الهضمية المستمرة. اطلب رعاية عاجلة عند ألم شديد أو متزايد، دم في "
+                "البراز أو القيء، قيء مستمر، إغماء، جفاف، أو ألم مع تيبس شديد بالبطن."
+            )
+        return None
+
     if "fever" in lowered_question:
         return (
             "For a fever, the usual first doctor to contact is a primary care doctor, "
@@ -423,13 +556,27 @@ def _general_medical_fallback(lowered_question: str) -> str | None:
     return None
 
 
-def _record_summary(context: ChatContext, include_counts: bool) -> str:
+def _record_summary(context: ChatContext, include_counts: bool, is_arabic: bool) -> str:
     prefix = ""
     if include_counts:
-        prefix = (
-            f"I found {context.prescriptions_count} saved prescription record(s), "
-            f"{context.reminders_count} active reminder(s), and "
-            f"{context.upcoming_count} upcoming dose event(s) in the next 24 hours.\n\n"
+        if is_arabic:
+            prefix = (
+                f"وجدت {context.prescriptions_count} وصفة محفوظة، و"
+                f"{context.reminders_count} تذكيرًا نشطًا، و"
+                f"{context.upcoming_count} جرعة قادمة خلال 24 ساعة.\n\n"
+            )
+        else:
+            prefix = (
+                f"I found {context.prescriptions_count} saved prescription record(s), "
+                f"{context.reminders_count} active reminder(s), and "
+                f"{context.upcoming_count} upcoming dose event(s) in the next 24 hours.\n\n"
+            )
+    if is_arabic:
+        return (
+            prefix
+            + "هذا هو السياق المحفوظ الذي يمكنني استخدامه:\n\n"
+            + _trim_context_for_fallback(context.text)
+            + "\n\nاسأل عن دواء محدد، أو تشخيص، أو طبيب، أو منشأة، أو موعد تذكير للحصول على إجابة أدق."
         )
     return (
         prefix
@@ -440,18 +587,50 @@ def _record_summary(context: ChatContext, include_counts: bool) -> str:
     )
 
 
-def _schedule_summary(context: ChatContext) -> str:
+def _schedule_summary(context: ChatContext, is_arabic: bool) -> str:
     lines = [
         line
         for line in context.text.splitlines()
         if line.startswith("[Reminder]") or line.startswith("Times:") or line.startswith("[Dose]")
     ]
     if not lines:
+        if is_arabic:
+            return (
+                "لا أرى مواعيد تذكير نشطة أو جرعات قادمة في السجلات المحفوظة. "
+                "يمكنك إنشاء التذكيرات من نتيجة الوصفة."
+            )
         return (
             "I do not see active reminder times or upcoming dose events in the saved records. "
             "You can create reminders from a prescription result."
         )
+    if is_arabic:
+        return "من التذكيرات والجرعات القادمة المحفوظة لديك:\n\n" + "\n".join(lines[:30])
     return "From your saved reminders and upcoming dose events:\n\n" + "\n".join(lines[:30])
+
+
+def _is_arabic_text(text: str) -> bool:
+    return any("\u0600" <= char <= "\u06ff" for char in text)
+
+
+def _is_name_question(lowered_question: str) -> bool:
+    return any(
+        term in lowered_question
+        for term in (
+            "what is your name",
+            "what's your name",
+            "who are you",
+            "اسمك",
+            "ما اسمك",
+            "انت مين",
+            "أنت مين",
+        )
+    )
+
+
+def _safety_disclaimer_for_question(question: str) -> str:
+    if _is_arabic_text(question):
+        return ARABIC_SAFETY_DISCLAIMER
+    return SAFETY_DISCLAIMER
 
 
 def _trim_context_for_fallback(text: str) -> str:
