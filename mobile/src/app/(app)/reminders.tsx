@@ -13,6 +13,7 @@ import { MockBottomTabs } from '../../components/home';
 import { ReminderCard } from '../../components/reminders';
 import { GlassBackground } from '../../components/ui';
 import { colors } from '../../theme';
+import { useActiveProfile } from '../../contexts/profile-context';
 import {
     useMedicationReminders,
     usePauseReminder,
@@ -22,8 +23,9 @@ import {
 
 export default function RemindersScreen() {
     const router = useRouter();
+    const { activeProfile } = useActiveProfile();
     const [showInactive, setShowInactive] = useState(false);
-    const { data, isLoading, error } = useMedicationReminders(!showInactive);
+    const { data, isLoading, error } = useMedicationReminders(!showInactive, activeProfile?.id);
     const pauseMutation = usePauseReminder();
     const resumeMutation = useResumeReminder();
     const deleteMutation = useDeleteReminder();

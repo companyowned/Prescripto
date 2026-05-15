@@ -62,6 +62,7 @@ async def init_db():
     import app.models.medication_dose_event  # noqa
     import app.models.medication_insight_snapshot  # noqa
     import app.models.password_reset_otp  # noqa
+    import app.models.profile_link_request  # noqa
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -76,6 +77,15 @@ async def init_db():
             "ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS profile_id UUID",
             "ALTER TABLE patient_profiles ADD COLUMN IF NOT EXISTS linked_user_id UUID",
             "ALTER TABLE patient_profiles ADD COLUMN IF NOT EXISTS sharing_level VARCHAR DEFAULT 'FULL_ACCESS'",
+            # Family Profile architecture — profile-centric medical identity
+            "ALTER TABLE medication_reminders ADD COLUMN IF NOT EXISTS profile_id UUID",
+            "ALTER TABLE medication_insight_snapshots ADD COLUMN IF NOT EXISTS profile_id UUID",
+            # Profile sharing (QR links) — granular viewer permissions
+            "ALTER TABLE profile_access ADD COLUMN IF NOT EXISTS can_read_prescriptions BOOLEAN NOT NULL DEFAULT true",
+            "ALTER TABLE profile_access ADD COLUMN IF NOT EXISTS can_read_documents BOOLEAN NOT NULL DEFAULT true",
+            "ALTER TABLE profile_access ADD COLUMN IF NOT EXISTS can_read_reminders BOOLEAN NOT NULL DEFAULT true",
+            "ALTER TABLE profile_access ADD COLUMN IF NOT EXISTS can_read_family_profile BOOLEAN NOT NULL DEFAULT true",
+            "ALTER TABLE profile_access ADD COLUMN IF NOT EXISTS can_read_medical_history BOOLEAN NOT NULL DEFAULT true",
         ]
         for stmt in migration_statements:
             try:
@@ -101,6 +111,15 @@ async def init_db():
                 "ALTER TABLE patient_profiles ADD CONSTRAINT fk_profiles_linked_user_id "
                 "FOREIGN KEY (linked_user_id) REFERENCES users (id)"
             ),
+            # Family Profile architecture — profile-centric FKs
+            (
+                "ALTER TABLE medication_reminders ADD CONSTRAINT fk_med_reminders_profile_id "
+                "FOREIGN KEY (profile_id) REFERENCES patient_profiles (id)"
+            ),
+            (
+                "ALTER TABLE medication_insight_snapshots ADD CONSTRAINT fk_med_insights_profile_id "
+                "FOREIGN KEY (profile_id) REFERENCES patient_profiles (id)"
+            ),
         ]
         for stmt in relationship_statements:
             try:
@@ -117,9 +136,11 @@ async def init_db():
 async def _backfill_profiles(session: AsyncSession):
     """Backfill default self profiles and profile links for legacy records."""
     from app.models.user import User
-    from app.models.patient_profile import PatientProfile, RelationshipToOwner
+    from app.models.patient_profile import PatientProfile, RelationshipToOwner, ProfileAccess, AccessRole
     from app.models.document import Document
     from app.models.prescription import Prescription
+    from app.models.medication_reminder import MedicationReminder
+    from app.models.medication_insight_snapshot import MedicationInsightSnapshot
 
     users = (await session.execute(select(User))).scalars().all()
     profile_by_user: dict = {}
@@ -152,6 +173,7 @@ async def _backfill_profiles(session: AsyncSession):
                 await session.flush()
         profile_by_user[user.id] = default_profile.id
 
+    # Backfill documents
     docs = (
         await session.execute(select(Document).where(Document.profile_id.is_(None)))
     ).scalars().all()
@@ -160,6 +182,7 @@ async def _backfill_profiles(session: AsyncSession):
         if profile_id:
             doc.profile_id = profile_id
 
+    # Backfill prescriptions
     prescriptions = (
         await session.execute(select(Prescription).where(Prescription.profile_id.is_(None)))
     ).scalars().all()
@@ -167,6 +190,48 @@ async def _backfill_profiles(session: AsyncSession):
         doc = await session.get(Document, prescription.document_id)
         if doc and doc.profile_id:
             prescription.profile_id = doc.profile_id
+
+    # Backfill medication reminders — assign to user's default profile
+    reminders = (
+        await session.execute(
+            select(MedicationReminder).where(MedicationReminder.profile_id.is_(None))
+        )
+    ).scalars().all()
+    for reminder in reminders:
+        pid = profile_by_user.get(reminder.user_id)
+        if pid:
+            reminder.profile_id = pid
+
+    # Backfill medication insight snapshots — assign to user's default profile
+    snapshots = (
+        await session.execute(
+            select(MedicationInsightSnapshot).where(
+                MedicationInsightSnapshot.profile_id.is_(None)
+            )
+        )
+    ).scalars().all()
+    for snap in snapshots:
+        pid = profile_by_user.get(snap.user_id)
+        if pid:
+            snap.profile_id = pid
+
+    # Backfill ProfileAccess — ensure OWNER grants exist for all profiles
+    all_profiles = (await session.execute(select(PatientProfile))).scalars().all()
+    for profile in all_profiles:
+        existing_access = (
+            await session.execute(
+                select(ProfileAccess).where(
+                    ProfileAccess.profile_id == profile.id,
+                    ProfileAccess.user_id == profile.owner_user_id,
+                )
+            )
+        ).scalar_one_or_none()
+        if not existing_access:
+            session.add(ProfileAccess(
+                profile_id=profile.id,
+                user_id=profile.owner_user_id,
+                role=AccessRole.OWNER,
+            ))
 
 
 async def get_db():

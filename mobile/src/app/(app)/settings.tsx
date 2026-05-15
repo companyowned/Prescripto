@@ -58,6 +58,36 @@ export default function SettingsScreen() {
 
                             <TouchableOpacity
                                 style={styles.cardRow}
+                                onPress={() => router.push('/(app)/profile-link-scan')}
+                            >
+                                <View style={styles.rowLeft}>
+                                    <View style={[styles.iconContainer, { backgroundColor: 'rgba(99, 102, 241, 0.15)' }]}>
+                                        <Ionicons name="qr-code-outline" size={20} color="#A5B4FC" />
+                                    </View>
+                                    <Text style={styles.rowText}>Scan profile link QR</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                            </TouchableOpacity>
+
+                            <View style={styles.divider} />
+
+                            <TouchableOpacity
+                                style={styles.cardRow}
+                                onPress={() => router.push('/(app)/profile-link-incoming')}
+                            >
+                                <View style={styles.rowLeft}>
+                                    <View style={[styles.iconContainer, { backgroundColor: 'rgba(236, 72, 153, 0.15)' }]}>
+                                        <Ionicons name="git-pull-request-outline" size={20} color="#F472B6" />
+                                    </View>
+                                    <Text style={styles.rowText}>Incoming profile link requests</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                            </TouchableOpacity>
+
+                            <View style={styles.divider} />
+
+                            <TouchableOpacity
+                                style={styles.cardRow}
                                 onPress={() => router.push('/(app)/chat')}
                             >
                                 <View style={styles.rowLeft}>

@@ -11,6 +11,7 @@ from app.core.exceptions import NotFoundError, BadRequestError
 from app.repos.medication_reminder_repo import MedicationReminderRepo
 from app.repos.medication_dose_event_repo import MedicationDoseEventRepo
 from app.schemas.medication_reminder import ReminderCreateRequest, ReminderUpdateRequest
+from app.services.profile_access import ProfileAccessService
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +24,24 @@ class MedicationReminderController:
         """Create a new medication reminder with schedule validation."""
         _validate_schedule(data.schedule_type, data.times, data.interval_hours, data.times_per_day)
 
+        # Resolve profile_id — use provided value or fall back to default profile
+        resolved_profile_id = None
+        if data.profile_id:
+            from app.controllers.profile_controller import PatientProfileController
+            profile = await PatientProfileController.get_profile(db, user_id, UUID(data.profile_id))
+            resolved_profile_id = profile.id
+        else:
+            from app.controllers.profile_controller import PatientProfileController
+            from app.repos.user_repo import UserRepo
+            user = await UserRepo.get_by_id(db, user_id)
+            owner_name = user.full_name if user else "User"
+            default_profile = await PatientProfileController.ensure_default_profile(db, user_id, owner_name)
+            resolved_profile_id = default_profile.id
+
         reminder = await MedicationReminderRepo.create(
             db,
             user_id=user_id,
+            profile_id=resolved_profile_id,
             prescription_id=UUID(data.prescription_id) if data.prescription_id else None,
             medication_name=data.medication_name,
             dosage=data.dosage,
@@ -40,7 +56,7 @@ class MedicationReminderController:
             interval_hours=data.interval_hours,
             days_of_week=data.days_of_week,
         )
-        logger.info(f"Created medication reminder {reminder.id} for user {user_id}")
+        logger.info(f"Created medication reminder {reminder.id} for user {user_id}, profile {resolved_profile_id}")
 
         # Generate initial dose events for the next 48 hours
         await _generate_doses_for_reminder(db, reminder, hours_ahead=48)
@@ -49,9 +65,13 @@ class MedicationReminderController:
 
     @staticmethod
     async def get_reminder(db: AsyncSession, reminder_id: UUID, user_id: UUID):
-        """Get a single reminder, checking ownership."""
+        """Get a single reminder, checking access."""
         reminder = await MedicationReminderRepo.get_by_id(db, reminder_id)
-        if not reminder or reminder.user_id != user_id:
+        if not reminder or not reminder.profile_id:
+            raise NotFoundError("Reminder not found")
+        access = await ProfileAccessService.resolve(db, user_id, reminder.profile_id)
+        access.require_reminders_read()
+        if access.owner_like and reminder.user_id != user_id:
             raise NotFoundError("Reminder not found")
         return reminder
 
@@ -60,12 +80,23 @@ class MedicationReminderController:
         db: AsyncSession,
         user_id: UUID,
         active_only: bool = False,
+        profile_id: Optional[UUID] = None,
         skip: int = 0,
         limit: int = 50,
     ):
         """List reminders for a user."""
+        if profile_id:
+            access = await ProfileAccessService.resolve(db, user_id, profile_id)
+            access.require_reminders_read()
+            if access.owner_like:
+                return await MedicationReminderRepo.get_user_reminders(
+                    db, user_id, active_only=active_only, profile_id=profile_id, skip=skip, limit=limit
+                )
+            return await MedicationReminderRepo.get_reminders_for_profile(
+                db, profile_id, active_only=active_only, skip=skip, limit=limit
+            )
         return await MedicationReminderRepo.get_user_reminders(
-            db, user_id, active_only=active_only, skip=skip, limit=limit
+            db, user_id, active_only=active_only, profile_id=profile_id, skip=skip, limit=limit
         )
 
     @staticmethod
@@ -126,11 +157,25 @@ class MedicationReminderController:
 
     @staticmethod
     async def get_upcoming_doses(
-        db: AsyncSession, user_id: UUID, window_hours: int = 24
+        db: AsyncSession, user_id: UUID, window_hours: int = 24, profile_id: Optional[UUID] = None
     ):
         """Get upcoming dose events for a user."""
+        if profile_id:
+            access = await ProfileAccessService.resolve(db, user_id, profile_id)
+            access.require_reminders_read()
+            if access.owner_like:
+                return await MedicationDoseEventRepo.get_upcoming_for_user(
+                    db, user_id, window_hours=window_hours, profile_id=profile_id
+                )
+            return await MedicationDoseEventRepo.get_upcoming_for_user(
+                db,
+                user_id,
+                window_hours=window_hours,
+                profile_id=profile_id,
+                profile_scope_only=True,
+            )
         return await MedicationDoseEventRepo.get_upcoming_for_user(
-            db, user_id, window_hours=window_hours
+            db, user_id, window_hours=window_hours, profile_id=profile_id
         )
 
 

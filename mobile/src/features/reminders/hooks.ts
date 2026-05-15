@@ -14,10 +14,10 @@ import {
 
 // ── Reminder Queries ──
 
-export const useMedicationReminders = (activeOnly = false) => {
+export const useMedicationReminders = (activeOnly = false, profileId?: string) => {
     return useQuery({
-        queryKey: ['reminders', 'list', activeOnly],
-        queryFn: () => remindersApi.list(activeOnly),
+        queryKey: ['reminders', 'list', activeOnly, profileId],
+        queryFn: () => remindersApi.list(activeOnly, 0, 50, profileId),
     });
 };
 
@@ -29,44 +29,44 @@ export const useReminder = (id: string) => {
     });
 };
 
-export const useUpcomingDoses = (windowHours = 24) => {
+export const useUpcomingDoses = (windowHours = 24, profileId?: string) => {
     return useQuery({
-        queryKey: ['reminders', 'upcoming', windowHours],
-        queryFn: () => remindersApi.getUpcoming(windowHours),
+        queryKey: ['reminders', 'upcoming', windowHours, profileId],
+        queryFn: () => remindersApi.getUpcoming(windowHours, profileId),
         refetchInterval: 60000, // Refresh every minute
     });
 };
 
 // ── Today's Doses ──
 
-export const useTodayDoses = () => {
+export const useTodayDoses = (profileId?: string) => {
     return useQuery({
-        queryKey: ['doses', 'today'],
-        queryFn: () => remindersApi.getTodayDoses(),
+        queryKey: ['doses', 'today', profileId],
+        queryFn: () => remindersApi.getTodayDoses(profileId),
         refetchInterval: 30000, // Refresh every 30 seconds
     });
 };
 
 // ── Insights ──
 
-export const useMedicationInsights = (range: '7d' | '30d' | '90d' = '7d') => {
+export const useMedicationInsights = (range: '7d' | '30d' | '90d' = '7d', profileId?: string) => {
     return useQuery({
-        queryKey: ['insights', 'summary', range],
-        queryFn: () => remindersApi.getSummary(range),
+        queryKey: ['insights', 'summary', range, profileId],
+        queryFn: () => remindersApi.getSummary(range, profileId),
     });
 };
 
-export const useMedicationTrends = (range: '7d' | '30d' | '90d' = '30d') => {
+export const useMedicationTrends = (range: '7d' | '30d' | '90d' = '30d', profileId?: string) => {
     return useQuery({
-        queryKey: ['insights', 'trends', range],
-        queryFn: () => remindersApi.getTrends(range),
+        queryKey: ['insights', 'trends', range, profileId],
+        queryFn: () => remindersApi.getTrends(range, profileId),
     });
 };
 
-export const useRiskFlags = () => {
+export const useRiskFlags = (profileId?: string) => {
     return useQuery({
-        queryKey: ['insights', 'risk-flags'],
-        queryFn: () => remindersApi.getRiskFlags(),
+        queryKey: ['insights', 'risk-flags', profileId],
+        queryFn: () => remindersApi.getRiskFlags(profileId),
         refetchInterval: 300000, // Refresh every 5 minutes
     });
 };

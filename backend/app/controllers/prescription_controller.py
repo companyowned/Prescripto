@@ -13,6 +13,7 @@ from app.repos.prescription_repo import (
     FacilityRepo,
     MedicationRepo,
 )
+from app.services.profile_access import ProfileAccessService
 from app.schemas.prescription import PrescriptionUpdateRequest
 
 
@@ -25,9 +26,16 @@ class PrescriptionController:
         from app.repos.document_repo import DocumentRepo
 
         doc = await DocumentRepo.get_by_id(db, document_id)
-        if not doc or doc.user_id != user_id:
+        if not doc or not doc.profile_id:
             raise NotFoundError("Document not found")
+
+        access = await ProfileAccessService.resolve(db, user_id, doc.profile_id)
+        access.require_prescriptions_read()
+
         if profile_id and doc.profile_id != profile_id:
+            raise NotFoundError("Document not found")
+
+        if access.owner_like and doc.user_id != user_id:
             raise NotFoundError("Document not found")
 
         prescription = await PrescriptionRepo.get_by_document_id(db, document_id)
@@ -48,12 +56,20 @@ class PrescriptionController:
         """Get paginated prescription history for a user."""
         resolved_profile_id = profile_id
         if resolved_profile_id:
-            await PatientProfileController.get_profile(db, user_id, resolved_profile_id)
-        else:
-            default_profile = await PatientProfileController.ensure_default_profile(
-                db, user_id, owner_full_name
+            access = await ProfileAccessService.resolve(db, user_id, resolved_profile_id)
+            access.require_prescriptions_read()
+            if access.owner_like:
+                return await PrescriptionRepo.get_user_prescriptions(
+                    db, user_id, resolved_profile_id, skip, limit, purpose
+                )
+            return await PrescriptionRepo.get_prescriptions_for_profile(
+                db, resolved_profile_id, skip, limit, purpose
             )
-            resolved_profile_id = default_profile.id
+
+        default_profile = await PatientProfileController.ensure_default_profile(
+            db, user_id, owner_full_name
+        )
+        resolved_profile_id = default_profile.id
         return await PrescriptionRepo.get_user_prescriptions(
             db, user_id, resolved_profile_id, skip, limit, purpose
         )

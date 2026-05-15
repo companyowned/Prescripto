@@ -9,6 +9,7 @@ export type ScheduleType = 'fixed_times' | 'interval' | 'as_needed';
 export interface MedicationReminder {
     id: string;
     user_id: string;
+    profile_id: string | null;
     prescription_id: string | null;
     medication_name: string;
     dosage: string | null;
@@ -33,6 +34,7 @@ export interface ReminderCreateRequest {
     form?: string;
     instructions?: string;
     prescription_id?: string;
+    profile_id?: string;
     start_date: string;
     end_date?: string;
     timezone: string;
