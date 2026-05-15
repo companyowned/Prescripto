@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     CHAT_LLM_MODEL: str = "gemini-2.5-flash"
     CHAT_TEMPERATURE: float = 0.2
 
+    # Deep link scheme embedded in profile QR (must match Expo `expo.scheme`)
+    PROFILE_LINK_QR_SCHEME: str = "dawini"
+
     # Celery
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/1"

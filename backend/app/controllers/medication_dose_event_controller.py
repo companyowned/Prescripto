@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError, BadRequestError
 from app.repos.medication_dose_event_repo import MedicationDoseEventRepo
+from app.services.profile_access import ProfileAccessService
 
 logger = logging.getLogger(__name__)
 
@@ -77,14 +78,25 @@ class MedicationDoseEventController:
         return await MedicationDoseEventRepo.update(db, event)
 
     @staticmethod
-    async def get_today_doses(db: AsyncSession, user_id: UUID):
+    async def get_today_doses(db: AsyncSession, user_id: UUID, profile_id: UUID = None):
         """Get today's dose events for a user."""
         now = datetime.now(timezone.utc)
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         end = start + timedelta(days=1)
 
+        profile_scope_only = False
+        if profile_id:
+            access = await ProfileAccessService.resolve(db, user_id, profile_id)
+            access.require_reminders_read()
+            profile_scope_only = not access.owner_like
+
         events = await MedicationDoseEventRepo.get_user_events_in_range(
-            db, user_id, start, end
+            db,
+            user_id,
+            start,
+            end,
+            profile_id=profile_id,
+            profile_scope_only=profile_scope_only,
         )
         return events
 

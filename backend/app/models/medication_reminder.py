@@ -17,6 +17,7 @@ class MedicationReminder(Base):
 
     id = Column(Uuid, primary_key=True, default=uuid.uuid4)
     user_id = Column(Uuid, ForeignKey("users.id"), nullable=False, index=True)
+    profile_id = Column(Uuid, ForeignKey("patient_profiles.id"), nullable=True, index=True)
     prescription_id = Column(
         Uuid, ForeignKey("prescriptions.id"), nullable=True, index=True
     )
@@ -51,6 +52,7 @@ class MedicationReminder(Base):
 
     # Relationships
     user = relationship("User", back_populates="medication_reminders")
+    profile = relationship("PatientProfile", backref="medication_reminders")
     prescription = relationship("Prescription", backref="medication_reminders")
     dose_events = relationship(
         "MedicationDoseEvent",

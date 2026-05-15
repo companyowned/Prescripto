@@ -63,18 +63,33 @@ class MedicationDoseEventRepo:
         user_id: UUID,
         start: datetime,
         end: datetime,
+        profile_id: Optional[UUID] = None,
+        profile_scope_only: bool = False,
     ) -> list[MedicationDoseEvent]:
         """Get dose events for a user within a date range, joined with reminder."""
-        result = await db.execute(
-            select(MedicationDoseEvent)
-            .join(MedicationReminder)
-            .options(selectinload(MedicationDoseEvent.reminder))
-            .where(
+        if profile_scope_only:
+            if not profile_id:
+                return []
+            filters = [
+                MedicationReminder.profile_id == profile_id,
+                MedicationReminder.is_deleted == False,
+                MedicationDoseEvent.scheduled_at >= start,
+                MedicationDoseEvent.scheduled_at < end,
+            ]
+        else:
+            filters = [
                 MedicationReminder.user_id == user_id,
                 MedicationReminder.is_deleted == False,
                 MedicationDoseEvent.scheduled_at >= start,
                 MedicationDoseEvent.scheduled_at < end,
-            )
+            ]
+            if profile_id:
+                filters.append(MedicationReminder.profile_id == profile_id)
+        result = await db.execute(
+            select(MedicationDoseEvent)
+            .join(MedicationReminder)
+            .options(selectinload(MedicationDoseEvent.reminder))
+            .where(*filters)
             .order_by(MedicationDoseEvent.scheduled_at.asc())
         )
         return list(result.scalars().all())
@@ -84,21 +99,37 @@ class MedicationDoseEventRepo:
         db: AsyncSession,
         user_id: UUID,
         window_hours: int = 24,
+        profile_id: Optional[UUID] = None,
+        profile_scope_only: bool = False,
     ) -> list[MedicationDoseEvent]:
         """Get upcoming pending doses for a user."""
         now = datetime.now(timezone.utc)
         end = now + timedelta(hours=window_hours)
-        result = await db.execute(
-            select(MedicationDoseEvent)
-            .join(MedicationReminder)
-            .options(selectinload(MedicationDoseEvent.reminder))
-            .where(
+        if profile_scope_only:
+            if not profile_id:
+                return []
+            filters = [
+                MedicationReminder.profile_id == profile_id,
+                MedicationReminder.is_deleted == False,
+                MedicationDoseEvent.scheduled_at >= now,
+                MedicationDoseEvent.scheduled_at <= end,
+                MedicationDoseEvent.status.in_(["pending", "snoozed"]),
+            ]
+        else:
+            filters = [
                 MedicationReminder.user_id == user_id,
                 MedicationReminder.is_deleted == False,
                 MedicationDoseEvent.scheduled_at >= now,
                 MedicationDoseEvent.scheduled_at <= end,
                 MedicationDoseEvent.status.in_(["pending", "snoozed"]),
-            )
+            ]
+            if profile_id:
+                filters.append(MedicationReminder.profile_id == profile_id)
+        result = await db.execute(
+            select(MedicationDoseEvent)
+            .join(MedicationReminder)
+            .options(selectinload(MedicationDoseEvent.reminder))
+            .where(*filters)
             .order_by(MedicationDoseEvent.scheduled_at.asc())
         )
         return list(result.scalars().all())
@@ -127,8 +158,30 @@ class MedicationDoseEventRepo:
         user_id: UUID,
         start: datetime,
         end: datetime,
+        profile_id: Optional[UUID] = None,
+        profile_scope_only: bool = False,
     ) -> dict:
         """Get aggregate counts for doses in range."""
+        if profile_scope_only:
+            if not profile_id:
+                return {"total": 0, "taken": 0, "missed": 0, "skipped": 0}
+            filters = [
+                MedicationReminder.profile_id == profile_id,
+                MedicationReminder.is_deleted == False,
+                MedicationDoseEvent.scheduled_at >= start,
+                MedicationDoseEvent.scheduled_at < end,
+                MedicationDoseEvent.status != "pending",
+            ]
+        else:
+            filters = [
+                MedicationReminder.user_id == user_id,
+                MedicationReminder.is_deleted == False,
+                MedicationDoseEvent.scheduled_at >= start,
+                MedicationDoseEvent.scheduled_at < end,
+                MedicationDoseEvent.status != "pending",
+            ]
+            if profile_id:
+                filters.append(MedicationReminder.profile_id == profile_id)
         result = await db.execute(
             select(
                 func.count().label("total"),
@@ -138,13 +191,7 @@ class MedicationDoseEventRepo:
             )
             .select_from(MedicationDoseEvent)
             .join(MedicationReminder)
-            .where(
-                MedicationReminder.user_id == user_id,
-                MedicationReminder.is_deleted == False,
-                MedicationDoseEvent.scheduled_at >= start,
-                MedicationDoseEvent.scheduled_at < end,
-                MedicationDoseEvent.status != "pending",
-            )
+            .where(*filters)
         )
         row = result.one()
         return {
@@ -160,10 +207,32 @@ class MedicationDoseEventRepo:
         user_id: UUID,
         start: datetime,
         end: datetime,
+        profile_id: Optional[UUID] = None,
+        profile_scope_only: bool = False,
     ) -> list[dict]:
         """Get daily aggregate stats for trend data."""
         # Use date part of scheduled_at for grouping
         date_col = func.date(MedicationDoseEvent.scheduled_at)
+        if profile_scope_only:
+            if not profile_id:
+                return []
+            filters = [
+                MedicationReminder.profile_id == profile_id,
+                MedicationReminder.is_deleted == False,
+                MedicationDoseEvent.scheduled_at >= start,
+                MedicationDoseEvent.scheduled_at < end,
+                MedicationDoseEvent.status != "pending",
+            ]
+        else:
+            filters = [
+                MedicationReminder.user_id == user_id,
+                MedicationReminder.is_deleted == False,
+                MedicationDoseEvent.scheduled_at >= start,
+                MedicationDoseEvent.scheduled_at < end,
+                MedicationDoseEvent.status != "pending",
+            ]
+            if profile_id:
+                filters.append(MedicationReminder.profile_id == profile_id)
         result = await db.execute(
             select(
                 date_col.label("date"),
@@ -174,13 +243,7 @@ class MedicationDoseEventRepo:
             )
             .select_from(MedicationDoseEvent)
             .join(MedicationReminder)
-            .where(
-                MedicationReminder.user_id == user_id,
-                MedicationReminder.is_deleted == False,
-                MedicationDoseEvent.scheduled_at >= start,
-                MedicationDoseEvent.scheduled_at < end,
-                MedicationDoseEvent.status != "pending",
-            )
+            .where(*filters)
             .group_by(date_col)
             .order_by(date_col.asc())
         )
@@ -201,8 +264,30 @@ class MedicationDoseEventRepo:
         user_id: UUID,
         start: datetime,
         end: datetime,
+        profile_id: Optional[UUID] = None,
+        profile_scope_only: bool = False,
     ) -> list[dict]:
         """Get missed count grouped by medication name."""
+        if profile_scope_only:
+            if not profile_id:
+                return []
+            filters = [
+                MedicationReminder.profile_id == profile_id,
+                MedicationReminder.is_deleted == False,
+                MedicationDoseEvent.status == "missed",
+                MedicationDoseEvent.scheduled_at >= start,
+                MedicationDoseEvent.scheduled_at < end,
+            ]
+        else:
+            filters = [
+                MedicationReminder.user_id == user_id,
+                MedicationReminder.is_deleted == False,
+                MedicationDoseEvent.status == "missed",
+                MedicationDoseEvent.scheduled_at >= start,
+                MedicationDoseEvent.scheduled_at < end,
+            ]
+            if profile_id:
+                filters.append(MedicationReminder.profile_id == profile_id)
         result = await db.execute(
             select(
                 MedicationReminder.medication_name,
@@ -210,13 +295,7 @@ class MedicationDoseEventRepo:
             )
             .select_from(MedicationDoseEvent)
             .join(MedicationReminder)
-            .where(
-                MedicationReminder.user_id == user_id,
-                MedicationReminder.is_deleted == False,
-                MedicationDoseEvent.status == "missed",
-                MedicationDoseEvent.scheduled_at >= start,
-                MedicationDoseEvent.scheduled_at < end,
-            )
+            .where(*filters)
             .group_by(MedicationReminder.medication_name)
             .order_by(func.count().desc())
             .limit(10)

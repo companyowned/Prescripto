@@ -13,6 +13,7 @@ import { MockBottomTabs } from '../../components/home';
 import { DoseTimelineItem } from '../../components/reminders';
 import { GlassBackground } from '../../components/ui';
 import { colors } from '../../theme';
+import { useActiveProfile } from '../../contexts/profile-context';
 import {
     useTodayDoses,
     useMarkDoseTaken,
@@ -22,7 +23,8 @@ import {
 
 export default function TodayScheduleScreen() {
     const router = useRouter();
-    const { data, isLoading, error } = useTodayDoses();
+    const { activeProfile } = useActiveProfile();
+    const { data, isLoading, error } = useTodayDoses(activeProfile?.id);
     const markTaken = useMarkDoseTaken();
     const skipDose = useSkipDose();
     const snoozeDose = useSnoozeDose();

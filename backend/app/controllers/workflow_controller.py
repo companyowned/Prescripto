@@ -100,6 +100,7 @@ class WorkflowController:
                         "form": None,
                         "instructions": med.notes,
                         "prescription_id": str(prescription.id),
+                        "profile_id": str(doc.profile_id) if doc.profile_id else None,
                         "start_date": datetime.now(timezone.utc),
                         "timezone": "UTC",
                         **schedule_data

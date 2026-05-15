@@ -13,6 +13,7 @@ import { MockBottomTabs } from '../../components/home';
 import { InsightCard, AdherenceChart } from '../../components/reminders';
 import { GlassBackground } from '../../components/ui';
 import { colors } from '../../theme';
+import { useActiveProfile } from '../../contexts/profile-context';
 import {
     useMedicationInsights,
     useMedicationTrends,
@@ -23,11 +24,12 @@ type RangeOption = '7d' | '30d' | '90d';
 
 export default function InsightsScreen() {
     const router = useRouter();
+    const { activeProfile } = useActiveProfile();
     const [range, setRange] = useState<RangeOption>('7d');
 
-    const { data: summary, isLoading: summaryLoading, error: summaryError } = useMedicationInsights(range);
-    const { data: trends, isLoading: trendsLoading, error: trendsError } = useMedicationTrends(range);
-    const { data: riskData, error: riskError } = useRiskFlags();
+    const { data: summary, isLoading: summaryLoading, error: summaryError } = useMedicationInsights(range, activeProfile?.id);
+    const { data: trends, isLoading: trendsLoading, error: trendsError } = useMedicationTrends(range, activeProfile?.id);
+    const { data: riskData, error: riskError } = useRiskFlags(activeProfile?.id);
 
     const isLoading = summaryLoading || trendsLoading;
     const isError = summaryError || trendsError || riskError;

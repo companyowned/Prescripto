@@ -16,6 +16,7 @@ from app.views.medication_reminders import router as medication_reminders_router
 from app.views.medication_dose_events import router as medication_dose_events_router
 from app.views.medication_insights import router as medication_insights_router
 from app.views.profiles import router as profiles_router
+from app.views.profile_links import router as profile_links_router
 from app.views.chat import router as chat_router
 
 
@@ -36,6 +37,7 @@ async def lifespan(app: FastAPI):
     import app.models.medication_dose_event  # noqa
     import app.models.medication_insight_snapshot  # noqa
     import app.models.password_reset_otp  # noqa
+    import app.models.profile_link_request  # noqa
 
     is_vercel_runtime = os.getenv("VERCEL") == "1"
     
@@ -108,6 +110,10 @@ def create_app() -> FastAPI:
     # Exception handlers
     register_exception_handlers(app)
 
+    @app.get("/api/v1", tags=["Health"], summary="API v1 base (connectivity check)")
+    async def api_v1_root():
+        return {"status": "ok", "service": settings.APP_NAME}
+
     # Routers
     app.include_router(health_router)
     app.include_router(auth_router, prefix="/api/v1")
@@ -117,6 +123,7 @@ def create_app() -> FastAPI:
     app.include_router(medication_reminders_router, prefix="/api/v1")
     app.include_router(medication_dose_events_router, prefix="/api/v1")
     app.include_router(medication_insights_router, prefix="/api/v1")
+    app.include_router(profile_links_router, prefix="/api/v1")
     app.include_router(chat_router, prefix="/api/v1")
 
     return app

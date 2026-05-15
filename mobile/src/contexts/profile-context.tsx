@@ -57,7 +57,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         const selected = activeProfileId
             ? profiles.find((p) => p.id === activeProfileId) ?? null
             : null;
-        const defaultProfile = profiles.find((p) => p.is_default) ?? profiles[0];
+        const defaultProfile =
+            profiles.find((p) => p.is_default && p.is_owned !== false) ??
+            profiles.find((p) => p.is_owned !== false) ??
+            profiles[0];
         const resolved = selected ?? defaultProfile;
         if (resolved && resolved.id !== activeProfileId) {
             setActiveProfileIdState(resolved.id);
@@ -73,8 +76,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     const setActiveProfileId = async (profileId: string) => {
         setActiveProfileIdState(profileId);
         await setStoredProfileId(profileId);
+        // Invalidate all profile-scoped query caches
         queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
         queryClient.invalidateQueries({ queryKey: ['document'] });
+        queryClient.invalidateQueries({ queryKey: ['reminders'] });
+        queryClient.invalidateQueries({ queryKey: ['doses'] });
+        queryClient.invalidateQueries({ queryKey: ['insights'] });
     };
 
     return (

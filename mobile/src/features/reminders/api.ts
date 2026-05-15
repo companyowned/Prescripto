@@ -29,10 +29,10 @@ export const remindersApi = {
         return response.data;
     },
 
-    async list(activeOnly = false, skip = 0, limit = 50): Promise<ReminderListResponse> {
+    async list(activeOnly = false, skip = 0, limit = 50, profileId?: string): Promise<ReminderListResponse> {
         const response = await apiClient.get<ReminderListResponse>(
             '/medication-reminders',
-            { params: { active_only: activeOnly, skip, limit } }
+            { params: { active_only: activeOnly, skip, limit, ...(profileId ? { profile_id: profileId } : {}) } }
         );
         return response.data;
     },
@@ -70,19 +70,20 @@ export const remindersApi = {
         return response.data;
     },
 
-    async getUpcoming(windowHours = 24): Promise<UpcomingDose[]> {
+    async getUpcoming(windowHours = 24, profileId?: string): Promise<UpcomingDose[]> {
         const response = await apiClient.get<UpcomingDose[]>(
             '/medication-reminders/upcoming',
-            { params: { window_hours: windowHours } }
+            { params: { window_hours: windowHours, ...(profileId ? { profile_id: profileId } : {}) } }
         );
         return response.data;
     },
 
     // ── Dose Event Actions ──
 
-    async getTodayDoses(): Promise<TodayDosesResponse> {
+    async getTodayDoses(profileId?: string): Promise<TodayDosesResponse> {
         const response = await apiClient.get<TodayDosesResponse>(
-            '/medication-dose-events/today'
+            '/medication-dose-events/today',
+            { params: profileId ? { profile_id: profileId } : {} }
         );
         return response.data;
     },
@@ -113,25 +114,26 @@ export const remindersApi = {
 
     // ── Insights ──
 
-    async getSummary(range: '7d' | '30d' | '90d' = '7d'): Promise<InsightsSummary> {
+    async getSummary(range: '7d' | '30d' | '90d' = '7d', profileId?: string): Promise<InsightsSummary> {
         const response = await apiClient.get<InsightsSummary>(
             '/medication-insights/summary',
-            { params: { range } }
+            { params: { range, ...(profileId ? { profile_id: profileId } : {}) } }
         );
         return response.data;
     },
 
-    async getTrends(range: '7d' | '30d' | '90d' = '30d'): Promise<TrendsResponse> {
+    async getTrends(range: '7d' | '30d' | '90d' = '30d', profileId?: string): Promise<TrendsResponse> {
         const response = await apiClient.get<TrendsResponse>(
             '/medication-insights/trends',
-            { params: { range } }
+            { params: { range, ...(profileId ? { profile_id: profileId } : {}) } }
         );
         return response.data;
     },
 
-    async getRiskFlags(): Promise<RiskFlagsResponse> {
+    async getRiskFlags(profileId?: string): Promise<RiskFlagsResponse> {
         const response = await apiClient.get<RiskFlagsResponse>(
-            '/medication-insights/risk-flags'
+            '/medication-insights/risk-flags',
+            { params: profileId ? { profile_id: profileId } : {} }
         );
         return response.data;
     },

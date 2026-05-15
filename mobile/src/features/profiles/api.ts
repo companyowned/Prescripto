@@ -3,6 +3,7 @@ import {
     CreatePatientProfileRequest,
     PatientProfile,
     PatientProfileListResponse,
+    ProfileLinkQrResponse,
     UpdatePatientProfileRequest,
 } from './types';
 
@@ -28,6 +29,19 @@ export const profilesApi = {
 
     async setDefault(profileId: string): Promise<PatientProfile> {
         const response = await apiClient.post<PatientProfile>(`/profiles/${profileId}/set-default`);
+        return response.data;
+    },
+
+    async promoteToIndependent(profileId: string, email: string, password: string): Promise<PatientProfile> {
+        const response = await apiClient.post<PatientProfile>(
+            `/profiles/${profileId}/promote-independent`,
+            { email, password }
+        );
+        return response.data;
+    },
+
+    async getLinkQr(profileId: string): Promise<ProfileLinkQrResponse> {
+        const response = await apiClient.get<ProfileLinkQrResponse>(`/profiles/${profileId}/link-qr`);
         return response.data;
     },
 };
