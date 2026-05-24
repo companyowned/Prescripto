@@ -37,6 +37,32 @@ async def upload_document(
     return DocumentUploadResponse(**result)
 
 
+@router.get("/documents", response_model=list[DocumentResponse])
+async def list_linked_documents(
+    parent_document_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get all child documents (lab results, radiology reports) linked to a parent document."""
+    from app.repos.document_repo import DocumentRepo
+    docs = await DocumentRepo.get_children_by_parent_id(db, parent_document_id, current_user.id)
+    return [
+        DocumentResponse(
+            id=str(d.id),
+            user_id=str(d.user_id),
+            profile_id=str(d.profile_id) if d.profile_id else None,
+            file_url=d.file_url,
+            file_type=d.file_type.value,
+            original_filename=d.original_filename,
+            purpose=d.purpose,
+            parent_document_id=str(d.parent_document_id) if d.parent_document_id else None,
+            status=d.status.value,
+            created_at=d.created_at,
+        )
+        for d in docs
+    ]
+
+
 @router.get("/documents/{document_id}", response_model=DocumentResponse)
 async def get_document(
     document_id: UUID,

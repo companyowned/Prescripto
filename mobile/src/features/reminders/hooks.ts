@@ -18,6 +18,7 @@ export const useMedicationReminders = (activeOnly = false) => {
     return useQuery({
         queryKey: ['reminders', 'list', activeOnly],
         queryFn: () => remindersApi.list(activeOnly),
+        staleTime: 2 * 60 * 1000,
     });
 };
 
@@ -53,6 +54,7 @@ export const useMedicationInsights = (range: '7d' | '30d' | '90d' = '7d') => {
     return useQuery({
         queryKey: ['insights', 'summary', range],
         queryFn: () => remindersApi.getSummary(range),
+        staleTime: 5 * 60 * 1000,
     });
 };
 
@@ -60,6 +62,7 @@ export const useMedicationTrends = (range: '7d' | '30d' | '90d' = '30d') => {
     return useQuery({
         queryKey: ['insights', 'trends', range],
         queryFn: () => remindersApi.getTrends(range),
+        staleTime: 5 * 60 * 1000,
     });
 };
 
@@ -67,7 +70,8 @@ export const useRiskFlags = () => {
     return useQuery({
         queryKey: ['insights', 'risk-flags'],
         queryFn: () => remindersApi.getRiskFlags(),
-        refetchInterval: 300000, // Refresh every 5 minutes
+        staleTime: 5 * 60 * 1000,
+        refetchInterval: 300000,
     });
 };
 

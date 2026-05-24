@@ -184,21 +184,29 @@ const RecordCard: React.FC<RecordCardProps> = ({ item, showCategoryBadge = false
     });
 
     const recordTitle = useMemo(() => {
-        if (item.diagnosis_text && item.diagnosis_text !== 'null') return item.diagnosis_text;
-        
-        if (item.purpose === 'lab_result') {
-            return item.facility_name ? `Lab Results - ${item.facility_name}` : 'Lab Report';
-        }
-        
+        const diag = item.diagnosis_text && item.diagnosis_text !== 'null'
+            ? item.diagnosis_text : null;
+
         if (item.purpose === 'prescription') {
-            return item.doctor_name ? `Prescription - ${item.doctor_name}` : 'Medical Prescription';
+            if (diag) return diag;
+            if (item.doctor_name) return `Prescription — Dr. ${item.doctor_name}`;
+            if (item.facility_name) return `Prescription — ${item.facility_name}`;
+            return 'Medical Prescription';
+        }
+
+        if (item.purpose === 'lab_result') {
+            if (diag) return diag;
+            if (item.facility_name) return `Lab Results — ${item.facility_name}`;
+            return 'Lab Test Results';
         }
 
         if (item.purpose === 'radiology_report') {
-            return item.facility_name ? `Radiology - ${item.facility_name}` : 'Radiology Report';
+            if (diag) return diag;
+            if (item.facility_name) return `Radiology — ${item.facility_name}`;
+            return 'Radiology Report';
         }
-        
-        return `Medical Record - ${dateStr}`;
+
+        return `Medical Record — ${dateStr}`;
     }, [item, dateStr]);
 
     return (
@@ -266,12 +274,43 @@ const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
     </View>
 );
 
+/* ────────────── Month filter utilities ────────────── */
+
+interface MonthOption { key: string; label: string }
+
+const extractMonths = (items: PrescriptionListItem[]): MonthOption[] => {
+    const seen = new Set<string>();
+    const result: MonthOption[] = [];
+    for (const item of items) {
+        const d = new Date(item.created_at);
+        const key = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            result.push({
+                key,
+                label: d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+            });
+        }
+    }
+    return result.sort((a, b) => b.key.localeCompare(a.key));
+};
+
+const filterByMonth = (items: PrescriptionListItem[], monthKey: string | null) => {
+    if (!monthKey) return items;
+    return items.filter((item) => {
+        const d = new Date(item.created_at);
+        const key = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}`;
+        return key === monthKey;
+    });
+};
+
 /* ────────────── Main Screen ────────────── */
 
 export default function HistoryScreen() {
     const router = useRouter();
     const { activeProfile } = useActiveProfile();
     const [activeCategory, setActiveCategory] = useState(0);
+    const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
     const fadeAnim = useRef(new Animated.Value(1)).current;
 
     const category = CATEGORIES[activeCategory];
@@ -298,7 +337,14 @@ export default function HistoryScreen() {
         return map;
     }, [allRecords]);
 
-    const sections = useMemo(() => groupByMonth(records), [records]);
+    const availableMonths = useMemo(() => extractMonths(allRecords), [allRecords]);
+
+    const filteredRecords = useMemo(
+        () => filterByMonth(records, selectedMonth),
+        [records, selectedMonth]
+    );
+
+    const sections = useMemo(() => groupByMonth(filteredRecords), [filteredRecords]);
 
     const switchCategory = useCallback(
         (index: number) => {
@@ -368,15 +414,54 @@ export default function HistoryScreen() {
                     ))}
                 </ScrollView>
 
+                {/* Month Filter */}
+                {availableMonths.length > 0 && (
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.monthBar}
+                        style={styles.monthBarScroll}
+                    >
+                        <TouchableOpacity
+                            style={[styles.monthChip, !selectedMonth && styles.monthChipActive]}
+                            onPress={() => setSelectedMonth(null)}
+                        >
+                            <Text style={[styles.monthChipText, !selectedMonth && styles.monthChipTextActive]}>
+                                All Months
+                            </Text>
+                        </TouchableOpacity>
+                        {availableMonths.map((m) => (
+                            <TouchableOpacity
+                                key={m.key}
+                                style={[styles.monthChip, selectedMonth === m.key && styles.monthChipActive]}
+                                onPress={() => setSelectedMonth(m.key)}
+                            >
+                                <Text style={[styles.monthChipText, selectedMonth === m.key && styles.monthChipTextActive]}>
+                                    {m.label}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                )}
+
                 {/* Content */}
                 <Animated.View style={[styles.contentContainer, { opacity: fadeAnim }]}>
-                    {records.length === 0 ? (
-                        <EmptyState
-                            title={category.emptyTitle}
-                            message={category.emptyMessage}
-                            actionTitle={category.emptyCta}
-                            onAction={category.key === 'prescription' || category.key === 'all' ? navigateToScan : navigateToUpload}
-                        />
+                    {filteredRecords.length === 0 ? (
+                        selectedMonth && records.length > 0 ? (
+                            <EmptyState
+                                title="No records this month"
+                                message="There are no records for the selected month. Try a different month or clear the filter."
+                                actionTitle="Clear Filter"
+                                onAction={() => setSelectedMonth(null)}
+                            />
+                        ) : (
+                            <EmptyState
+                                title={category.emptyTitle}
+                                message={category.emptyMessage}
+                                actionTitle={category.emptyCta}
+                                onAction={category.key === 'prescription' || category.key === 'all' ? navigateToScan : navigateToUpload}
+                            />
+                        )
                     ) : (
                         <SectionList
                             sections={sections}
@@ -467,6 +552,22 @@ const styles = StyleSheet.create({
         marginLeft: 2,
     },
     tabBadgeText: { ...typography.caption, fontSize: 10, fontWeight: '700', color: colors.textSecondary },
+
+    /* Month filter */
+    monthBarScroll: { flexGrow: 0, marginBottom: spacing.sm },
+    monthBar: { paddingHorizontal: spacing.xl, gap: spacing.sm },
+    monthChip: {
+        paddingHorizontal: 14, paddingVertical: 7,
+        borderRadius: 20, borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.25)',
+        backgroundColor: 'rgba(255,255,255,0.10)',
+    },
+    monthChipActive: {
+        backgroundColor: colors.primary[500],
+        borderColor: colors.primary[500],
+    },
+    monthChipText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.65)' },
+    monthChipTextActive: { color: '#FFFFFF' },
 
     /* Content */
     contentContainer: { flex: 1 },

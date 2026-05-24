@@ -1,78 +1,61 @@
 /**
- * Root Layout — Providers + auth-aware routing
+ * Root Layout — Providers + auth-aware routing + onboarding
  */
-
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Slot, useRouter, useSegments } from 'expo-router';
-import { StatusBar } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { authService } from '../services/auth';
+import { ThemeProvider } from '../contexts/theme-context';
+import { LanguageProvider } from '../contexts/language-context';
 
 const queryClient = new QueryClient({
     defaultOptions: {
-        queries: {
-            retry: 2,
-            staleTime: 30 * 1000,
-            refetchOnWindowFocus: false,
-        },
+        queries: { retry: 2, staleTime: 30 * 1000, refetchOnWindowFocus: false },
     },
 });
 
-// Auth context so login/logout can trigger navigation refresh
-interface AuthContextType {
-    signIn: () => void;
-    signOut: () => void;
-}
-
-const AuthContext = createContext<AuthContextType>({
-    signIn: () => { },
-    signOut: () => { },
-});
-
+interface AuthContextType { signIn: () => void; signOut: () => void; completeOnboarding: () => void; }
+const AuthContext = createContext<AuthContextType>({ signIn: () => {}, signOut: () => {}, completeOnboarding: () => {} });
 export const useAuth = () => useContext(AuthContext);
 
 function AuthGate({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const segments = useSegments();
-    const [isReady, setIsReady] = useState(false);
+    const [isReady, setIsReady]               = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    const checkAuth = useCallback(async () => {
-        const authed = await authService.isAuthenticated();
-        setIsAuthenticated(authed);
-        setIsReady(true);
-    }, []);
+    const [onboardingDone, setOnboardingDone]   = useState(false);
 
     useEffect(() => {
-        checkAuth();
+        authService.isAuthenticated().then((authed) => {
+            setIsAuthenticated(authed);
+            setIsReady(true);
+        });
     }, []);
 
-    // Called from login/register screens after successful auth
-    const signIn = useCallback(() => {
-        setIsAuthenticated(true);
-    }, []);
-
-    // Called from logout
-    const signOut = useCallback(() => {
-        setIsAuthenticated(false);
-    }, []);
+    const signIn             = useCallback(() => setIsAuthenticated(true),  []);
+    const signOut            = useCallback(() => setIsAuthenticated(false), []);
+    const completeOnboarding = useCallback(() => setOnboardingDone(true),   []);
 
     useEffect(() => {
         if (!isReady) return;
+        const inAuth       = segments[0] === '(auth)';
+        const inOnboarding = segments[0] === '(onboarding)';
 
-        const inAuthGroup = segments[0] === '(auth)';
-
-        if (!isAuthenticated && !inAuthGroup) {
+        if (!onboardingDone && !inOnboarding) {
+            router.replace('/(onboarding)');
+        } else if (onboardingDone && !isAuthenticated && !inAuth) {
             router.replace('/(auth)/login');
-        } else if (isAuthenticated && inAuthGroup) {
+        } else if (onboardingDone && isAuthenticated && inAuth) {
             router.replace('/(app)/home');
         }
-    }, [isAuthenticated, segments, isReady]);
+    }, [isAuthenticated, segments, isReady, onboardingDone]);
 
     if (!isReady) return null;
 
     return (
-        <AuthContext.Provider value={{ signIn, signOut }}>
+        <AuthContext.Provider value={{ signIn, signOut, completeOnboarding }}>
             {children}
         </AuthContext.Provider>
     );
@@ -80,11 +63,17 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
     return (
-        <QueryClientProvider client={queryClient}>
-            <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
-            <AuthGate>
-                <Slot />
-            </AuthGate>
-        </QueryClientProvider>
+        <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider>
+                    <LanguageProvider>
+                        <StatusBar barStyle="light-content" backgroundColor="#040D12" />
+                        <AuthGate>
+                            <Slot />
+                        </AuthGate>
+                    </LanguageProvider>
+                </ThemeProvider>
+            </QueryClientProvider>
+        </GestureHandlerRootView>
     );
 }

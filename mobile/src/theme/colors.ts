@@ -1,64 +1,60 @@
 /**
  * Prescripto Design System — Color Palette
- * Glassmorphism Medical UI Support
+ * Light glassmorphism on bright background
  */
 
 export const colors = {
     // Primary (teal/cyan medical accent)
     primary: {
-        300: '#3EDBF0', // Cyan target (light)
-        400: '#1FA3C6', // Teal
-        500: '#1FA3C6',
-        600: '#0F5C73', // Deep blue
-        700: '#072A33', // Dark navy
+        300: '#1AABCF', // readable teal on light bg
+        400: '#1FA3C6',
+        500: '#1890B0',
+        600: '#0F5C73',
+        700: '#072A33',
     },
 
-    // Secondary (glass accents)
     secondary: {
-        400: '#3EDBF0',
+        400: '#1AABCF',
         500: '#1FA3C6',
     },
 
-    // Background gradient
     background: {
-        top: '#0A3F4D',
-        bottom: '#072A33',
+        top: '#D6F0F7',
+        bottom: '#B8E4F0',
     },
 
-    // Glass variables
+    // Glass variables — tuned for a bright background
     glass: {
-        background: 'rgba(255, 255, 255, 0.12)',
-        backgroundDark: 'rgba(0, 0, 0, 0.25)',
-        border: 'rgba(255, 255, 255, 0.15)',
-        borderHighlight: 'rgba(255, 255, 255, 0.25)',
-        inputBg: 'rgba(255, 255, 255, 0.1)',
-        glow: 'rgba(62, 219, 240, 0.4)', // cyan glow for active elements
+        background:     'rgba(255,255,255,0.55)',
+        backgroundDark: 'rgba(255,255,255,0.40)',
+        border:         'rgba(11,29,46,0.12)',
+        borderHighlight:'rgba(11,29,46,0.18)',
+        inputBg:        'rgba(255,255,255,0.50)',
+        glow:           'rgba(26,171,207,0.35)',
     },
 
-    // Gradients for CTA
     gradient: {
         primary: ['#1FA3C6', '#3EDBF0'] as const,
     },
 
     // Neutrals
     dark: {
-        bg: '#0A3F4D',
-        surface: 'rgba(255, 255, 255, 0.08)',
-        surfaceElevated: 'rgba(255, 255, 255, 0.15)',
-        border: 'rgba(255, 255, 255, 0.15)',
-        textPrimary: '#FFFFFF',
-        textSecondary: 'rgba(255, 255, 255, 0.7)',
-        textMuted: 'rgba(255, 255, 255, 0.5)',
+        bg:              '#0B1D2E',
+        surface:         'rgba(255,255,255,0.55)',
+        surfaceElevated: 'rgba(255,255,255,0.70)',
+        border:          'rgba(11,29,46,0.12)',
+        textPrimary:     '#0B1D2E',
+        textSecondary:   'rgba(11,29,46,0.60)',
+        textMuted:       'rgba(11,29,46,0.40)',
     },
     light: {
-        // Fallback or mapped to dark as we only have dark glass ui
-        bg: '#0A3F4D',
-        surface: 'rgba(255, 255, 255, 0.08)',
-        surfaceElevated: 'rgba(255, 255, 255, 0.15)',
-        border: 'rgba(255, 255, 255, 0.15)',
-        textPrimary: '#FFFFFF',
-        textSecondary: 'rgba(255, 255, 255, 0.7)',
-        textMuted: 'rgba(255, 255, 255, 0.5)',
+        bg:              '#0B1D2E',
+        surface:         'rgba(255,255,255,0.55)',
+        surfaceElevated: 'rgba(255,255,255,0.70)',
+        border:          'rgba(11,29,46,0.12)',
+        textPrimary:     '#0B1D2E',
+        textSecondary:   'rgba(11,29,46,0.60)',
+        textMuted:       'rgba(11,29,46,0.40)',
     },
 
     // Common
@@ -66,22 +62,21 @@ export const colors = {
     black: '#000000',
     transparent: 'transparent',
 
-    // Text overrides for light over dark
-    textPrimary: '#FFFFFF',
-    textSecondary: 'rgba(255, 255, 255, 0.7)',
-    textMuted: 'rgba(255, 255, 255, 0.5)',
+    // Global text tokens
+    textPrimary:   '#0B1D2E',
+    textSecondary: 'rgba(11,29,46,0.60)',
+    textMuted:     'rgba(11,29,46,0.40)',
 
-    // Success / Error / Warning
-    success: '#4CAF50',
-    error: '#EF5350',
-    warning: '#FF9800',
-    info: '#3EDBF0',
+    // Status
+    success: '#0E9F6E',
+    error:   '#E53E3E',
+    warning: '#D97706',
+    info:    '#1AABCF',
 
-    // Confidence levels
     confidence: {
-        high: '#4CAF50',    // >= 0.8
-        medium: '#FF9800',  // >= 0.5
-        low: '#EF5350',     // < 0.5
+        high:   '#0E9F6E',
+        medium: '#D97706',
+        low:    '#E53E3E',
     },
 } as const;
 

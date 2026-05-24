@@ -31,7 +31,7 @@ export const HeroCard: React.FC<HeroCardProps> = ({ onScanPress, onUploadPress }
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
             />
-            <BlurView intensity={24} tint="dark" style={[StyleSheet.absoluteFill, styles.blur]} />
+            <BlurView intensity={20} tint="light" style={[StyleSheet.absoluteFill, styles.blur]} />
 
             <View style={styles.heroCardContent}>
                 <Text style={styles.heroTitle}>Scan New Prescription</Text>
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
         padding: 24,
     },
     heroTitle: {
-        color: '#FFFFFF',
+        color: '#0B1D2E',
         fontSize: 26,
         fontWeight: '800',
         marginBottom: 8,
