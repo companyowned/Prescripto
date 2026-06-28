@@ -4,12 +4,11 @@
 import React from 'react';
 import {
     Pressable, Text, StyleSheet, ActivityIndicator,
-    ViewStyle, TextStyle, View, Platform,
+    ViewStyle, TextStyle, View, Platform, Vibration,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../../theme';
 
 interface ButtonProps {
@@ -42,8 +41,8 @@ export const Button: React.FC<ButtonProps> = ({
     };
 
     const handlePress = () => {
-        if (haptic && Platform.OS !== 'web') {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (haptic && Platform.OS === 'android') {
+            Vibration.vibrate(30); // short click-feel vibration
         }
         onPress();
     };

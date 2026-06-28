@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
+import { Vibration } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import { authService } from '../../services/auth';
 import { useAuth } from '../_layout';
@@ -54,7 +54,7 @@ export default function HomeScreen() {
         signOut();
     };
 
-    const tap = () => { if (Platform.OS !== 'web') Haptics.selectionAsync(); };
+    const tap = () => { if (Platform.OS === 'android') Vibration.vibrate(20); };
 
     const pageOpacity   = useSharedValue(0);
     const pageTranslate = useSharedValue(18);
