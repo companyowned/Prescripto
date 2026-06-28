@@ -31,14 +31,33 @@ export interface FollowUpRequestType {
     source?: string | null;
 }
 
+export interface LabResultType {
+    test_name: string;
+    result_value?: string | null;
+    unit?: string | null;
+    reference_range?: string | null;
+    status?: 'normal' | 'high' | 'low' | 'critical' | null;
+    notes?: string | null;
+}
+
+export interface ScanReportType {
+    type?: string | null;
+    findings?: string | null;
+    impression?: string | null;
+    date?: string | null;
+}
+
 export interface PrescriptionResponse {
     id: string;
     profile_id: string | null;
     document_id: string;
+    purpose?: RecordPurpose;
     doctor: DoctorType | null;
     facility: FacilityType | null;
     diagnosis_text: string | null;
     medications: MedicationType[];
+    lab_results?: LabResultType[];
+    scan_report?: ScanReportType | null;
     follow_up_requests?: FollowUpRequestType[];
     has_lab_requests?: boolean;
     has_radiology_requests?: boolean;

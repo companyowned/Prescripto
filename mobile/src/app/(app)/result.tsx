@@ -14,6 +14,8 @@ import {
     DoctorFacilityCard,
     DiagnosisCard,
     MedicationList,
+    LabResultsCard,
+    ScanReportCard,
     FollowUpRequestsCard,
 } from '../../components/prescription';
 import { colors, spacing } from '../../theme';
@@ -128,16 +130,51 @@ export default function ResultScreen() {
 
                     <DiagnosisCard diagnosis={prescription.diagnosis_text} />
 
-                    <MedicationList
-                        medications={prescription.medications.map((m) => ({
-                            id: m.id,
-                            name: m.name,
-                            dose: m.dose,
-                            frequency: m.frequency,
-                            duration: m.duration,
-                            notes: m.notes,
-                        }))}
-                    />
+                    {/* ── Document-type-aware section ── */}
+                    {(() => {
+                        // Derive document type: prefer explicit purpose, then infer from data
+                        const purpose = prescription.purpose
+                            ?? (prescription.raw_output_json?.document_type as string | undefined);
+
+                        const isLab  = purpose === 'lab_result'
+                            || (!purpose && !prescription.medications?.length
+                                && (prescription.lab_results?.length
+                                    || prescription.raw_output_json?.lab_results?.length));
+                        const isScan = purpose === 'radiology_report'
+                            || (!purpose && !prescription.medications?.length
+                                && (prescription.scan_report
+                                    || prescription.raw_output_json?.scan_report));
+
+                        if (isLab) {
+                            const results =
+                                prescription.lab_results?.length
+                                    ? prescription.lab_results
+                                    : (prescription.raw_output_json?.lab_results ?? []);
+                            return <LabResultsCard labResults={results} />;
+                        }
+
+                        if (isScan) {
+                            const report =
+                                prescription.scan_report
+                                ?? prescription.raw_output_json?.scan_report
+                                ?? {};
+                            return <ScanReportCard report={report} />;
+                        }
+
+                        // Default: prescription medications
+                        return (
+                            <MedicationList
+                                medications={(prescription.medications ?? []).map((m) => ({
+                                    id: m.id,
+                                    name: m.name,
+                                    dose: m.dose,
+                                    frequency: m.frequency,
+                                    duration: m.duration,
+                                    notes: m.notes,
+                                }))}
+                            />
+                        );
+                    })()}
 
                     <FollowUpRequestsCard
                         requests={followUpRequests}
