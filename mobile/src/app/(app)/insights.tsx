@@ -156,7 +156,7 @@ const getMotivation = (pct: number): { message: string; emoji: string; color: st
 
 export default function InsightsScreen() {
     const router = useRouter();
-
+    const { activeProfile } = useActiveProfile();
     const { isRTL } = useLanguage();
 
     const [range, setRange] = useState<RangeOption>('7d');

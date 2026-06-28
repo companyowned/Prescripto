@@ -23,6 +23,7 @@ import {
     useDeleteReminder,
 } from '../../features/reminders/hooks';
 import { useLanguage } from '../../contexts/language-context';
+import { scheduleAllReminders } from '../../services/reminderAlarmService';
 
 /* ── Time-of-day grouping ── */
 
@@ -66,6 +67,7 @@ const groupByTimeOfDay = (reminders: MedicationReminder[]): TimeGroup[] => {
 };
 
 export default function RemindersScreen() {
+    const router = useRouter();
     const { t, isRTL } = useLanguage();
     const [showInactive, setShowInactive] = useState(false);
     const pageOpacity = useSharedValue(0);
@@ -81,6 +83,13 @@ export default function RemindersScreen() {
     const [selectedReminder, setSelectedReminder] = useState<MedicationReminder | null>(null);
 
     const { data, isLoading, error } = useMedicationReminders(!showInactive);
+
+    // Reschedule all alarm notifications whenever the reminder list changes
+    useEffect(() => {
+        if (data?.reminders?.length) {
+            scheduleAllReminders(data.reminders).catch(console.warn);
+        }
+    }, [data?.reminders]);
 
     const pauseMutation = usePauseReminder();
     const resumeMutation = useResumeReminder();

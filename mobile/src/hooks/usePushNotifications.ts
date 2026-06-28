@@ -34,10 +34,13 @@ export function usePushNotifications() {
 
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       setNotification(notification);
-      
+      // Medication alarm notifications are handled by useAlarmNotifications (AlarmOverlay).
+      // Only show the generic alert for non-medication push notifications.
+      const data = notification.request.content.data as any;
+      if (data?.reminderId) return; // handled by AlarmOverlay
+
       const title = notification.request.content.title || 'Notification';
-      const body = notification.request.content.body || 'You have a new alert!';
-      
+      const body  = notification.request.content.body  || 'You have a new alert!';
       if (Platform.OS === 'web') {
           window.alert(`${title}\n\n${body}`);
       } else {
