@@ -22,6 +22,7 @@ import {
 } from '../../components/home';
 import { useTheme, ThemeColors } from '../../contexts/theme-context';
 import { useLanguage } from '../../contexts/language-context';
+import { colors } from '../../theme';
 
 function greetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
     const h = new Date().getHours();
@@ -55,15 +56,15 @@ export default function HomeScreen() {
 
     const tap = () => { if (Platform.OS !== 'web') Haptics.selectionAsync(); };
 
-    const pageOpacity = useSharedValue(0);
+    const pageOpacity   = useSharedValue(0);
     const pageTranslate = useSharedValue(18);
     const pageStyle = useAnimatedStyle(() => ({
         opacity: pageOpacity.value,
         transform: [{ translateY: pageTranslate.value }],
     }));
     useEffect(() => {
-        pageOpacity.value = withTiming(1, { duration: 180, easing: Easing.out(Easing.ease) });
-        pageTranslate.value = withTiming(0, { duration: 180, easing: Easing.out(Easing.ease) });
+        pageOpacity.value   = withTiming(1, { duration: 280, easing: Easing.out(Easing.ease) });
+        pageTranslate.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.ease) });
     }, []);
 
     const adherence   = insights ? Math.round(insights.adherence_rate * 100) : null;
@@ -86,15 +87,12 @@ export default function HomeScreen() {
 
                         <ProfileSwitcher />
 
-                        {/* Greeting */}
-                        <Text style={[styles.greetingText, { color: tc.textPrimary }]}>{t(greetingKey())}, {userData?.full_name?.split(' ')[0] || 'there'} 👋</Text>
-
                         {/* Stats Row */}
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScroll} contentContainerStyle={styles.statsRow}>
-                            <StatCard icon="shield-checkmark" label={t('adherence')} value={adherence !== null ? `${adherence}%` : '—'} color="#1AABCF" tc={tc} />
-                            <StatCard icon="flame"            label={t('streak')}    value={streak !== null ? `${streak}d` : '—'}        color="#F59E0B" tc={tc} />
-                            <StatCard icon="checkmark-done"   label={t('taken')}     value={takenToday !== null ? `${takenToday}` : '—'} color="#10B981" tc={tc} />
-                            <StatCard icon="alert-circle"     label={t('missed')}    value={missedToday !== null ? `${missedToday}` : '—'} color="#EF4444" tc={tc} />
+                            <StatCard icon="shield-checkmark" label={t('adherence')} value={adherence !== null ? `${adherence}%` : '—'} color="#4FB3FF" />
+                            <StatCard icon="flame"            label={t('streak')}    value={streak    !== null ? `${streak}d`    : '—'} color="#FFD96E" />
+                            <StatCard icon="checkmark-done"   label={t('taken')}     value={takenToday !== null ? `${takenToday}` : '—'} color="#76FFB4" />
+                            <StatCard icon="alert-circle"     label={t('missed')}    value={missedToday !== null ? `${missedToday}` : '—'} color="#FF6B8A" />
                         </ScrollView>
 
                         <HeroCard
@@ -104,10 +102,10 @@ export default function HomeScreen() {
 
                         {/* Quick Actions */}
                         <View style={styles.quickGrid}>
-                            <QuickAction icon="chatbubbles"         label={t('dawiniAI')}  color="#1AABCF" onPress={() => router.push('/(app)/chat')}           tc={tc} />
-                            <QuickAction icon="today-outline"       label={t('schedule')} color="#10B981" onPress={() => router.push('/(app)/today-schedule')} tc={tc} />
-                            <QuickAction icon="bar-chart-outline"   label={t('insights')} color="#F59E0B" onPress={() => router.push('/(app)/insights')}       tc={tc} />
-                            <QuickAction icon="medical"             label={t('pharmacy')} color="#A78BFA" onPress={() => { tap(); setPharmacyVisible(true); }} tc={tc} />
+                            <QuickAction icon="chatbubbles"       label={t('dawiniAI')}  color="#4FB3FF" onPress={() => router.push('/(app)/chat')} />
+                            <QuickAction icon="today-outline"     label={t('schedule')} color="#76FFB4" onPress={() => router.push('/(app)/today-schedule')} />
+                            <QuickAction icon="bar-chart-outline" label={t('insights')} color="#FFD96E" onPress={() => router.push('/(app)/insights')} />
+                            <QuickAction icon="medical"           label={t('pharmacy')} color="#C4B5FD" onPress={() => { tap(); setPharmacyVisible(true); }} />
                         </View>
 
                         <RecentScansList
@@ -135,57 +133,77 @@ export default function HomeScreen() {
     );
 }
 
-const StatCard: React.FC<{ icon: string; label: string; value: string; color: string; tc: ThemeColors }> = ({ icon, label, value, color, tc }) => (
-    <View style={[styles.statCard, { borderColor: color + '30' }]}>
-        <LinearGradient colors={[color + '18', 'transparent']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+const StatCard: React.FC<{ icon: string; label: string; value: string; color: string }> = ({ icon, label, value, color }) => (
+    <View style={[styles.statCard, { borderColor: color + '35' }]}>
+        <LinearGradient
+            colors={[color + '20', 'transparent']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+        />
         <Ionicons name={icon as any} size={20} color={color} />
         <Text style={[styles.statValue, { color }]}>{value}</Text>
-        <Text style={[styles.statLabel, { color: tc.textMuted }]}>{label}</Text>
+        <Text style={styles.statLabel}>{label}</Text>
     </View>
 );
 
-const QuickAction: React.FC<{ icon: string; label: string; color: string; onPress: () => void; tc: ThemeColors }> = ({ icon, label, color, onPress, tc }) => (
+const QuickAction: React.FC<{ icon: string; label: string; color: string; onPress: () => void }> = ({ icon, label, color, onPress }) => (
     <TouchableOpacity style={styles.quickAction} onPress={onPress} activeOpacity={0.75}>
-        <View style={[styles.qaIcon, { backgroundColor: color + '18', borderColor: color + '30' }]}>
+        <View style={[styles.qaIcon, { backgroundColor: color + '18', borderColor: color + '35' }]}>
             <Ionicons name={icon as any} size={22} color={color} />
         </View>
-        <Text style={[styles.qaLabel, { color: tc.textSecondary }]}>{label}</Text>
+        <Text style={styles.qaLabel}>{label}</Text>
     </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
-    safeArea:   { flex: 1, backgroundColor: 'transparent' },
-    container:  { flex: 1 },
+    safeArea: { flex: 1, backgroundColor: 'transparent' },
+    container: { flex: 1 },
     scrollContent: {
         paddingHorizontal: 20,
         paddingTop: Platform.OS === 'ios' ? 10 : 30,
-        paddingBottom: 110,
+        paddingBottom: 120,
     },
-    greetingText: {
-        fontSize: 20, fontWeight: '700', color: '#0B1D2E',
-        marginBottom: 16, marginTop: 4,
-    },
-    statsScroll: { flexGrow: 0, marginBottom: 18 },
-    statsRow: { gap: 10, paddingRight: 4 },
+    statsScroll: { flexGrow: 0, marginBottom: 20 },
+    statsRow:    { gap: 10, paddingRight: 4 },
     statCard: {
-        width: 88, alignItems: 'center', justifyContent: 'center',
-        paddingVertical: 14, paddingHorizontal: 10,
-        borderRadius: 18, borderWidth: 1,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        gap: 4, overflow: 'hidden',
+        width: 90,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 10,
+        borderRadius: 20,
+        borderWidth: 1,
+        backgroundColor: colors.glass.background,
+        gap: 5,
+        overflow: 'hidden',
     },
-    statValue: { fontSize: 18, fontWeight: '800' },
-    statLabel: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.4 },
-
+    statValue: { fontSize: 19, fontWeight: '800' },
+    statLabel: {
+        fontSize: 9,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        color: 'rgba(255,255,255,0.55)',
+    },
     quickGrid: {
-        flexDirection: 'row', justifyContent: 'space-between',
-        marginBottom: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 24,
     },
     quickAction: { alignItems: 'center', gap: 8, flex: 1 },
     qaIcon: {
-        width: 54, height: 54, borderRadius: 18,
-        alignItems: 'center', justifyContent: 'center',
+        width: 56,
+        height: 56,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
         borderWidth: 1,
     },
-    qaLabel: { fontSize: 11, fontWeight: '600', textAlign: 'center' },
+    qaLabel: {
+        fontSize: 10,
+        fontWeight: '600',
+        textAlign: 'center',
+        color: 'rgba(255,255,255,0.65)',
+    },
 });

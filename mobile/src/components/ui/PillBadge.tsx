@@ -8,7 +8,7 @@ const VARIANT_MAP: Record<BadgeVariant, { bg: string; border: string; text: stri
     success: { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.35)', text: '#34D399', icon: 'checkmark-circle' },
     warning: { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.35)', text: '#FCD34D', icon: 'alert-circle' },
     error:   { bg: 'rgba(239,68,68,0.15)',  border: 'rgba(239,68,68,0.35)',  text: '#F87171', icon: 'close-circle' },
-    info:    { bg: 'rgba(62,219,240,0.15)', border: 'rgba(62,219,240,0.35)', text: '#3EDBF0', icon: 'information-circle' },
+    info:    { bg: 'rgba(79,179,255,0.15)', border: 'rgba(79,179,255,0.35)', text: '#4FB3FF', icon: 'information-circle' },
     neutral: { bg: 'rgba(255,255,255,0.08)', border: 'rgba(255,255,255,0.15)', text: 'rgba(255,255,255,0.6)', icon: 'ellipse' },
     active:  { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.35)', text: '#34D399', icon: 'radio-button-on' },
     paused:  { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.35)', text: '#FCD34D', icon: 'pause-circle' },

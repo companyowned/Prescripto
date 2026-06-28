@@ -1,31 +1,25 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme';
 import { EmptyState } from '../ui';
 import type { PrescriptionListItem } from '../../../src/features/prescriptions/types';
 
 const PURPOSE_CONFIG = {
-    prescription: { icon: 'pill', color: '#1AABCF',  label: 'Rx' },
-    lab_result:   { icon: 'flask-outline', color: '#10B981', label: 'Lab' },
-    radiology_report: { icon: 'radio-outline', color: '#A78BFA', label: 'Scan' },
+    prescription:     { icon: 'pill',          color: '#4FB3FF', label: 'Rx'   },
+    lab_result:       { icon: 'flask-outline', color: '#76FFB4', label: 'Lab'  },
+    radiology_report: { icon: 'radio-outline', color: '#C4B5FD', label: 'Scan' },
 } as const;
 
 const getScanTitle = (scan: PrescriptionListItem): string => {
     const diag = scan.diagnosis_text && scan.diagnosis_text !== 'null' && scan.diagnosis_text !== ''
         ? scan.diagnosis_text : null;
     if (diag) return diag;
-    if (scan.purpose === 'lab_result') {
-        return scan.facility_name ? `Lab Results — ${scan.facility_name}` : 'Lab Test Results';
-    }
-    if (scan.purpose === 'radiology_report') {
-        return scan.facility_name ? `Radiology — ${scan.facility_name}` : 'Radiology Report';
-    }
-    if (scan.medication_count > 0) {
-        const medWord = scan.medication_count === 1 ? 'Medication' : 'Medications';
-        return `${scan.medication_count} ${medWord} Prescribed`;
-    }
+    if (scan.purpose === 'lab_result') return scan.facility_name ? `Lab Results — ${scan.facility_name}` : 'Lab Test Results';
+    if (scan.purpose === 'radiology_report') return scan.facility_name ? `Radiology — ${scan.facility_name}` : 'Radiology Report';
+    if (scan.medication_count > 0) return `${scan.medication_count} ${scan.medication_count === 1 ? 'Medication' : 'Medications'} Prescribed`;
     if (scan.doctor_name) return `Prescription — Dr. ${scan.doctor_name}`;
     return 'Medical Prescription';
 };
@@ -62,12 +56,12 @@ export const RecentScansList: React.FC<RecentScansListProps> = ({
                 )}
             </View>
 
-            <View style={styles.listContainer}>
+            <View style={styles.list}>
                 {scans.length === 0 ? (
                     <EmptyState
                         title="No prescriptions scanned yet"
                         message="Start by scanning your first prescription to manage your records intelligently."
-                        icon={<Ionicons name="document-text-outline" size={32} color={colors.primary[300]} />}
+                        icon={<Ionicons name="document-text-outline" size={32} color={colors.primary[400]} />}
                         actionTitle="Scan First Prescription"
                         onAction={onNewScanPress}
                     />
@@ -76,9 +70,8 @@ export const RecentScansList: React.FC<RecentScansListProps> = ({
                         const date = new Date(scan.created_at).toLocaleDateString('en-US', {
                             month: 'short', day: 'numeric', year: 'numeric',
                         });
-                        const cfg = PURPOSE_CONFIG[scan.purpose as keyof typeof PURPOSE_CONFIG]
-                            || PURPOSE_CONFIG.prescription;
-                        const title = getScanTitle(scan);
+                        const cfg = PURPOSE_CONFIG[scan.purpose as keyof typeof PURPOSE_CONFIG] || PURPOSE_CONFIG.prescription;
+                        const title    = getScanTitle(scan);
                         const subtitle = getScanSubtitle(scan, date);
                         const confidence = scan.confidence_score != null
                             ? Math.round(scan.confidence_score * 100) : null;
@@ -86,39 +79,44 @@ export const RecentScansList: React.FC<RecentScansListProps> = ({
                         return (
                             <TouchableOpacity
                                 key={scan.id}
-                                style={styles.listItem}
+                                style={styles.item}
                                 onPress={() => onScanPress(scan.document_id)}
                                 activeOpacity={0.75}
                             >
-                                <BlurView intensity={15} tint="light" style={StyleSheet.absoluteFill} />
+                                <BlurView intensity={18} tint="dark" style={StyleSheet.absoluteFill} />
+                                <LinearGradient
+                                    colors={['rgba(255,255,255,0.09)', 'rgba(255,255,255,0.04)']}
+                                    style={StyleSheet.absoluteFill}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                />
 
                                 {/* Left accent bar */}
                                 <View style={[styles.accentBar, { backgroundColor: cfg.color }]} />
 
-                                <View style={styles.listContent}>
-                                    {/* Icon */}
-                                    <View style={[styles.listIconContainer, { backgroundColor: cfg.color + '20', borderColor: cfg.color + '40' }]}>
+                                <View style={styles.rowContent}>
+                                    {/* Icon badge */}
+                                    <View style={[styles.iconBadge, { backgroundColor: cfg.color + '20', borderColor: cfg.color + '45' }]}>
                                         <Ionicons name={cfg.icon as any} size={20} color={cfg.color} />
                                     </View>
 
                                     {/* Text */}
-                                    <View style={styles.listTextContainer}>
+                                    <View style={styles.textCol}>
                                         <View style={styles.titleRow}>
-                                            <View style={[styles.typeBadge, { backgroundColor: cfg.color + '20' }]}>
+                                            <View style={[styles.typeBadge, { backgroundColor: cfg.color + '22' }]}>
                                                 <Text style={[styles.typeBadgeText, { color: cfg.color }]}>{cfg.label}</Text>
                                             </View>
                                             {confidence !== null && (
-                                                <Text style={[
-                                                    styles.confidenceText,
-                                                    { color: confidence >= 80 ? '#10B981' : confidence >= 50 ? '#F59E0B' : '#EF4444' }
-                                                ]}>{confidence}%</Text>
+                                                <Text style={[styles.confidenceText, {
+                                                    color: confidence >= 80 ? colors.success : confidence >= 50 ? colors.warning : colors.error,
+                                                }]}>{confidence}%</Text>
                                             )}
                                         </View>
-                                        <Text style={styles.listTitle} numberOfLines={1}>{title}</Text>
-                                        <Text style={styles.listSubtitle} numberOfLines={1}>{subtitle}</Text>
+                                        <Text style={styles.itemTitle} numberOfLines={1}>{title}</Text>
+                                        <Text style={styles.itemSubtitle} numberOfLines={1}>{subtitle}</Text>
                                     </View>
 
-                                    <Ionicons name="chevron-forward" size={16} color="rgba(11,29,46,0.30)" />
+                                    <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.30)" />
                                 </View>
                             </TouchableOpacity>
                         );
@@ -130,9 +128,7 @@ export const RecentScansList: React.FC<RecentScansListProps> = ({
 };
 
 const styles = StyleSheet.create({
-    container: {
-        marginBottom: 24,
-    },
+    container: { marginBottom: 24 },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -140,44 +136,28 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     sectionTitle: {
-        color: '#FFFFFF',
+        color: colors.white,
         fontSize: 18,
         fontWeight: '700',
     },
     seeAllText: {
-        color: colors.primary[300],
+        color: colors.primary[400],
         fontSize: 14,
         fontWeight: '600',
     },
-    listContainer: {
-        gap: 12,
-    },
-    listItem: {
+    list: { gap: 12 },
+    item: {
         borderRadius: 20,
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: colors.glass.borderHighlight,
         backgroundColor: colors.glass.background,
     },
-    listContent: {
+    rowContent: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
         paddingLeft: 20,
-    },
-    listIconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 16,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 14,
-        borderWidth: 1,
-    },
-    listTextContainer: {
-        flex: 1,
-        justifyContent: 'center',
     },
     accentBar: {
         position: 'absolute',
@@ -187,6 +167,16 @@ const styles = StyleSheet.create({
         width: 4,
         zIndex: 2,
     },
+    iconBadge: {
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 14,
+        borderWidth: 1,
+    },
+    textCol: { flex: 1, justifyContent: 'center' },
     titleRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -207,33 +197,14 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '700',
     },
-    listTitle: {
-        color: '#FFFFFF',
+    itemTitle: {
+        color: colors.white,
         fontSize: 15,
         fontWeight: '700',
         marginBottom: 2,
     },
-    listSubtitle: {
-        color: colors.textSecondary,
+    itemSubtitle: {
+        color: 'rgba(255,255,255,0.55)',
         fontSize: 12,
-    },
-    listRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    tagProcessed: {
-        backgroundColor: 'rgba(62, 219, 240, 0.15)',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: colors.primary[400],
-    },
-    tagText: {
-        color: colors.primary[300],
-        fontSize: 9,
-        fontWeight: '800',
-        letterSpacing: 0.5,
     },
 });

@@ -1,5 +1,5 @@
 /**
- * Button — Premium reusable button with glassmorphism + haptic feedback
+ * Button — Premium glassmorphism button with deep blue gradient + haptic feedback
  */
 import React from 'react';
 import {
@@ -72,20 +72,30 @@ export const Button: React.FC<ButtonProps> = ({
             >
                 {variant === 'primary' ? (
                     <LinearGradient
-                        colors={[...colors.gradient.primary]}
+                        colors={['#2196F3', '#1565C0', '#0D47A1']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={StyleSheet.absoluteFill}
                     />
-                ) : variant === 'secondary' || variant === 'outline' ? (
-                    <BlurView intensity={15} tint="light" style={[StyleSheet.absoluteFill, styles.glassBorder]} />
+                ) : variant === 'secondary' ? (
+                    <>
+                        <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+                        <LinearGradient
+                            colors={['rgba(255,255,255,0.14)', 'rgba(255,255,255,0.06)']}
+                            style={StyleSheet.absoluteFill}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                        />
+                    </>
+                ) : variant === 'outline' ? (
+                    <BlurView intensity={15} tint="dark" style={[StyleSheet.absoluteFill, styles.glassBorder]} />
                 ) : null}
 
                 <View style={styles.contentRow}>
                     {loading ? (
                         <ActivityIndicator
                             size="small"
-                            color={variant === 'outline' || variant === 'ghost' ? colors.primary[300] : colors.white}
+                            color={variant === 'outline' || variant === 'ghost' ? colors.primary[400] : colors.white}
                         />
                     ) : (
                         <>
@@ -100,18 +110,18 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 const styles = StyleSheet.create({
-    base: { borderRadius: borderRadius.md, overflow: 'hidden' },
+    base: { borderRadius: borderRadius.xl, overflow: 'hidden' },
     pressableArea: { width: '100%', justifyContent: 'center', alignItems: 'center' },
     contentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, zIndex: 1 },
-    glassBorder: { borderRadius: borderRadius.md, borderWidth: 1, borderColor: colors.glass.border },
+    glassBorder: { borderRadius: borderRadius.xl, borderWidth: 1, borderColor: colors.glass.borderHighlight },
     text: { ...typography.button },
-    disabled: { opacity: 0.5 },
+    disabled: { opacity: 0.45 },
 });
 
 const sizeStyles: Record<string, ViewStyle> = {
     sm: { paddingHorizontal: spacing.lg,  paddingVertical: spacing.sm,  minHeight: 36 },
-    md: { paddingHorizontal: spacing.xl,  paddingVertical: spacing.md,  minHeight: 48 },
-    lg: { paddingHorizontal: spacing.xxl, paddingVertical: spacing.lg,  minHeight: 56 },
+    md: { paddingHorizontal: spacing.xl,  paddingVertical: spacing.md,  minHeight: 50 },
+    lg: { paddingHorizontal: spacing.xxl, paddingVertical: spacing.lg,  minHeight: 58 },
 };
 
 const textSizeStyles: Record<string, TextStyle> = {
@@ -120,18 +130,30 @@ const textSizeStyles: Record<string, TextStyle> = {
 
 const variantContainerStyles: Record<string, ViewStyle> = {
     primary: {
-        shadowColor: colors.glass.glow, shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.8, shadowRadius: 15, elevation: 8,
-        borderWidth: 1, borderColor: colors.glass.borderHighlight,
+        shadowColor: 'rgba(33,150,243,0.6)',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 1,
+        shadowRadius: 18,
+        elevation: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(79,179,255,0.35)',
     },
-    secondary: { backgroundColor: 'transparent' },
-    outline:   { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.primary[300] },
-    ghost:     { backgroundColor: 'transparent' },
+    secondary: {
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: colors.glass.borderHighlight,
+    },
+    outline: {
+        backgroundColor: 'transparent',
+        borderWidth: 1.5,
+        borderColor: colors.primary[400],
+    },
+    ghost: { backgroundColor: 'transparent' },
 };
 
 const variantTextStyles: Record<string, TextStyle> = {
-    primary:   { color: colors.white },
+    primary:   { color: colors.white, fontWeight: '700' },
     secondary: { color: colors.white },
-    outline:   { color: colors.primary[300] },
-    ghost:     { color: colors.primary[300] },
+    outline:   { color: colors.primary[400] },
+    ghost:     { color: colors.primary[400] },
 };

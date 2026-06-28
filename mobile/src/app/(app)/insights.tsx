@@ -40,7 +40,7 @@ const AdherenceRing: React.FC<{ pct: number; color: string; size?: number }> = (
             {/* Track */}
             <View style={[
                 StyleSheet.absoluteFill,
-                { borderRadius: half, borderWidth: sw, borderColor: 'rgba(11,29,46,0.10)' },
+                { borderRadius: half, borderWidth: sw, borderColor: 'rgba(255,255,255,0.12)' },
             ]} />
 
             {/* Right-half progress */}
@@ -68,7 +68,7 @@ const AdherenceRing: React.FC<{ pct: number; color: string; size?: number }> = (
             {/* Center text */}
             <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
                 <Text style={{ fontSize: 30, fontWeight: '900', color }}>{pct}%</Text>
-                <Text style={{ fontSize: 9, fontWeight: '700', color: 'rgba(11,29,46,0.45)', letterSpacing: 1.2 }}>
+                <Text style={{ fontSize: 9, fontWeight: '700', color: 'rgba(255,255,255,0.50)', letterSpacing: 1.2 }}>
                     ADHERENCE
                 </Text>
             </View>
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
         paddingBottom: 110,
     },
     headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-    title: { fontSize: 32, fontWeight: '800', color: '#0B1D2E' },
+    title: { fontSize: 32, fontWeight: '800', color: '#FFFFFF' },
     exportBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 6,
         paddingHorizontal: 14, paddingVertical: 8,
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     heroStats: { flex: 1, gap: 12 },
     heroStat: { alignItems: 'center', flexDirection: 'row', gap: 8 },
     heroStatValue: { fontSize: 16, fontWeight: '800' },
-    heroStatLabel: { fontSize: 11, color: 'rgba(11,29,46,0.50)', fontWeight: '600' },
+    heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.55)', fontWeight: '600' },
 
     motivationCard: {
         flexDirection: 'row', alignItems: 'center', gap: 10,
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
     cardsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 8 },
     chartSection: { marginBottom: 24 },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-    sectionTitle: { fontSize: 18, fontWeight: '700', color: '#0B1D2E' },
+    sectionTitle: { fontSize: 18, fontWeight: '700', color: '#FFFFFF' },
     sectionSubtitle: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
     chartCard: {
         backgroundColor: colors.glass.background,
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     riskCard: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 12, marginTop: 8 },
     riskWarning: { backgroundColor: 'rgba(245,158,11,0.15)', borderWidth: 1, borderColor: 'rgba(245,158,11,0.3)' },
     riskCritical: { backgroundColor: 'rgba(239,68,68,0.15)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)' },
-    riskText: { flex: 1, fontSize: 13, fontWeight: '600', color: '#0B1D2E' },
+    riskText: { flex: 1, fontSize: 13, fontWeight: '600', color: '#FFFFFF' },
 
     quickActions: { marginBottom: 16 },
     quickAction: {
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
         padding: 16, borderRadius: 14, marginBottom: 8,
         borderWidth: 1, borderColor: colors.glass.borderHighlight, gap: 12,
     },
-    quickActionText: { flex: 1, fontSize: 15, fontWeight: '600', color: '#0B1D2E' },
+    quickActionText: { flex: 1, fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
 
     emptyCard: {
         backgroundColor: colors.glass.background,
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.55)',
         justifyContent: 'center', alignItems: 'center', marginBottom: 20,
     },
-    emptyTitle: { fontSize: 18, fontWeight: '700', color: '#0B1D2E', marginBottom: 8 },
+    emptyTitle: { fontSize: 18, fontWeight: '700', color: '#FFFFFF', marginBottom: 8 },
     emptyMessage: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 20 },
     createBtn: { backgroundColor: colors.primary[500], paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
     createBtnText: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },

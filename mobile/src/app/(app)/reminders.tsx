@@ -136,12 +136,6 @@ export default function RemindersScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Swipe hint */}
-                        <View style={styles.hintRow}>
-                            <Ionicons name="arrow-back-outline" size={12} color={colors.textSecondary} />
-                            <Text style={styles.hintText}>{t('swipeHint')}</Text>
-                        </View>
-
                         {/* Filter toggle */}
                         <View style={styles.filterRow}>
                             <TouchableOpacity
@@ -196,14 +190,11 @@ export default function RemindersScreen() {
                                         <ReminderCard
                                             key={reminder.id}
                                             reminder={reminder}
-                                            onPress={() => router.push({
-                                                pathname: '/(app)/reminder-form',
-                                                params: { id: reminder.id },
-                                            })}
+                                            onPress={() => setSelectedReminder(reminder)}
+                                            onEdit={() => router.push({ pathname: '/(app)/reminder-form', params: { id: reminder.id } })}
                                             onPause={() => pauseMutation.mutate(reminder.id)}
                                             onResume={() => resumeMutation.mutate(reminder.id)}
                                             onDelete={() => handleDelete(reminder.id, reminder.medication_name)}
-                                            onInfo={() => setSelectedReminder(reminder)}
                                         />
                                     ))}
                                 </View>
@@ -258,7 +249,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row', justifyContent: 'space-between',
         alignItems: 'center', marginBottom: 4,
     },
-    title: { fontSize: 28, fontWeight: '800', color: '#0B1D2E' },
+    title: { fontSize: 28, fontWeight: '800', color: '#FFFFFF' },
     addBtn: {
         width: 42, height: 42, borderRadius: 14,
         backgroundColor: colors.primary[500],
@@ -293,7 +284,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.1)',
         justifyContent: 'center', alignItems: 'center', marginBottom: 20,
     },
-    emptyTitle: { fontSize: 18, fontWeight: '700', color: '#0B1D2E', marginBottom: 8 },
+    emptyTitle: { fontSize: 18, fontWeight: '700', color: '#FFFFFF', marginBottom: 8 },
     emptyMessage: {
         fontSize: 14, color: colors.textSecondary,
         textAlign: 'center', lineHeight: 22, marginBottom: 20,

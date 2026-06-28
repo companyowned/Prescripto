@@ -20,12 +20,12 @@ const { width } = Dimensions.get('window');
 const SLIDES = [
     {
         icon: 'scan-outline' as const,
-        iconColor: '#3EDBF0',
-        iconBg: 'rgba(62,219,240,0.12)',
+        iconColor: '#4FB3FF',
+        iconBg: 'rgba(79,179,255,0.12)',
         title: 'Scan Prescriptions',
         subtitle: 'Instantly digitize handwritten prescriptions using AI — no more lost paper records.',
-        accent: '#3EDBF0',
-        gradient: ['rgba(62,219,240,0.15)', 'rgba(4,13,18,0)'] as const,
+        accent: '#4FB3FF',
+        gradient: ['rgba(79,179,255,0.15)', 'rgba(4,13,18,0)'] as const,
     },
     {
         icon: 'notifications-outline' as const,
@@ -38,12 +38,12 @@ const SLIDES = [
     },
     {
         icon: 'people-outline' as const,
-        iconColor: '#1FA3C6',
-        iconBg: 'rgba(31,163,198,0.12)',
+        iconColor: '#2196F3',
+        iconBg: 'rgba(33,150,243,0.12)',
         title: 'Care for Your Family',
         subtitle: 'Manage multiple health profiles for your whole family — all in one place.',
-        accent: '#1FA3C6',
-        gradient: ['rgba(31,163,198,0.15)', 'rgba(4,13,18,0)'] as const,
+        accent: '#2196F3',
+        gradient: ['rgba(33,150,243,0.15)', 'rgba(4,13,18,0)'] as const,
     },
 ];
 
@@ -87,8 +87,8 @@ export default function OnboardingScreen() {
     const [current, setCurrent] = useState(0);
     const slide = SLIDES[current];
 
-    const finish = () => {
-        completeOnboarding();
+    const finish = async () => {
+        await completeOnboarding();
         router.replace('/(auth)/login');
     };
 

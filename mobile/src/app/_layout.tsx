@@ -6,9 +6,12 @@ import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/auth';
 import { ThemeProvider } from '../contexts/theme-context';
 import { LanguageProvider } from '../contexts/language-context';
+
+const ONBOARDING_KEY = '@dawini_onboarding_done';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -27,16 +30,27 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [onboardingDone, setOnboardingDone]   = useState(false);
 
+    // On mount: check auth status AND whether onboarding was already completed
     useEffect(() => {
-        authService.isAuthenticated().then((authed) => {
+        const bootstrap = async () => {
+            const [authed, stored] = await Promise.all([
+                authService.isAuthenticated(),
+                AsyncStorage.getItem(ONBOARDING_KEY),
+            ]);
             setIsAuthenticated(authed);
+            setOnboardingDone(stored === 'true');
             setIsReady(true);
-        });
+        };
+        bootstrap();
     }, []);
 
-    const signIn             = useCallback(() => setIsAuthenticated(true),  []);
-    const signOut            = useCallback(() => setIsAuthenticated(false), []);
-    const completeOnboarding = useCallback(() => setOnboardingDone(true),   []);
+    const signIn  = useCallback(() => setIsAuthenticated(true),  []);
+    const signOut = useCallback(() => setIsAuthenticated(false), []);
+
+    const completeOnboarding = useCallback(async () => {
+        await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+        setOnboardingDone(true);
+    }, []);
 
     useEffect(() => {
         if (!isReady) return;

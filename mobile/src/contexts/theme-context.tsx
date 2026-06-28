@@ -11,22 +11,23 @@ export interface ThemeColors {
     inputBg:       string;
 }
 
+// Both themes use white text — always on deep blue background
 const LIGHT: ThemeColors = {
-    textPrimary:   '#0B1D2E',
-    textSecondary: 'rgba(11,29,46,0.60)',
-    textMuted:     'rgba(11,29,46,0.40)',
-    cardBg:        'rgba(255,255,255,0.55)',
-    cardBorder:    'rgba(11,29,46,0.18)',
-    inputBg:       'rgba(255,255,255,0.50)',
+    textPrimary:   '#FFFFFF',
+    textSecondary: 'rgba(255,255,255,0.75)',
+    textMuted:     'rgba(255,255,255,0.50)',
+    cardBg:        'rgba(255,255,255,0.10)',
+    cardBorder:    'rgba(255,255,255,0.18)',
+    inputBg:       'rgba(255,255,255,0.08)',
 };
 
 const DARK: ThemeColors = {
     textPrimary:   '#FFFFFF',
-    textSecondary: 'rgba(255,255,255,0.65)',
-    textMuted:     'rgba(255,255,255,0.40)',
-    cardBg:        'rgba(255,255,255,0.10)',
-    cardBorder:    'rgba(255,255,255,0.20)',
-    inputBg:       'rgba(255,255,255,0.08)',
+    textSecondary: 'rgba(255,255,255,0.70)',
+    textMuted:     'rgba(255,255,255,0.45)',
+    cardBg:        'rgba(255,255,255,0.08)',
+    cardBorder:    'rgba(255,255,255,0.15)',
+    inputBg:       'rgba(255,255,255,0.06)',
 };
 
 interface ThemeContextType {

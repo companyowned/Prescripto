@@ -166,16 +166,16 @@ export default function ResultScreen() {
                                 {/* Prescription anchor node */}
                                 <View style={styles.timelineRow}>
                                     <View style={styles.timelineLeft}>
-                                        <View style={[styles.timelineDot, { backgroundColor: '#1AABCF' }]}>
+                                        <View style={[styles.timelineDot, { backgroundColor: '#4FB3FF' }]}>
                                             <Ionicons name="document-text" size={11} color="#FFF" />
                                         </View>
                                         <View style={styles.timelineBar} />
                                     </View>
-                                    <View style={[styles.timelineNode, { borderColor: '#1AABCF30' }]}>
+                                    <View style={[styles.timelineNode, { borderColor: '#4FB3FF30' }]}>
                                         <View style={styles.timelineNodeTop}>
-                                            <View style={[styles.timelineNodeBadge, { backgroundColor: '#1AABCF20' }]}>
-                                                <Ionicons name="document-text" size={10} color="#1AABCF" />
-                                                <Text style={[styles.timelineNodeBadgeText, { color: '#1AABCF' }]}>Rx</Text>
+                                            <View style={[styles.timelineNodeBadge, { backgroundColor: '#4FB3FF20' }]}>
+                                                <Ionicons name="document-text" size={10} color="#4FB3FF" />
+                                                <Text style={[styles.timelineNodeBadgeText, { color: '#4FB3FF' }]}>Rx</Text>
                                             </View>
                                             <Text style={styles.timelineNodeDate}>
                                                 {new Date(prescription.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -214,7 +214,7 @@ export default function ResultScreen() {
                                                         <Text style={[styles.timelineNodeBadgeText, { color }]}>{typeLabel}</Text>
                                                     </View>
                                                     <Text style={styles.timelineNodeDate}>{date}</Text>
-                                                    <Ionicons name="chevron-forward" size={14} color="rgba(11,29,46,0.30)" />
+                                                    <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.35)" />
                                                 </View>
                                                 <Text style={styles.timelineNodeLabel}>{typeTitle}</Text>
                                                 {doc.original_filename && (
@@ -260,8 +260,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(16,185,129,0.15)',
         alignItems: 'center', justifyContent: 'center',
     },
-    linkedTitle: { fontSize: 15, fontWeight: '700', color: '#0B1D2E' },
-    linkedSubtitle: { fontSize: 12, color: 'rgba(11,29,46,0.50)', marginTop: 1 },
+    linkedTitle: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
+    linkedSubtitle: { fontSize: 12, color: 'rgba(255,255,255,0.55)', marginTop: 1 },
     timeline: {},
     timelineRow: { flexDirection: 'row', gap: 12 },
     timelineLeft: { alignItems: 'center', width: 26 },
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     },
     timelineBar: {
         width: 2, flex: 1, minHeight: 12,
-        backgroundColor: 'rgba(11,29,46,0.08)',
+        backgroundColor: 'rgba(255,255,255,0.08)',
         marginTop: 2,
     },
     timelineNode: {
@@ -286,13 +286,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
     },
     timelineNodeBadgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.3 },
-    timelineNodeLabel: { fontSize: 13, fontWeight: '700', color: '#0B1D2E' },
-    timelineNodeDate: { fontSize: 11, color: 'rgba(11,29,46,0.50)', fontWeight: '600', flex: 1, textAlign: 'right' },
-    timelineNodeSub: { fontSize: 11, color: 'rgba(11,29,46,0.45)', marginTop: 2 },
+    timelineNodeLabel: { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
+    timelineNodeDate: { fontSize: 11, color: 'rgba(255,255,255,0.55)', fontWeight: '600', flex: 1, textAlign: 'right' },
+    timelineNodeSub: { fontSize: 11, color: 'rgba(255,255,255,0.50)', marginTop: 2 },
     linkedAddBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 6,
         marginTop: 4, paddingTop: 12,
-        borderTopWidth: 1, borderTopColor: 'rgba(11,29,46,0.08)',
+        borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.10)',
         justifyContent: 'center',
     },
     linkedAddText: { fontSize: 13, fontWeight: '700', color: colors.primary[300] },

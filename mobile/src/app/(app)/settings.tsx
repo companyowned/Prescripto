@@ -181,9 +181,9 @@ const styles = StyleSheet.create({
         paddingTop: Platform.OS === 'ios' ? 10 : 30,
         paddingBottom: 110,
     },
-    title: { fontSize: 32, fontWeight: '800', color: '#0B1D2E', marginBottom: 24 },
+    title: { fontSize: 32, fontWeight: '800', color: '#FFFFFF', marginBottom: 24 },
     sectionLabel: {
-        fontSize: 11, fontWeight: '700', color: 'rgba(11,29,46,0.45)',
+        fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.50)',
         letterSpacing: 1.2, marginBottom: 8, marginLeft: 4,
     },
     card: {
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
         width: 38, height: 38, borderRadius: 11,
         justifyContent: 'center', alignItems: 'center', marginRight: 14,
     },
-    rowText: { color: '#0B1D2E', fontSize: 15, fontWeight: '600' },
+    rowText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
     divider: { height: 1, backgroundColor: colors.glass.border, marginHorizontal: 12 },
 
     langToggle: {
@@ -212,6 +212,6 @@ const styles = StyleSheet.create({
 
     version: {
         textAlign: 'center', fontSize: 12,
-        color: 'rgba(11,29,46,0.30)', marginTop: 8, marginBottom: 8,
+        color: 'rgba(255,255,255,0.35)', marginTop: 8, marginBottom: 8,
     },
 });
