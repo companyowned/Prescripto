@@ -27,8 +27,9 @@ export function useAlarmNotifications() {
 
     // ── Bootstrap: channel + category ────────────────────────────────────────
     useEffect(() => {
-        setupAlarmChannel();
-        registerAlarmCategory();
+        if (Platform.OS === 'web') return;
+        setupAlarmChannel().catch(console.warn);
+        registerAlarmCategory().catch(console.warn);
     }, []);
 
     // ── Foreground notifications → show in-app overlay ───────────────────────

@@ -29,7 +29,13 @@
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_EXACT_ALARM",
+        "android.permission.ACCESS_NOTIFICATION_POLICY"
       ],
       "package": "com.prescripto.app",
       "googleServicesFile": "./google-services.json"
@@ -40,6 +46,15 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/Logo for Dawini.png",
+          "color": "#0F4C81",
+          "sounds": [],
+          "mode": "production"
+        }
+      ],
       [
         "expo-camera",
         {

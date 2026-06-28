@@ -37,35 +37,41 @@ export type AlarmNotificationData = {
 export async function setupAlarmChannel() {
     if (Platform.OS !== 'android') return;
 
-    await Notifications.setNotificationChannelAsync(ALARM_CHANNEL, {
-        name: 'Medication Alarms',
-        importance: Notifications.AndroidImportance.MAX,
-        sound: 'default',
-        vibrationPattern: [0, 500, 300, 500, 300, 800],
-        enableVibrate: true,
-        enableLights: true,
-        lightColor: '#4FB3FF',
-        bypassDnd: true,           // Ring even in Do-Not-Disturb
-        lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-        showBadge: true,
-    });
+    try {
+        await Notifications.setNotificationChannelAsync(ALARM_CHANNEL, {
+            name: 'Medication Alarms',
+            importance: Notifications.AndroidImportance.MAX,
+            sound: 'default',
+            vibrationPattern: [0, 500, 300, 500, 300, 800],
+            enableVibrate: true,
+            enableLights: true,
+            lightColor: '#4FB3FF',
+            showBadge: true,
+        });
+    } catch (e) {
+        console.warn('setupAlarmChannel failed:', e);
+    }
 }
 
 // ── Notification categories (action buttons) ─────────────────────────────────
 
 export async function registerAlarmCategory() {
-    await Notifications.setNotificationCategoryAsync(CATEGORY_MEDICATION, [
-        {
-            identifier: ACTION_TAKE_NOW,
-            buttonTitle: '✓ Taken',
-            options: { opensAppToForeground: true },
-        },
-        {
-            identifier: ACTION_SNOOZE,
-            buttonTitle: '⏰ Snooze 10 min',
-            options: { opensAppToForeground: false },
-        },
-    ]);
+    try {
+        await Notifications.setNotificationCategoryAsync(CATEGORY_MEDICATION, [
+            {
+                identifier: ACTION_TAKE_NOW,
+                buttonTitle: '✓ Taken',
+                options: { opensAppToForeground: true },
+            },
+            {
+                identifier: ACTION_SNOOZE,
+                buttonTitle: '⏰ Snooze 10 min',
+                options: { opensAppToForeground: false },
+            },
+        ]);
+    } catch (e) {
+        console.warn('registerAlarmCategory failed:', e);
+    }
 }
 
 // ── Notification identifier helpers ──────────────────────────────────────────
@@ -106,24 +112,23 @@ async function scheduleOne(
         followUpIndex,
     };
 
-    await Notifications.scheduleNotificationAsync({
-        identifier: notifId(reminder.id, followUpIndex, originalScheduledAt.toISOString()),
-        content: {
-            title,
-            body,
-            data: data as any,
-            sound: true,
-            categoryIdentifier: CATEGORY_MEDICATION,
-            ...(Platform.OS === 'android' && ({
-                channelId: ALARM_CHANNEL,
-                priority: 'max',
-                sticky: false,
-                vibrate: [0, 500, 300, 500],
-                color: '#4FB3FF',
-            } as any)),
-        },
-        trigger: { type: 'date', date: triggerDate } as any,
-    });
+    try {
+        await Notifications.scheduleNotificationAsync({
+            identifier: notifId(reminder.id, followUpIndex, originalScheduledAt.toISOString()),
+            content: {
+                title,
+                body,
+                data: data as any,
+                sound: true,
+                categoryIdentifier: CATEGORY_MEDICATION,
+            },
+            trigger: Platform.OS === 'android'
+                ? { type: 'date', date: triggerDate, channelId: ALARM_CHANNEL } as any
+                : { type: 'date', date: triggerDate } as any,
+        });
+    } catch (e) {
+        console.warn(`scheduleOne failed for reminder ${reminder.id}:`, e);
+    }
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────

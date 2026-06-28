@@ -16,6 +16,15 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+
+// BlurView can crash on certain Android devices — use a plain dark overlay instead
+const BackdropBlur = Platform.OS === 'android'
+    ? ({ style }: { style: any }) => (
+        <View style={[style, { backgroundColor: 'rgba(2,8,20,0.92)' }]} />
+    )
+    : ({ style }: { style: any }) => (
+        <BlurView intensity={60} tint="dark" style={style} />
+    );
 import { AlarmNotificationData } from '../../services/reminderAlarmService';
 
 interface Props {
@@ -99,7 +108,7 @@ export const AlarmOverlay: React.FC<Props> = ({
         >
             {/* Dark overlay */}
             <View style={styles.backdrop}>
-                <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+                <BackdropBlur style={StyleSheet.absoluteFill} />
                 <LinearGradient
                     colors={['rgba(4,13,36,0.92)', 'rgba(10,30,80,0.96)', 'rgba(4,13,36,0.98)']}
                     style={StyleSheet.absoluteFill}

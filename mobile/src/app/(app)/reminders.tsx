@@ -86,7 +86,7 @@ export default function RemindersScreen() {
 
     // Reschedule all alarm notifications whenever the reminder list changes
     useEffect(() => {
-        if (data?.reminders?.length) {
+        if (Platform.OS !== 'web' && data?.reminders?.length) {
             scheduleAllReminders(data.reminders).catch(console.warn);
         }
     }, [data?.reminders]);
