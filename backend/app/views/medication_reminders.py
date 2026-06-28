@@ -49,6 +49,7 @@ def _to_response(r) -> ReminderResponse:
     return ReminderResponse(
         id=str(r.id),
         user_id=str(r.user_id),
+        profile_id=str(r.profile_id) if r.profile_id else None,
         prescription_id=str(r.prescription_id) if r.prescription_id else None,
         medication_name=r.medication_name,
         dosage=r.dosage,
@@ -84,6 +85,7 @@ async def create_reminder(
 @router.get("", response_model=ReminderListResponse)
 async def list_reminders(
     active_only: bool = Query(False),
+    profile_id: UUID | None = Query(default=None),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -91,7 +93,7 @@ async def list_reminders(
 ):
     """List the current user's medication reminders."""
     reminders, total = await MedicationReminderController.list_reminders(
-        db, current_user.id, active_only=active_only, skip=skip, limit=limit
+        db, current_user.id, active_only=active_only, profile_id=profile_id, skip=skip, limit=limit
     )
     return ReminderListResponse(
         reminders=[_to_response(r) for r in reminders],
@@ -102,12 +104,13 @@ async def list_reminders(
 @router.get("/upcoming", response_model=list[UpcomingDoseResponse])
 async def get_upcoming_doses(
     window_hours: int = Query(24, ge=1, le=168),
+    profile_id: UUID | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Get upcoming doses within a time window."""
     events = await MedicationReminderController.get_upcoming_doses(
-        db, current_user.id, window_hours=window_hours
+        db, current_user.id, window_hours=window_hours, profile_id=profile_id
     )
     return [
         UpcomingDoseResponse(

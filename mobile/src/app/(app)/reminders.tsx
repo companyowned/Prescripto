@@ -13,7 +13,9 @@ import { ReminderCard } from '../../components/reminders';
 import { GlassBackground, MedicationInfoModal } from '../../components/ui';
 import { SkeletonCard } from '../../components/ui/SkeletonLoader';
 import { colors } from '../../theme';
+
 import { MedicationReminder } from '../../features/reminders/types';
+
 import {
     useMedicationReminders,
     usePauseReminder,
@@ -64,7 +66,6 @@ const groupByTimeOfDay = (reminders: MedicationReminder[]): TimeGroup[] => {
 };
 
 export default function RemindersScreen() {
-    const router = useRouter();
     const { t, isRTL } = useLanguage();
     const [showInactive, setShowInactive] = useState(false);
     const pageOpacity = useSharedValue(0);
@@ -80,6 +81,7 @@ export default function RemindersScreen() {
     const [selectedReminder, setSelectedReminder] = useState<MedicationReminder | null>(null);
 
     const { data, isLoading, error } = useMedicationReminders(!showInactive);
+
     const pauseMutation = usePauseReminder();
     const resumeMutation = useResumeReminder();
     const deleteMutation = useDeleteReminder();

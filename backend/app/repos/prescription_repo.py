@@ -107,6 +107,45 @@ class PrescriptionRepo:
         return list(result.scalars().all()), total
 
     @staticmethod
+    async def get_prescriptions_for_profile(
+        db: AsyncSession,
+        profile_id: UUID,
+        skip: int = 0,
+        limit: int = 20,
+        purpose: Optional[str] = None,
+    ) -> tuple[list[Prescription], int]:
+        """List prescriptions for a profile regardless of document uploader (viewer access)."""
+        from app.models.document import Document
+
+        filters = [Prescription.profile_id == profile_id]
+        if purpose:
+            filters.append(Document.purpose == purpose)
+
+        count_result = await db.execute(
+            select(func.count())
+            .select_from(Prescription)
+            .join(Document)
+            .where(*filters)
+        )
+        total = count_result.scalar()
+
+        result = await db.execute(
+            select(Prescription)
+            .join(Document)
+            .options(
+                selectinload(Prescription.doctor),
+                selectinload(Prescription.facility),
+                selectinload(Prescription.medications),
+                selectinload(Prescription.document),
+            )
+            .where(*filters)
+            .order_by(Prescription.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(result.scalars().all()), total
+
+    @staticmethod
     async def update(db: AsyncSession, prescription: Prescription) -> Prescription:
         await db.flush()
         await db.refresh(prescription)

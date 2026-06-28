@@ -14,6 +14,7 @@ class ReminderCreateRequest(BaseModel):
     form: Optional[str] = None
     instructions: Optional[str] = None
     prescription_id: Optional[str] = None
+    profile_id: Optional[str] = None
 
     start_date: datetime
     end_date: Optional[datetime] = None
@@ -75,6 +76,7 @@ class ReminderResponse(BaseModel):
     """Single medication reminder response."""
     id: str
     user_id: str
+    profile_id: Optional[str] = None
     prescription_id: Optional[str] = None
     medication_name: str
     dosage: Optional[str] = None

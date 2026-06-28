@@ -1,5 +1,6 @@
 """Patient profile controller."""
 
+from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import select
@@ -7,10 +8,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import BadRequestError, NotFoundError
 from app.models.document import Document
-from app.models.patient_profile import RelationshipToOwner
+from app.models.patient_profile import (
+    PatientProfile,
+    RelationshipToOwner,
+    AccessRole,
+    ProfileAccess,
+)
 from app.models.prescription import Prescription
-from app.repos.profile_repo import PatientProfileRepo
-from app.schemas.profile import PatientProfileCreateRequest, PatientProfileUpdateRequest
+from app.repos.profile_repo import PatientProfileRepo, ProfileAccessRepo
+from app.schemas.profile import (
+    PatientProfileCreateRequest,
+    PatientProfileResponse,
+    PatientProfileUpdateRequest,
+)
+from app.services.profile_access import ProfileAccessService, ProfileAccessResolution
 
 
 class PatientProfileController:
@@ -20,26 +31,82 @@ class PatientProfileController:
     ):
         profile = await PatientProfileRepo.get_default_by_owner(db, owner_user_id)
         if profile:
+            # Ensure ProfileAccess grant exists
+            await ProfileAccessRepo.create_access_grant(db, profile.id, owner_user_id, AccessRole.OWNER)
             return profile
 
         profiles = await PatientProfileRepo.list_by_owner(db, owner_user_id)
         if profiles:
             profiles[0].is_default = True
             await db.flush()
+            await ProfileAccessRepo.create_access_grant(db, profiles[0].id, owner_user_id, AccessRole.OWNER)
             return profiles[0]
 
-        return await PatientProfileRepo.create(
+        profile = await PatientProfileRepo.create(
             db,
             owner_user_id=owner_user_id,
             full_name=owner_full_name,
             relationship_to_owner=RelationshipToOwner.SELF,
             is_default=True,
         )
+        await ProfileAccessRepo.create_access_grant(db, profile.id, owner_user_id, AccessRole.OWNER)
+        return profile
+
+    @staticmethod
+    async def list_profile_rows_with_access(
+        db: AsyncSession, owner_user_id: UUID, owner_full_name: str
+    ) -> list[tuple[PatientProfile, ProfileAccess]]:
+        await PatientProfileController.ensure_default_profile(db, owner_user_id, owner_full_name)
+        return await PatientProfileRepo.list_accessible_profiles_with_grants(db, owner_user_id)
+
+    @staticmethod
+    async def get_profile_readable(
+        db: AsyncSession, user_id: UUID, profile_id: UUID
+    ) -> ProfileAccessResolution:
+        return await ProfileAccessService.resolve(db, user_id, profile_id)
+
+    @staticmethod
+    def to_profile_response(
+        profile,
+        current_user_id: UUID,
+        grant: Optional[ProfileAccess],
+    ) -> PatientProfileResponse:
+        is_owned = profile.owner_user_id == current_user_id
+        if is_owned:
+            access_role = "owner"
+        elif grant is not None:
+            access_role = grant.role.value
+        else:
+            access_role = "owner"
+        redact_family = (
+            not is_owned
+            and grant is not None
+            and grant.role == AccessRole.VIEWER
+            and not grant.can_read_family_profile
+        )
+        return PatientProfileResponse(
+            id=str(profile.id),
+            owner_user_id=str(profile.owner_user_id),
+            full_name=profile.full_name,
+            date_of_birth=None if redact_family else profile.date_of_birth,
+            gender=None if redact_family else profile.gender,
+            relationship_to_owner=profile.relationship_to_owner,
+            avatar_url=None if redact_family else profile.avatar_url,
+            is_default=profile.is_default,
+            linked_user_id=str(profile.linked_user_id) if profile.linked_user_id else None,
+            sharing_level=profile.sharing_level,
+            created_at=profile.created_at,
+            updated_at=profile.updated_at,
+            is_owned=is_owned,
+            my_access_role=access_role,
+        )
 
     @staticmethod
     async def list_profiles(db: AsyncSession, owner_user_id: UUID, owner_full_name: str):
-        await PatientProfileController.ensure_default_profile(db, owner_user_id, owner_full_name)
-        return await PatientProfileRepo.list_by_owner(db, owner_user_id)
+        rows = await PatientProfileController.list_profile_rows_with_access(
+            db, owner_user_id, owner_full_name
+        )
+        return [p for p, _ in rows]
 
     @staticmethod
     async def get_profile(db: AsyncSession, owner_user_id: UUID, profile_id: UUID):
@@ -77,7 +144,7 @@ class PatientProfileController:
             )
             linked_user_id = new_user.id
             
-        return await PatientProfileRepo.create(
+        profile = await PatientProfileRepo.create(
             db,
             owner_user_id=owner_user_id,
             full_name=data.full_name,
@@ -88,6 +155,8 @@ class PatientProfileController:
             is_default=data.is_default,
             linked_user_id=linked_user_id,
         )
+        await ProfileAccessRepo.create_access_grant(db, profile.id, owner_user_id, AccessRole.OWNER)
+        return profile
 
     @staticmethod
     async def update_profile(
@@ -130,6 +199,51 @@ class PatientProfileController:
 
         await db.delete(profile)
         await db.flush()
+
+    @staticmethod
+    async def promote_to_independent(
+        db: AsyncSession, owner_user_id: UUID, profile_id: UUID, email: str, temp_password: str
+    ):
+        """
+        Promote a family profile to an independent account.
+        Creates a new user account (or reuses an existing one) and links it to this profile,
+        granting them SELF access so the data transfers when they log in.
+        """
+        from app.repos.user_repo import UserRepo
+        from app.core.security import get_password_hash
+
+        profile = await PatientProfileController.get_profile(db, owner_user_id, profile_id)
+
+        if profile.relationship_to_owner == RelationshipToOwner.SELF:
+            raise BadRequestError("Cannot promote your own profile — it is already your account")
+
+        if profile.linked_user_id:
+            raise BadRequestError("This profile is already linked to an independent account")
+
+        # Check if a user with this email already exists
+        existing_user = await UserRepo.get_by_email(db, email)
+        if existing_user:
+            raise BadRequestError("A user with this email already exists. Please use a different email.")
+
+        # Create a new user account for the family member
+        hashed_pw = get_password_hash(temp_password)
+        new_user = await UserRepo.create(
+            db,
+            email=email,
+            full_name=profile.full_name,
+            hashed_password=hashed_pw,
+            managed_by_id=owner_user_id,
+        )
+
+        # Link the profile to the new user
+        profile.linked_user_id = new_user.id
+        await db.flush()
+
+        # Grant the new user SELF access to this profile
+        await ProfileAccessRepo.create_access_grant(db, profile.id, new_user.id, AccessRole.SELF)
+
+        await db.refresh(profile)
+        return profile
 
     @staticmethod
     async def _unset_default_for_owner(db: AsyncSession, owner_user_id: UUID):

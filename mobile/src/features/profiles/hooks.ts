@@ -45,3 +45,19 @@ export const useSetDefaultProfile = () => {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profiles'] }),
     });
 };
+
+export const usePromoteToIndependent = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ profileId, email, password }: { profileId: string; email: string; password: string }) =>
+            profilesApi.promoteToIndependent(profileId, email, password),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profiles'] }),
+    });
+};
+
+export const useProfileLinkQr = (profileId: string | undefined) =>
+    useQuery({
+        queryKey: ['profile-link-qr', profileId],
+        queryFn: () => profilesApi.getLinkQr(profileId!),
+        enabled: !!profileId,
+    });

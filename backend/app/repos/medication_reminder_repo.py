@@ -39,11 +39,44 @@ class MedicationReminderRepo:
         db: AsyncSession,
         user_id: UUID,
         active_only: bool = False,
+        profile_id: Optional[UUID] = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[MedicationReminder], int]:
         base_filter = and_(
             MedicationReminder.user_id == user_id,
+            MedicationReminder.is_deleted == False,
+        )
+        if active_only:
+            base_filter = and_(base_filter, MedicationReminder.is_active == True)
+        if profile_id:
+            base_filter = and_(base_filter, MedicationReminder.profile_id == profile_id)
+
+        count_result = await db.execute(
+            select(func.count()).select_from(MedicationReminder).where(base_filter)
+        )
+        total = count_result.scalar()
+
+        result = await db.execute(
+            select(MedicationReminder)
+            .where(base_filter)
+            .order_by(MedicationReminder.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(result.scalars().all()), total
+
+    @staticmethod
+    async def get_reminders_for_profile(
+        db: AsyncSession,
+        profile_id: UUID,
+        active_only: bool = False,
+        skip: int = 0,
+        limit: int = 50,
+    ) -> tuple[list[MedicationReminder], int]:
+        """List reminders for a profile (for viewers — ignores reminder.user_id)."""
+        base_filter = and_(
+            MedicationReminder.profile_id == profile_id,
             MedicationReminder.is_deleted == False,
         )
         if active_only:

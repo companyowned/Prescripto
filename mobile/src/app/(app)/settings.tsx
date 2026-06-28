@@ -102,6 +102,7 @@ export default function SettingsScreen() {
                                 iconColor={colors.primary[300]}
                                 label={t('dawiniAI')}
                                 chevron
+
                                 onPress={() => router.push('/(app)/chat')}
                             />
                             <View style={styles.divider} />

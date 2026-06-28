@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import get_current_user
@@ -54,11 +54,12 @@ def _to_enriched_response(e) -> DoseEventWithReminderResponse:
 
 @router.get("/today", response_model=TodayDosesResponse)
 async def get_today_doses(
+    profile_id: UUID | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Get today's dose events."""
-    events = await MedicationDoseEventController.get_today_doses(db, current_user.id)
+    events = await MedicationDoseEventController.get_today_doses(db, current_user.id, profile_id=profile_id)
     return TodayDosesResponse(
         doses=[_to_enriched_response(e) for e in events],
         total=len(events),

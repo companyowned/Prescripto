@@ -27,6 +27,11 @@ class BadRequestError(AppException):
         super().__init__(detail=detail, status_code=400)
 
 
+class ForbiddenError(AppException):
+    def __init__(self, detail: str = "Forbidden"):
+        super().__init__(detail=detail, status_code=403)
+
+
 class ProcessingError(AppException):
     def __init__(self, detail: str = "Processing failed"):
         super().__init__(detail=detail, status_code=500)

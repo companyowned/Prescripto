@@ -57,11 +57,20 @@ class PatientProfileResponse(BaseModel):
     relationship_to_owner: RelationshipToOwner
     avatar_url: Optional[str] = None
     is_default: bool
+    linked_user_id: Optional[str] = None
+    sharing_level: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    is_owned: bool = True
+    my_access_role: str = "owner"
 
     model_config = {"from_attributes": True}
 
 
 class PatientProfileListResponse(BaseModel):
     profiles: list[PatientProfileResponse]
+
+
+class PromoteToIndependentRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=6, max_length=128)

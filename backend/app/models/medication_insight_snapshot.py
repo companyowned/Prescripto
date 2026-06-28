@@ -14,6 +14,7 @@ class MedicationInsightSnapshot(Base):
 
     id = Column(Uuid, primary_key=True, default=uuid.uuid4)
     user_id = Column(Uuid, ForeignKey("users.id"), nullable=False, index=True)
+    profile_id = Column(Uuid, ForeignKey("patient_profiles.id"), nullable=True, index=True)
     date = Column(Date, nullable=False)
 
     total_doses = Column(Integer, default=0)
@@ -28,7 +29,8 @@ class MedicationInsightSnapshot(Base):
 
     # Relationships
     user = relationship("User", backref="insight_snapshots")
+    profile = relationship("PatientProfile", backref="insight_snapshots")
 
     __table_args__ = (
-        Index("ix_insight_user_date", "user_id", "date", unique=True),
+        Index("ix_insight_user_profile_date", "user_id", "profile_id", "date", unique=True),
     )

@@ -15,6 +15,7 @@ from app.core.exceptions import BadRequestError, NotFoundError
 from app.models.document import DocumentStatus, FileType
 from app.controllers.profile_controller import PatientProfileController
 from app.repos.document_repo import DocumentRepo, JobRepo
+from app.services.profile_access import ProfileAccessService
 from app.utils.file_storage import FileStorage
 
 
@@ -117,9 +118,13 @@ class DocumentController:
 
     @staticmethod
     async def get_document(db: AsyncSession, doc_id: uuid.UUID, user_id: uuid.UUID):
-        """Get a document; verifies ownership."""
+        """Get a document; verifies access via profile sharing rules."""
         doc = await DocumentRepo.get_by_id(db, doc_id)
-        if not doc or doc.user_id != user_id:
+        if not doc or not doc.profile_id:
+            raise NotFoundError("Document not found")
+        access = await ProfileAccessService.resolve(db, user_id, doc.profile_id)
+        access.require_documents_read()
+        if access.owner_like and doc.user_id != user_id:
             raise NotFoundError("Document not found")
         return doc
 
@@ -130,6 +135,10 @@ class DocumentController:
         if not job:
             raise NotFoundError("Job not found")
         doc = await DocumentRepo.get_by_id(db, job.document_id)
-        if not doc or doc.user_id != user_id:
+        if not doc or not doc.profile_id:
+            raise NotFoundError("Job not found")
+        access = await ProfileAccessService.resolve(db, user_id, doc.profile_id)
+        access.require_documents_read()
+        if access.owner_like and doc.user_id != user_id:
             raise NotFoundError("Job not found")
         return job

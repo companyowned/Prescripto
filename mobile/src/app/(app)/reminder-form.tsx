@@ -13,6 +13,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassBackground } from '../../components/ui';
 import { colors } from '../../theme';
+import { useActiveProfile } from '../../contexts/profile-context';
 import {
     useReminder,
     useCreateReminder,
@@ -159,6 +160,7 @@ export default function ReminderFormScreen() {
     const router = useRouter();
     const params = useLocalSearchParams<{ id?: string }>();
     const isEdit = !!params.id;
+    const { activeProfile } = useActiveProfile();
 
     const { data: existingReminder, isLoading: isLoadingReminder } = useReminder(params.id || '');
     const createMutation = useCreateReminder();
@@ -224,6 +226,7 @@ export default function ReminderFormScreen() {
             dosage: dosage.trim() || undefined,
             form,
             instructions: instructions.trim() || undefined,
+            profile_id: activeProfile?.id,
             start_date: new Date().toISOString(),
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             schedule_type: scheduleType,
