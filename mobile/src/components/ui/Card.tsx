@@ -1,10 +1,11 @@
 /**
- * Card — Glassmorphism elevated card container
+ * Card — Dark glassmorphism elevated card container
  */
 
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, borderRadius } from '../../theme';
 
 interface CardProps {
@@ -17,9 +18,15 @@ export const Card: React.FC<CardProps> = ({ children, variant = 'default', style
     return (
         <View style={[styles.container, variantStyles[variant].container, style]}>
             <BlurView
-                intensity={15}
+                intensity={20}
                 tint="dark"
                 style={[StyleSheet.absoluteFill, styles.blur]}
+            />
+            <LinearGradient
+                colors={['rgba(255,255,255,0.10)', 'rgba(255,255,255,0.04)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[StyleSheet.absoluteFill, { borderRadius: borderRadius.xl }]}
             />
             <View style={[styles.content, variantStyles[variant].content]}>
                 {children}
@@ -30,14 +37,14 @@ export const Card: React.FC<CardProps> = ({ children, variant = 'default', style
 
 const styles = StyleSheet.create({
     container: {
-        borderRadius: borderRadius.lg,
+        borderRadius: borderRadius.xl,
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: colors.glass.border,
-        backgroundColor: colors.glass.background, // fallback/base
+        backgroundColor: colors.glass.background,
     },
     blur: {
-        borderRadius: borderRadius.lg,
+        borderRadius: borderRadius.xl,
     },
     content: {
         padding: spacing.lg,
@@ -53,10 +60,10 @@ const variantStyles: Record<string, { container: ViewStyle; content: ViewStyle }
         container: {
             borderColor: colors.glass.borderHighlight,
             shadowColor: '#000',
-            shadowOffset: { width: 0, height: 10 },
+            shadowOffset: { width: 0, height: 12 },
             shadowOpacity: 0.5,
-            shadowRadius: 20,
-            elevation: 10,
+            shadowRadius: 24,
+            elevation: 12,
         },
         content: {},
     },

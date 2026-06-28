@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme';
 
 interface HomeHeaderProps {
@@ -8,58 +8,65 @@ interface HomeHeaderProps {
     onLogout: () => void;
 }
 
-export const HomeHeader: React.FC<HomeHeaderProps> = ({
-    userName,
-    onLogout,
-}) => {
+export const HomeHeader: React.FC<HomeHeaderProps> = ({ userName, onLogout }) => {
     return (
         <View style={styles.header}>
-            <View style={styles.headerLeft}>
-                <View style={styles.headerTitles}>
-                    <Text style={styles.dashboardText}>DASHBOARD</Text>
-                    <Text style={styles.greetingText}>
-                        Good Evening, {userName} 👋
-                    </Text>
-                </View>
+            <View style={styles.left}>
+                <Text style={styles.eyebrow}>DASHBOARD</Text>
+                <Text style={styles.greeting}>
+                    Good {getTimeOfDay()}, {userName} 👋
+                </Text>
             </View>
 
-            <TouchableOpacity onPress={onLogout} style={styles.logoutBtn}>
-                <Feather name="log-out" size={24} color={colors.primary[300]} />
+            <TouchableOpacity onPress={onLogout} style={styles.logoutBtn} activeOpacity={0.75}>
+                <View style={styles.logoutBg}>
+                    <Ionicons name="log-out-outline" size={20} color={colors.primary[400]} />
+                </View>
             </TouchableOpacity>
         </View>
     );
 };
+
+function getTimeOfDay() {
+    const h = new Date().getHours();
+    if (h < 12) return 'Morning';
+    if (h < 17) return 'Afternoon';
+    return 'Evening';
+}
 
 const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 30,
+        marginBottom: 24,
     },
-    headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    left: {
+        flex: 1,
     },
-    headerTitles: {
-        justifyContent: 'center',
-    },
-    dashboardText: {
-        color: colors.textSecondary,
-        fontSize: 11,
+    eyebrow: {
+        color: 'rgba(255,255,255,0.50)',
+        fontSize: 10,
         fontWeight: '700',
-        letterSpacing: 1.2,
-        marginBottom: 2,
+        letterSpacing: 1.8,
+        marginBottom: 4,
     },
-    greetingText: {
-        color: colors.textPrimary,
-        fontSize: 18,
+    greeting: {
+        color: colors.white,
+        fontSize: 20,
         fontWeight: '800',
-        letterSpacing: -0.3,
+        letterSpacing: -0.4,
     },
     logoutBtn: {
-        position: 'relative',
         padding: 4,
+    },
+    logoutBg: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: colors.glass.background,
+        borderWidth: 1,
+        borderColor: colors.glass.borderHighlight,
         alignItems: 'center',
         justifyContent: 'center',
     },

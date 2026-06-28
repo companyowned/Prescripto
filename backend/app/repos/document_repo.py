@@ -66,6 +66,20 @@ class DocumentRepo:
         return list(result.scalars().all()), total
 
     @staticmethod
+    async def get_children_by_parent_id(
+        db: AsyncSession, parent_document_id: UUID, user_id: UUID
+    ) -> list[Document]:
+        result = await db.execute(
+            select(Document)
+            .where(
+                Document.parent_document_id == parent_document_id,
+                Document.user_id == user_id,
+            )
+            .order_by(Document.created_at.asc())
+        )
+        return list(result.scalars().all())
+
+    @staticmethod
     async def update_status(db: AsyncSession, doc_id: UUID, status: DocumentStatus) -> None:
         doc = await DocumentRepo.get_by_id(db, doc_id)
         if doc:

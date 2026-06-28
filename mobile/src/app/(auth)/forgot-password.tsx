@@ -163,7 +163,7 @@ export default function ForgotPasswordScreen() {
                     </Animated.View>
 
                     <Animated.View entering={FadeInDown.duration(700).delay(150).springify().damping(15)} style={styles.formWrapper}>
-                        <BlurView intensity={24} tint="default" style={[StyleSheet.absoluteFill, styles.glassCard]} />
+                        <BlurView intensity={24} tint="dark" style={[StyleSheet.absoluteFill, styles.glassCard]} />
                         <LinearGradient
                             colors={['rgba(255,255,255,0.25)', 'transparent', 'transparent']}
                             start={{ x: 0, y: 0 }}

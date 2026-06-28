@@ -1,87 +1,84 @@
 /**
- * Prescripto Design System — Color Palette
- * Glassmorphism Medical UI Support
+ * Prescripto Design System — Deep Blue Glassmorphism Palette
+ * Dark medical-luxury aesthetic inspired by premium healthcare UI
  */
 
 export const colors = {
-    // Primary (teal/cyan medical accent)
+    // Primary — deep medical blue accent
     primary: {
-        300: '#3EDBF0', // Cyan target (light)
-        400: '#1FA3C6', // Teal
-        500: '#1FA3C6',
-        600: '#0F5C73', // Deep blue
-        700: '#072A33', // Dark navy
+        300: '#7BC8FF', // light accent on dark bg
+        400: '#4FB3FF', // main accent blue
+        500: '#2196F3', // medium blue
+        600: '#1565C0', // deep blue
+        700: '#0D47A1', // darkest blue
     },
 
-    // Secondary (glass accents)
     secondary: {
-        400: '#3EDBF0',
-        500: '#1FA3C6',
+        400: '#4FB3FF',
+        500: '#2196F3',
     },
 
-    // Background gradient
     background: {
-        top: '#0A3F4D',
-        bottom: '#072A33',
+        top:    '#0A3558',
+        bottom: '#0F4C81',
     },
 
-    // Glass variables
+    // Glass — dark frosted glass on deep blue
     glass: {
-        background: 'rgba(255, 255, 255, 0.12)',
-        backgroundDark: 'rgba(0, 0, 0, 0.25)',
-        border: 'rgba(255, 255, 255, 0.15)',
-        borderHighlight: 'rgba(255, 255, 255, 0.25)',
-        inputBg: 'rgba(255, 255, 255, 0.1)',
-        glow: 'rgba(62, 219, 240, 0.4)', // cyan glow for active elements
+        background:      'rgba(255,255,255,0.10)',
+        backgroundDark:  'rgba(255,255,255,0.07)',
+        border:          'rgba(255,255,255,0.15)',
+        borderHighlight: 'rgba(255,255,255,0.22)',
+        inputBg:         'rgba(255,255,255,0.08)',
+        glow:            'rgba(79,179,255,0.45)',
     },
 
-    // Gradients for CTA
     gradient: {
-        primary: ['#1FA3C6', '#3EDBF0'] as const,
+        primary:    ['#1E6FB7', '#4FB3FF'] as const,
+        background: ['#081E36', '#0F4C81', '#1565C0'] as const,
+        card:       ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.06)'] as const,
     },
 
-    // Neutrals
+    // Neutrals — always white text on dark blue bg
     dark: {
-        bg: '#0A3F4D',
-        surface: 'rgba(255, 255, 255, 0.08)',
-        surfaceElevated: 'rgba(255, 255, 255, 0.15)',
-        border: 'rgba(255, 255, 255, 0.15)',
-        textPrimary: '#FFFFFF',
-        textSecondary: 'rgba(255, 255, 255, 0.7)',
-        textMuted: 'rgba(255, 255, 255, 0.5)',
+        bg:              '#081E36',
+        surface:         'rgba(255,255,255,0.10)',
+        surfaceElevated: 'rgba(255,255,255,0.15)',
+        border:          'rgba(255,255,255,0.15)',
+        textPrimary:     '#FFFFFF',
+        textSecondary:   'rgba(255,255,255,0.75)',
+        textMuted:       'rgba(255,255,255,0.50)',
     },
     light: {
-        // Fallback or mapped to dark as we only have dark glass ui
-        bg: '#0A3F4D',
-        surface: 'rgba(255, 255, 255, 0.08)',
-        surfaceElevated: 'rgba(255, 255, 255, 0.15)',
-        border: 'rgba(255, 255, 255, 0.15)',
-        textPrimary: '#FFFFFF',
-        textSecondary: 'rgba(255, 255, 255, 0.7)',
-        textMuted: 'rgba(255, 255, 255, 0.5)',
+        bg:              '#0F4C81',
+        surface:         'rgba(255,255,255,0.10)',
+        surfaceElevated: 'rgba(255,255,255,0.15)',
+        border:          'rgba(255,255,255,0.15)',
+        textPrimary:     '#FFFFFF',
+        textSecondary:   'rgba(255,255,255,0.75)',
+        textMuted:       'rgba(255,255,255,0.50)',
     },
 
     // Common
-    white: '#FFFFFF',
-    black: '#000000',
+    white:       '#FFFFFF',
+    black:       '#000000',
     transparent: 'transparent',
 
-    // Text overrides for light over dark
-    textPrimary: '#FFFFFF',
-    textSecondary: 'rgba(255, 255, 255, 0.7)',
-    textMuted: 'rgba(255, 255, 255, 0.5)',
+    // Global text tokens — white on dark bg
+    textPrimary:   '#FFFFFF',
+    textSecondary: 'rgba(255,255,255,0.75)',
+    textMuted:     'rgba(255,255,255,0.50)',
 
-    // Success / Error / Warning
-    success: '#4CAF50',
-    error: '#EF5350',
-    warning: '#FF9800',
-    info: '#3EDBF0',
+    // Status
+    success: '#76FFB4',
+    error:   '#FF6B8A',
+    warning: '#FFD96E',
+    info:    '#4FB3FF',
 
-    // Confidence levels
     confidence: {
-        high: '#4CAF50',    // >= 0.8
-        medium: '#FF9800',  // >= 0.5
-        low: '#EF5350',     // < 0.5
+        high:   '#76FFB4',
+        medium: '#FFD96E',
+        low:    '#FF6B8A',
     },
 } as const;
 

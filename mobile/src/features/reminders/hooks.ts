@@ -16,8 +16,11 @@ import {
 
 export const useMedicationReminders = (activeOnly = false, profileId?: string) => {
     return useQuery({
-        queryKey: ['reminders', 'list', activeOnly, profileId],
-        queryFn: () => remindersApi.list(activeOnly, 0, 50, profileId),
+
+        queryKey: ['reminders', 'list', activeOnly],
+        queryFn: () => remindersApi.list(activeOnly),
+        staleTime: 2 * 60 * 1000,
+
     });
 };
 
@@ -51,23 +54,32 @@ export const useTodayDoses = (profileId?: string) => {
 
 export const useMedicationInsights = (range: '7d' | '30d' | '90d' = '7d', profileId?: string) => {
     return useQuery({
-        queryKey: ['insights', 'summary', range, profileId],
-        queryFn: () => remindersApi.getSummary(range, profileId),
+
+        queryKey: ['insights', 'summary', range],
+        queryFn: () => remindersApi.getSummary(range),
+        staleTime: 5 * 60 * 1000,
+
     });
 };
 
 export const useMedicationTrends = (range: '7d' | '30d' | '90d' = '30d', profileId?: string) => {
     return useQuery({
-        queryKey: ['insights', 'trends', range, profileId],
-        queryFn: () => remindersApi.getTrends(range, profileId),
+
+        queryKey: ['insights', 'trends', range],
+        queryFn: () => remindersApi.getTrends(range),
+        staleTime: 5 * 60 * 1000,
+
     });
 };
 
 export const useRiskFlags = (profileId?: string) => {
     return useQuery({
-        queryKey: ['insights', 'risk-flags', profileId],
-        queryFn: () => remindersApi.getRiskFlags(profileId),
-        refetchInterval: 300000, // Refresh every 5 minutes
+
+        queryKey: ['insights', 'risk-flags'],
+        queryFn: () => remindersApi.getRiskFlags(),
+        staleTime: 5 * 60 * 1000,
+        refetchInterval: 300000,
+
     });
 };
 

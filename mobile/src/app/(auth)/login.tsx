@@ -167,7 +167,7 @@ export default function LoginScreen() {
                     <Animated.View entering={FadeInDown.duration(800).springify().damping(15)} style={styles.header}>
                         <Animated.View style={[styles.logoWrapper, floatStyle]}>
                             {/* Force light or default tint on Web to prevent huge black squares if backdrop-filter is simulated */}
-                            <BlurView intensity={Platform.OS === 'web' ? 20 : 40} tint="default" style={StyleSheet.absoluteFill} />
+                            <BlurView intensity={Platform.OS === 'web' ? 20 : 40} tint="dark" style={StyleSheet.absoluteFill} />
                             <LinearGradient
                                 colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.0)']}
                                 start={{ x: 0, y: 0 }}
@@ -186,7 +186,7 @@ export default function LoginScreen() {
 
                     <Animated.View entering={FadeInDown.duration(800).delay(200).springify().damping(15)} style={styles.formWrapper}>
                         {/* On Web, Dark tint sets a heavy rgba(0,0,0,0.5) that ruins the Glassmorphism base layer */}
-                        <BlurView intensity={24} tint="default" style={[StyleSheet.absoluteFill, styles.glassCard]} />
+                        <BlurView intensity={24} tint="dark" style={[StyleSheet.absoluteFill, styles.glassCard]} />
                         
                         {/* Inner Top-Left Edge Reflection for 3D glassy curve */}
                         <LinearGradient
@@ -308,9 +308,9 @@ const styles = StyleSheet.create({
         letterSpacing: -0.5,
     },
     titleGlow: {
-        textShadowColor: 'rgba(62, 219, 240, 0.6)',
+        textShadowColor: 'rgba(79, 179, 255, 0.65)',
         textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 15, // Premium glowing typography
+        textShadowRadius: 18,
     },
     subtitle: {
         ...typography.bodySmall,

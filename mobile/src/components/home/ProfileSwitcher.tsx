@@ -1,15 +1,16 @@
 import React from 'react';
 import { Alert, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useActiveProfile } from '../../contexts/profile-context';
 import { colors } from '../../theme';
 
 const RELATIONSHIP_LABELS: Record<string, string> = {
-    self: 'Self',
-    child: 'Child',
-    parent: 'Parent',
-    spouse: 'Spouse',
+    self:    'Self',
+    child:   'Child',
+    parent:  'Parent',
+    spouse:  'Spouse',
     sibling: 'Sibling',
-    other: 'Other',
+    other:   'Other',
 };
 
 export function ProfileSwitcher() {
@@ -33,25 +34,42 @@ export function ProfileSwitcher() {
     return (
         <TouchableOpacity style={styles.container} onPress={openSelector} activeOpacity={0.8}>
             <View style={styles.badge}>
-                <Text style={styles.label}>Viewing</Text>
-                <Text style={styles.value}>
-                    {activeProfile.full_name.split(' ')[0]} - {RELATIONSHIP_LABELS[activeProfile.relationship_to_owner]}
-                </Text>
+                <View style={styles.left}>
+                    <Text style={styles.label}>Viewing</Text>
+                    <Text style={styles.value}>
+                        {activeProfile.full_name.split(' ')[0]} · {RELATIONSHIP_LABELS[activeProfile.relationship_to_owner]}
+                    </Text>
+                </View>
+                <Ionicons name="chevron-down" size={14} color="rgba(255,255,255,0.50)" />
             </View>
         </TouchableOpacity>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { marginBottom: 12 },
+    container: { marginBottom: 14 },
     badge: {
         backgroundColor: colors.glass.background,
-        borderColor: colors.glass.borderHighlight,
+        borderColor:     colors.glass.borderHighlight,
         borderWidth: 1,
         borderRadius: 14,
-        paddingHorizontal: 12,
+        paddingHorizontal: 14,
         paddingVertical: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
-    label: { color: colors.textSecondary, fontSize: 12, marginBottom: 2 },
-    value: { color: '#fff', fontSize: 14, fontWeight: '700' },
+    left: {},
+    label: {
+        color: 'rgba(255,255,255,0.50)',
+        fontSize: 10,
+        fontWeight: '600',
+        letterSpacing: 0.5,
+        marginBottom: 2,
+    },
+    value: {
+        color: colors.white,
+        fontSize: 14,
+        fontWeight: '700',
+    },
 });

@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '../../contexts/language-context';
 
 interface MockBottomTabsProps {
     activeTab?: 'home' | 'records' | 'reminders' | 'chat' | 'insights' | 'settings';
@@ -25,87 +27,109 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
     onSettingsPress,
 }) => {
     const router = useRouter();
+    const { t } = useLanguage();
+
+    const tabs = [
+        { key: 'home',     icon: 'home',         lib: 'ion', label: t('home'),     onPress: onHomePress },
+        { key: 'records',  icon: 'history',       lib: 'mci', label: t('records'),  onPress: onRecordsPress },
+        { key: 'reminders',icon: 'notifications', lib: 'ion', label: t('meds'),     onPress: onRemindersPress || (() => router.push('/(app)/reminders')) },
+        { key: 'chat',     icon: 'chatbubbles',   lib: 'ion', label: t('chat'),     onPress: onChatPress || (() => router.push('/(app)/chat')) },
+        { key: 'insights', icon: 'bar-chart',     lib: 'ion', label: t('insights'), onPress: onInsightsPress },
+        { key: 'settings', icon: 'settings-sharp',lib: 'ion', label: t('settings'), onPress: onSettingsPress },
+    ];
 
     return (
-        <BlurView intensity={40} tint="default" style={styles.bottomTabBar}>
-            <TouchableOpacity style={[styles.tabItem, activeTab === 'home' && styles.tabItemActive]} onPress={onHomePress} activeOpacity={0.7}>
-                <Ionicons name="home" size={activeTab === 'home' ? 26 : 24} color={activeTab === 'home' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'home' && styles.iconActive} />
-                <Text style={[styles.tabText, activeTab === 'home' && styles.tabTextActive]}>HOME</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.tabItem, activeTab === 'records' && styles.tabItemActive]} onPress={onRecordsPress} activeOpacity={0.7}>
-                <MaterialCommunityIcons name="history" size={activeTab === 'records' ? 28 : 26} color={activeTab === 'records' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'records' && styles.iconActive} />
-                <Text style={[styles.tabText, activeTab === 'records' && styles.tabTextActive]}>RECORDS</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.tabItem, activeTab === 'reminders' && styles.tabItemActive]} onPress={onRemindersPress || (() => router.push('/(app)/reminders'))} activeOpacity={0.7}>
-                <Ionicons name="notifications" size={activeTab === 'reminders' ? 26 : 24} color={activeTab === 'reminders' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'reminders' && styles.iconActive} />
-                <Text style={[styles.tabText, activeTab === 'reminders' && styles.tabTextActive]}>MEDS</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.tabItem, activeTab === 'chat' && styles.tabItemActive]} onPress={onChatPress || (() => router.push('/(app)/chat'))} activeOpacity={0.7}>
-                <Ionicons name="chatbubbles" size={activeTab === 'chat' ? 26 : 24} color={activeTab === 'chat' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'chat' && styles.iconActive} />
-                <Text style={[styles.tabText, activeTab === 'chat' && styles.tabTextActive]}>CHAT</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.tabItem, activeTab === 'insights' && styles.tabItemActive]} onPress={onInsightsPress} activeOpacity={0.7}>
-                <Ionicons name="bar-chart" size={activeTab === 'insights' ? 26 : 24} color={activeTab === 'insights' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'insights' && styles.iconActive} />
-                <Text style={[styles.tabText, activeTab === 'insights' && styles.tabTextActive]}>INSIGHT</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.tabItem, activeTab === 'settings' && styles.tabItemActive]} onPress={onSettingsPress} activeOpacity={0.7}>
-                <Ionicons name="settings-sharp" size={activeTab === 'settings' ? 26 : 24} color={activeTab === 'settings' ? colors.primary[300] : "rgba(255,255,255,0.6)"} style={activeTab === 'settings' && styles.iconActive} />
-                <Text style={[styles.tabText, activeTab === 'settings' && styles.tabTextActive]}>SETTINGS</Text>
-            </TouchableOpacity>
-        </BlurView>
+        <View style={styles.wrapper}>
+            <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+            <LinearGradient
+                colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.05)']}
+                style={StyleSheet.absoluteFill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+            />
+            <View style={styles.row}>
+                {tabs.map((tab) => {
+                    const isActive = activeTab === tab.key;
+                    const iconColor = isActive ? colors.primary[400] : 'rgba(255,255,255,0.40)';
+                    const iconSize  = isActive ? 26 : 23;
+                    return (
+                        <TouchableOpacity
+                            key={tab.key}
+                            style={[styles.tabItem, isActive && styles.tabItemActive]}
+                            onPress={tab.onPress}
+                            activeOpacity={0.7}
+                        >
+                            {isActive && (
+                                <View style={styles.activeIndicator} />
+                            )}
+                            {tab.lib === 'mci' ? (
+                                <MaterialCommunityIcons name={tab.icon as any} size={iconSize} color={iconColor} />
+                            ) : (
+                                <Ionicons name={tab.icon as any} size={iconSize} color={iconColor} />
+                            )}
+                            <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+                                {tab.label.toUpperCase()}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                })}
+            </View>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    bottomTabBar: {
+    wrapper: {
         position: 'absolute',
-        bottom: Platform.OS === 'ios' ? 30 : 20,
-        left: 20,
-        right: 20,
-        borderRadius: 40,
+        bottom: Platform.OS === 'ios' ? 28 : 18,
+        left: 18,
+        right: 18,
+        borderRadius: 36,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: colors.glass.borderHighlight,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.45,
+        shadowRadius: 24,
+        elevation: 12,
+        backgroundColor: 'rgba(6,21,36,0.70)',
+    },
+    row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderWidth: 1.5,
-        borderColor: 'rgba(255, 255, 255, 0.2)', // Light glass border
-        backgroundColor: 'rgba(255, 255, 255, 0.1)', // Keep transparent for glass
-        shadowColor: colors.primary[300],
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
-        elevation: 8,
-        overflow: 'hidden',
+        paddingHorizontal: 14,
+        paddingVertical: 11,
     },
     tabItem: {
         alignItems: 'center',
         justifyContent: 'center',
         gap: 4,
+        paddingHorizontal: 4,
+        position: 'relative',
     },
     tabItemActive: {
-        transform: [{ scale: 1.05 }],
+        transform: [{ scale: 1.06 }],
     },
-    iconActive: {
-        shadowColor: colors.primary[300],
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 1,
-        shadowRadius: 10,
+    activeIndicator: {
+        position: 'absolute',
+        top: -11,
+        width: 28,
+        height: 3,
+        borderRadius: 2,
+        backgroundColor: colors.primary[400],
     },
     tabText: {
-        fontSize: 9,
+        fontSize: 8,
         fontWeight: '600',
-        color: "rgba(255,255,255,0.6)", // base text
+        color: 'rgba(255,255,255,0.38)',
         marginTop: 2,
+        letterSpacing: 0.4,
     },
     tabTextActive: {
         fontWeight: '800',
-        color: colors.primary[300],
-        textShadowColor: 'rgba(62, 219, 240, 0.8)',
+        color: colors.primary[400],
+        textShadowColor: 'rgba(79,179,255,0.60)',
         textShadowOffset: { width: 0, height: 0 },
         textShadowRadius: 8,
     },

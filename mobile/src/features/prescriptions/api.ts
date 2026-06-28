@@ -36,4 +36,21 @@ export const prescriptionsApi = {
         );
         return response.data;
     },
+
+    async getLinkedDocuments(parentDocumentId: string): Promise<LinkedDocument[]> {
+        const response = await apiClient.get<LinkedDocument[]>('/documents', {
+            params: { parent_document_id: parentDocumentId },
+        });
+        return response.data;
+    },
 };
+
+export interface LinkedDocument {
+    id: string;
+    purpose: string;
+    original_filename: string | null;
+    status: string;
+    created_at: string;
+    file_url: string | null;
+    parent_document_id: string | null;
+}

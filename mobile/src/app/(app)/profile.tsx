@@ -8,21 +8,52 @@ import {
     TouchableOpacity,
     Platform,
     ActivityIndicator,
-    Alert
+    Alert,
+    Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Input, Button, GlassBackground } from '../../components/ui';
 import { authService } from '../../services/auth';
 import { colors } from '../../theme';
 import { useActiveProfile } from '../../contexts/profile-context';
 
+const AVATAR_KEY = 'user_avatar_uri';
+
 export default function ProfileScreen() {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [fullName, setFullName] = useState('');
+    const [avatarUri, setAvatarUri] = useState<string | null>(null);
     const { activeProfile } = useActiveProfile();
+
+    useEffect(() => {
+        AsyncStorage.getItem(AVATAR_KEY).then((uri) => {
+            if (uri) setAvatarUri(uri);
+        });
+    }, []);
+
+    const pickAvatar = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission needed', 'Please allow access to your photo library.');
+            return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.7,
+        });
+        if (!result.canceled && result.assets[0]?.uri) {
+            const uri = result.assets[0].uri;
+            setAvatarUri(uri);
+            await AsyncStorage.setItem(AVATAR_KEY, uri);
+        }
+    };
 
     // Fetch user profile
     const { data: userData, isLoading } = useQuery({
@@ -85,12 +116,19 @@ export default function ProfileScreen() {
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         {/* Avatar Display */}
                         <View style={styles.avatarContainer}>
-                            <View style={styles.avatarWrapper}>
-                                <Ionicons name="person" size={48} color={colors.primary[300]} />
-                                <View style={styles.editIconBadge}>
-                                    <Ionicons name="pencil" size={14} color="#FFFFFF" />
+                            <TouchableOpacity onPress={pickAvatar} activeOpacity={0.8}>
+                                <View style={styles.avatarWrapper}>
+                                    {avatarUri ? (
+                                        <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+                                    ) : (
+                                        <Ionicons name="person" size={48} color={colors.primary[300]} />
+                                    )}
+                                    <View style={styles.editIconBadge}>
+                                        <Ionicons name="camera" size={14} color="#FFFFFF" />
+                                    </View>
                                 </View>
-                            </View>
+                            </TouchableOpacity>
+                            <Text style={styles.avatarHint}>Tap to change photo</Text>
                             <Text style={styles.emailText}>{userData?.email}</Text>
                         </View>
 
@@ -190,8 +228,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 4,
         borderColor: colors.primary[500],
-        marginBottom: 16,
+        marginBottom: 6,
+        overflow: 'hidden',
     },
+    avatarImage: { width: 100, height: 100, borderRadius: 50 },
+    avatarHint: { fontSize: 12, color: 'rgba(255,255,255,0.50)', marginBottom: 10 },
     editIconBadge: {
         position: 'absolute',
         bottom: 0,

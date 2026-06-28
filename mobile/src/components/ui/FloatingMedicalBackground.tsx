@@ -1,322 +1,224 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Dimensions, Platform } from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withRepeat,
     withTiming,
-    Easing,
     withSequence,
+    Easing,
 } from 'react-native-reanimated';
-import { colors } from '../../theme';
 
 const { width, height } = Dimensions.get('window');
 
-// 
-// 3D Styled Components
-//
+interface Props { children: React.ReactNode }
 
-const FloatingPill3D = ({ delay, duration, startPos, scale = 1, opacity = 0.5 }: any) => {
-    const translateY = useSharedValue(0);
-    const rotateZ = useSharedValue(0);
+export const FloatingMedicalBackground: React.FC<Props> = ({ children }) => {
+    // Blob 1 — large top-left organic shape
+    const b1Scale = useSharedValue(1);
+    const b1X     = useSharedValue(0);
+    const b1Y     = useSharedValue(0);
 
-    useEffect(() => {
-        setTimeout(() => {
-            translateY.value = withRepeat(
-                withSequence(
-                    withTiming(-80, { duration, easing: Easing.inOut(Easing.ease) }),
-                    withTiming(0, { duration, easing: Easing.inOut(Easing.ease) })
-                ),
-                -1,
-                true
-            );
-            rotateZ.value = withRepeat(
-                withTiming(30, { duration: duration * 1.5, easing: Easing.inOut(Easing.ease) }),
-                -1,
-                true
-            );
-        }, delay);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // Blob 2 — large bottom-right
+    const b2Scale = useSharedValue(1);
+    const b2X     = useSharedValue(0);
+    const b2Y     = useSharedValue(0);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [
-            { translateY: translateY.value },
-            { rotate: `${rotateZ.value}deg` },
-            { scale },
-        ],
-        opacity,
-    }));
+    // Blob 3 — mid accent
+    const b3Scale = useSharedValue(1);
+    const b3X     = useSharedValue(0);
+    const b3Y     = useSharedValue(0);
 
-    return (
-        <Animated.View style={[styles.pillWrapper, startPos, animatedStyle]}>
-            {/* 3D Glossy Pill structure */}
-            <View style={styles.pillHalfTop}>
-                <LinearGradient
-                    colors={['rgba(62, 219, 240, 0.8)', 'rgba(31, 163, 198, 0.4)']}
-                    start={{ x: 0.2, y: 0 }}
-                    end={{ x: 0.8, y: 1 }}
-                    style={StyleSheet.absoluteFill}
-                />
-                {/* 3D Highlight */}
-                <View style={styles.pillHighlight} />
-            </View>
-            <View style={styles.pillHalfBottom}>
-                <LinearGradient
-                    colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.0)']}
-                    start={{ x: 0.2, y: 0 }}
-                    end={{ x: 0.8, y: 1 }}
-                    style={StyleSheet.absoluteFill}
-                />
-            </View>
-        </Animated.View>
-    );
-};
-
-const FloatingCross3D = ({ delay, duration, startPos, scale = 1, opacity = 0.4 }: any) => {
-    const translateY = useSharedValue(0);
-    const rotateZ = useSharedValue(15);
+    // Blob 4 — small top-right sparkle
+    const b4Scale = useSharedValue(1);
 
     useEffect(() => {
-        setTimeout(() => {
-            translateY.value = withRepeat(
-                withSequence(
-                    withTiming(60, { duration, easing: Easing.inOut(Easing.ease) }),
-                    withTiming(0, { duration, easing: Easing.inOut(Easing.ease) })
-                ),
-                -1,
-                true
-            );
-            rotateZ.value = withRepeat(
-                withTiming(45, { duration: duration * 2, easing: Easing.inOut(Easing.ease) }),
-                -1,
-                true
-            );
-        }, delay);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // Blob 1
+        b1Scale.value = withRepeat(withSequence(
+            withTiming(1.12, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(1,    { duration: 10000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
+        b1X.value = withRepeat(withSequence(
+            withTiming(20, { duration: 14000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(-20, { duration: 14000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
+        b1Y.value = withRepeat(withSequence(
+            withTiming(15, { duration: 11000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(-15, { duration: 11000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
+
+        // Blob 2
+        b2Scale.value = withRepeat(withSequence(
+            withTiming(1.08, { duration: 12000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(0.95, { duration: 12000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
+        b2X.value = withRepeat(withSequence(
+            withTiming(-18, { duration: 16000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(18,  { duration: 16000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
+        b2Y.value = withRepeat(withSequence(
+            withTiming(-12, { duration: 13000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(12,  { duration: 13000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
+
+        // Blob 3
+        b3Scale.value = withRepeat(withSequence(
+            withTiming(1.15, { duration: 9000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(0.90, { duration: 9000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
+        b3X.value = withRepeat(withSequence(
+            withTiming(25,  { duration: 15000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(-25, { duration: 15000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
+        b3Y.value = withRepeat(withSequence(
+            withTiming(20,  { duration: 12000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(-20, { duration: 12000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
+
+        // Blob 4
+        b4Scale.value = withRepeat(withSequence(
+            withTiming(1.20, { duration: 7000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(0.85, { duration: 7000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true);
     }, []);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [
-            { translateY: translateY.value },
-            { rotate: `${rotateZ.value}deg` },
-            { scale },
-        ],
-        opacity,
+    const blob1Style = useAnimatedStyle(() => ({
+        transform: [{ scale: b1Scale.value }, { translateX: b1X.value }, { translateY: b1Y.value }],
+    }));
+    const blob2Style = useAnimatedStyle(() => ({
+        transform: [{ scale: b2Scale.value }, { translateX: b2X.value }, { translateY: b2Y.value }],
+    }));
+    const blob3Style = useAnimatedStyle(() => ({
+        transform: [{ scale: b3Scale.value }, { translateX: b3X.value }, { translateY: b3Y.value }],
+    }));
+    const blob4Style = useAnimatedStyle(() => ({
+        transform: [{ scale: b4Scale.value }],
     }));
 
-    return (
-        <Animated.View style={[styles.crossWrapper, startPos, animatedStyle]}>
-            {/* Glow backing */}
-            <View style={styles.crossGlow} />
-            {/* Cross Arms */}
-            <View style={styles.crossH}>
-                <LinearGradient
-                    colors={['rgba(62, 219, 240, 0.6)', 'rgba(15, 92, 115, 0.4)']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={StyleSheet.absoluteFill}
-                />
-            </View>
-            <View style={styles.crossV}>
-                <LinearGradient
-                    colors={['rgba(62, 219, 240, 0.8)', 'rgba(15, 92, 115, 0.2)']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={StyleSheet.absoluteFill}
-                />
-            </View>
-        </Animated.View>
-    );
-};
-
-// Main Background Component
-interface FloatingMedicalBackgroundProps {
-    children: React.ReactNode;
-}
-
-export const FloatingMedicalBackground: React.FC<FloatingMedicalBackgroundProps> = ({ children }) => {
     return (
         <View style={styles.container}>
-            {/* Core Gradient Layer */}
+            {/* Deep blue gradient base */}
             <LinearGradient
-                colors={['#04151A', '#020C10']} // Deepest Navy
+                colors={['#061524', '#0A2D50', '#0F4C81', '#0E3D6E']}
+                start={{ x: 0.1, y: 0 }}
+                end={{ x: 0.9, y: 1 }}
                 style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
             />
 
-            {/* Glowing Orbs for Primary Light Sources (Midground) */}
-            <View style={[styles.glowOrb, styles.glowTopRight]}>
+            {/* Blob 1 — large teal-blue top-left organic shape */}
+            <Animated.View style={[styles.blob1, blob1Style]} pointerEvents="none">
                 <LinearGradient
-                    colors={['rgba(62, 219, 240, 0.15)', 'transparent']} // Cyan
+                    colors={['rgba(30,111,183,0.70)', 'rgba(15,76,129,0.30)', 'transparent']}
                     style={StyleSheet.absoluteFill}
-                    start={{ x: 0.5, y: 0.5 }}
+                    start={{ x: 0.2, y: 0.1 }}
+                    end={{ x: 0.9, y: 0.9 }}
+                />
+            </Animated.View>
+
+            {/* Blob 2 — large lower-right deep blue shape */}
+            <Animated.View style={[styles.blob2, blob2Style]} pointerEvents="none">
+                <LinearGradient
+                    colors={['rgba(21,101,192,0.60)', 'rgba(13,71,161,0.25)', 'transparent']}
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0.1, y: 0.1 }}
+                    end={{ x: 0.8, y: 0.9 }}
+                />
+            </Animated.View>
+
+            {/* Blob 3 — mid accent bright blue */}
+            <Animated.View style={[styles.blob3, blob3Style]} pointerEvents="none">
+                <LinearGradient
+                    colors={['rgba(79,179,255,0.18)', 'rgba(33,150,243,0.08)', 'transparent']}
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                 />
-            </View>
+            </Animated.View>
 
-            <View style={[styles.glowOrb, styles.glowBottomLeft]}>
+            {/* Blob 4 — small sparkle upper-right */}
+            <Animated.View style={[styles.blob4, blob4Style]} pointerEvents="none">
                 <LinearGradient
-                    colors={['rgba(31, 163, 198, 0.2)', 'transparent']} // Teal
+                    colors={['rgba(123,200,255,0.25)', 'transparent']}
                     style={StyleSheet.absoluteFill}
-                    start={{ x: 0.5, y: 0.5 }}
-                    end={{ x: 0, y: 1 }}
+                    start={{ x: 0.2, y: 0.2 }}
+                    end={{ x: 1, y: 1 }}
                 />
-            </View>
+            </Animated.View>
 
-            {/* 3D Floating Elements (Background Depth) */}
-            <FloatingPill3D
-                delay={0}
-                duration={14000}
-                scale={2}
-                opacity={0.65}
-                startPos={{ top: height * 0.1, left: width * 0.05 }}
-            />
-            
-            <FloatingCross3D
-                delay={1500}
-                duration={16000}
-                scale={2}
-                opacity={0.5}
-                startPos={{ top: height * 0.25, right: width * 0.15 }}
+            {/* Radial bloom — center depth glow */}
+            <View style={styles.centerGlow} pointerEvents="none" />
+
+            {/* Subtle bottom vignette */}
+            <LinearGradient
+                colors={['transparent', 'rgba(6,21,36,0.40)']}
+                style={styles.vignette}
+                start={{ x: 0.5, y: 0.3 }}
+                end={{ x: 0.5, y: 1 }}
+                pointerEvents="none"
             />
 
-            <FloatingPill3D
-                delay={500}
-                duration={12000}
-                scale={1.2}
-                opacity={0.8}
-                startPos={{ bottom: height * 0.2, left: width * 0.05 }}
-            />
-
-            <FloatingCross3D
-                delay={2000}
-                duration={18000}
-                scale={3.5}
-                opacity={0.4}
-                startPos={{ bottom: height * 0.15, right: width * 0.02 }}
-            />
-            
-            {/* Extremely prominent sharp cross near the form */}
-            <FloatingCross3D
-                delay={1000}
-                duration={10000}
-                scale={1}
-                opacity={0.9}
-                startPos={{ top: height * 0.5, left: -20 }}
-            />
-
-            {/* Foreground Content */}
-            <View style={styles.content}>
-                {children}
-            </View>
+            <View style={styles.content}>{children}</View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#04151A',
-    },
-    content: {
-        flex: 1,
-        zIndex: 10,
-    },
-    glowOrb: {
+    container: { flex: 1, backgroundColor: '#061524' },
+    content:   { flex: 1, zIndex: 10 },
+
+    blob1: {
         position: 'absolute',
-        borderRadius: 400,
-    },
-    glowTopRight: {
-        top: -200,
-        right: -150,
-        width: 600,
-        height: 600,
-    },
-    glowBottomLeft: {
-        bottom: -200,
-        left: -150,
-        width: 600,
-        height: 600,
-    },
-    // Pill 3D Styles
-    pillWrapper: {
-        position: 'absolute',
-        width: 50,
-        height: 120,
-        borderRadius: 25,
-        shadowColor: 'rgba(62, 219, 240, 0.5)',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
-        elevation: 10,
+        top: -height * 0.15,
+        left: -width * 0.25,
+        width: width * 1.1,
+        height: width * 1.1,
+        borderRadius: width * 0.55,
         overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-        backgroundColor: 'rgba(0,0,0,0.1)',
-        ...(Platform.OS === 'web' && { filter: 'blur(3px)' } as any), // True depth of field on web
+        opacity: 0.9,
     },
-    pillHalfTop: {
-        flex: 1,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
+    blob2: {
+        position: 'absolute',
+        bottom: -height * 0.10,
+        right: -width * 0.30,
+        width: width * 1.0,
+        height: width * 1.0,
+        borderRadius: width * 0.5,
         overflow: 'hidden',
+        opacity: 0.85,
     },
-    pillHalfBottom: {
-        flex: 1,
-        borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 25,
+    blob3: {
+        position: 'absolute',
+        top: height * 0.28,
+        left: -width * 0.10,
+        width: width * 0.80,
+        height: width * 0.80,
+        borderRadius: width * 0.40,
         overflow: 'hidden',
+        opacity: 0.75,
     },
-    pillHighlight: {
+    blob4: {
         position: 'absolute',
-        top: 5,
-        left: 5,
-        width: 15,
-        height: 35,
-        borderRadius: 10,
-        backgroundColor: 'rgba(255,255,255,0.5)',
-        transform: [{ rotate: '15deg' }],
-    },
-    // Cross 3D Styles
-    crossWrapper: {
-        position: 'absolute',
-        width: 100,
-        height: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-        ...(Platform.OS === 'web' && { filter: 'blur(4px)' } as any),
-    },
-    crossGlow: {
-        position: 'absolute',
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(62, 219, 240, 0.8)',
-        shadowColor: colors.primary[300],
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 1,
-        shadowRadius: 25,
-        elevation: 10,
-    },
-    crossH: {
-        position: 'absolute',
-        width: 80,
-        height: 24,
-        borderRadius: 12,
+        top: height * 0.05,
+        right: -width * 0.10,
+        width: width * 0.55,
+        height: width * 0.55,
+        borderRadius: width * 0.275,
         overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
+        opacity: 0.80,
     },
-    crossV: {
+    centerGlow: {
         position: 'absolute',
-        width: 24,
-        height: 80,
-        borderRadius: 12,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
+        top: height * 0.20,
+        left: width * 0.15,
+        width: width * 0.70,
+        height: width * 0.70,
+        borderRadius: width * 0.35,
+        backgroundColor: 'rgba(30,111,183,0.12)',
+        zIndex: 1,
+    },
+    vignette: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: 2,
     },
 });
