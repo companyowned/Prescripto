@@ -43,26 +43,6 @@ export function useAlarmNotifications() {
         return () => sub.remove();
     }, []);
 
-    // ── Background / killed app → notification action response ───────────────
-    useEffect(() => {
-        const sub = Notifications.addNotificationResponseReceivedListener(async (response) => {
-            const data = response.notification.request.content.data as AlarmNotificationData | undefined;
-            if (!data?.reminderId || processingRef.current) return;
-
-            const actionId = response.actionIdentifier;
-
-            if (actionId === ACTION_TAKE_NOW) {
-                await handleTaken(data);
-            } else if (actionId === ACTION_SNOOZE) {
-                await handleSnooze(data);
-            } else {
-                // User opened the app by tapping the notification body — show overlay
-                setActiveAlarm(data);
-            }
-        });
-        return () => sub.remove();
-    }, [handleTaken, handleSnooze]);
-
     // ── Handle "Taken" ────────────────────────────────────────────────────────
     const handleTaken = useCallback(async (alarm: AlarmNotificationData) => {
         if (processingRef.current) return;
@@ -86,7 +66,7 @@ export function useAlarmNotifications() {
                 }
             }
         } catch (e) {
-            console.warn('AlarmNotifications: error marking dose taken:', e);
+            if (__DEV__) console.warn('AlarmNotifications: error marking dose taken:', e);
         } finally {
             processingRef.current = false;
             setActiveAlarm(null);
@@ -137,12 +117,33 @@ export function useAlarmNotifications() {
                 await remindersApi.snoozeDose(doseEvent.id, { snooze_minutes: 10 });
             }
         } catch (e) {
-            console.warn('AlarmNotifications: error snoozing:', e);
+            if (__DEV__) console.warn('AlarmNotifications: error snoozing:', e);
         } finally {
             processingRef.current = false;
             setActiveAlarm(null);
         }
     }, []);
+
+    // ── Background / killed app → notification action response ───────────────
+    // Defined after handleTaken/handleSnooze to avoid temporal dead zone in dep array
+    useEffect(() => {
+        const sub = Notifications.addNotificationResponseReceivedListener(async (response) => {
+            const data = response.notification.request.content.data as AlarmNotificationData | undefined;
+            if (!data?.reminderId || processingRef.current) return;
+
+            const actionId = response.actionIdentifier;
+
+            if (actionId === ACTION_TAKE_NOW) {
+                await handleTaken(data);
+            } else if (actionId === ACTION_SNOOZE) {
+                await handleSnooze(data);
+            } else {
+                // User opened the app by tapping the notification body — show overlay
+                setActiveAlarm(data);
+            }
+        });
+        return () => sub.remove();
+    }, [handleTaken, handleSnooze]);
 
     return {
         activeAlarm,
