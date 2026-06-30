@@ -115,6 +115,10 @@ export const authService = {
         return !!token;
     },
 
+    async setStoredToken(token: string): Promise<void> {
+        await setToken(token);
+    },
+
     async getCurrentUser(): Promise<UserResponse> {
         const response = await apiClient.get<UserResponse>('/auth/me');
         return response.data;

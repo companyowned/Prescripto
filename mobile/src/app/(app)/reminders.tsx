@@ -89,7 +89,7 @@ export default function RemindersScreen() {
         if (Platform.OS !== 'web' && data?.reminders?.length) {
             scheduleAllReminders(data.reminders).catch(console.warn);
         }
-    }, [data?.reminders]);
+    }, [data?.reminders, Platform.OS]);
 
     const pauseMutation = usePauseReminder();
     const resumeMutation = useResumeReminder();

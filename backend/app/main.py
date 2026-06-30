@@ -5,6 +5,24 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+
+def _get_allowed_origins() -> list[str]:
+    """Build CORS origin list from ALLOWED_ORIGINS env var (comma-separated).
+
+    Falls back to localhost addresses for local development only.
+    """
+    raw = os.environ.get("ALLOWED_ORIGINS", "")
+    if raw:
+        return [o.strip() for o in raw.split(",") if o.strip()]
+    return [
+        "http://localhost:8081",
+        "http://localhost:8082",
+        "http://localhost:19006",
+        "http://localhost:3000",
+        "http://127.0.0.1:8081",
+        "http://127.0.0.1:8082",
+    ]
+
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.db.session import init_db
@@ -88,24 +106,7 @@ def create_app() -> FastAPI:
     # CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:8081",
-            "http://localhost:8082",
-            "http://localhost:19006",
-            "http://localhost:3000",
-            "http://127.0.0.1:8081",
-            "http://127.0.0.1:8082",
-            "http://192.168.100.93:8081",
-            "http://192.168.100.93:8082",
-            "http://192.168.100.93:19006",
-            "http://192.168.100.107:8081",
-            "http://192.168.100.107:8082",
-            "http://192.168.100.107:19006",
-            "http://192.168.100.9:8081",
-            "http://192.168.100.9:8082",
-            "http://192.168.100.9:19006",
-            "http://192.168.100.9:8000",
-        ],
+        allow_origins=_get_allowed_origins(),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

@@ -191,6 +191,14 @@ def _validate_schedule(
             raise BadRequestError(
                 "fixed_times schedule requires at least one time in 'times' array"
             )
+        for time_str in times:
+            try:
+                from datetime import datetime as _dt
+                _dt.strptime(time_str, "%H:%M")
+            except ValueError:
+                raise BadRequestError(
+                    f"Invalid time format '{time_str}'. Expected HH:MM (e.g. '08:00')."
+                )
     elif schedule_type == "interval":
         if not interval_hours:
             raise BadRequestError(

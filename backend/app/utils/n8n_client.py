@@ -36,6 +36,11 @@ class N8nClient:
             extra_data: Additional fields to send to the webhook
         """
         if not self.webhook_url:
+            if not settings.DEBUG:
+                raise ValueError(
+                    "N8N_WEBHOOK_URL is not configured. "
+                    "Set it in the environment before processing documents in production."
+                )
             logger.warning("[STUB MODE] No n8n webhook URL configured — returning mock output")
             return self._mock_output()
 
@@ -70,14 +75,11 @@ class N8nClient:
 
             response.raise_for_status()
 
-            # --- DEBUG LOGGING ---
-            print("\n" + "="*50)
-            print("🚀 RAW RESPONSE FROM N8N WEBHOOK:")
-            print(f"Status Code: {response.status_code}")
-            print(f"Headers: {dict(response.headers)}")
-            print(f"Body: '{response.text}'")
-            print("="*50 + "\n")
-            # ---------------------
+            logger.debug(
+                "n8n raw response — status=%s body=%r",
+                response.status_code,
+                response.text[:500],
+            )
             
             try:
                 # n8n often returns nested structures depending on your webhook config,

@@ -1,9 +1,9 @@
 /**
- * Index route — redirects to home or login
+ * Index route — intentionally empty.
+ * AuthGate in _layout.tsx reads the stored token and redirects to the correct
+ * screen (onboarding, login, or home) once the async auth check completes.
  */
 
-import { Redirect } from 'expo-router';
-
 export default function Index() {
-    return <Redirect href="/(auth)/login" />;
+    return null;
 }

@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import and_, case, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.patient_profile import PatientProfile, ProfileAccess, AccessRole, RelationshipToOwner
@@ -107,8 +108,16 @@ class ProfileAccessRepo:
         user_id: UUID,
         role: AccessRole = AccessRole.OWNER,
     ) -> ProfileAccess:
-        """Create a ProfileAccess row (idempotent — skips if already exists)."""
-        existing = await db.execute(
+        """Create a ProfileAccess row, ignoring conflicts (race-safe upsert)."""
+        stmt = (
+            pg_insert(ProfileAccess)
+            .values(profile_id=profile_id, user_id=user_id, role=role)
+            .on_conflict_do_nothing(index_elements=["profile_id", "user_id"])
+        )
+        await db.execute(stmt)
+        await db.flush()
+
+        result = await db.execute(
             select(ProfileAccess).where(
                 and_(
                     ProfileAccess.profile_id == profile_id,
@@ -116,19 +125,7 @@ class ProfileAccessRepo:
                 )
             )
         )
-        grant = existing.scalar_one_or_none()
-        if grant:
-            return grant
-
-        grant = ProfileAccess(
-            profile_id=profile_id,
-            user_id=user_id,
-            role=role,
-        )
-        db.add(grant)
-        await db.flush()
-        await db.refresh(grant)
-        return grant
+        return result.scalar_one()
 
     @staticmethod
     async def get_grant(

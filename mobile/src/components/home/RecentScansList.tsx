@@ -14,7 +14,7 @@ const PURPOSE_CONFIG = {
 } as const;
 
 const getScanTitle = (scan: PrescriptionListItem): string => {
-    const diag = scan.diagnosis_text && scan.diagnosis_text !== 'null' && scan.diagnosis_text !== ''
+    const diag = scan.diagnosis_text != null && scan.diagnosis_text !== '' && scan.diagnosis_text !== 'null'
         ? scan.diagnosis_text : null;
     if (diag) return diag;
     if (scan.purpose === 'lab_result') return scan.facility_name ? `Lab Results — ${scan.facility_name}` : 'Lab Test Results';

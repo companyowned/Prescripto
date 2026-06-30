@@ -3,7 +3,7 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.models.patient_profile import RelationshipToOwner
 
@@ -26,7 +26,7 @@ class PatientProfileBase(BaseModel):
 
 class PatientProfileCreateRequest(PatientProfileBase):
     is_default: bool = False
-    linked_email: Optional[str] = Field(default=None, max_length=255)
+    linked_email: Optional[EmailStr] = None
 
 
 

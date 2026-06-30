@@ -28,7 +28,6 @@ export const usePrescriptionHistory = (skip = 0, limit = 20, profileId?: string,
     return useQuery({
         queryKey: ['prescriptions', 'history', profileId, purpose, skip, limit],
         queryFn: () => prescriptionsApi.getHistory(skip, limit, profileId, purpose),
-        enabled: true,
         staleTime: 5 * 60 * 1000,
     });
 };

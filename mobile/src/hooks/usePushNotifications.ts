@@ -49,7 +49,7 @@ export function usePushNotifications() {
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('User reacted to notification:', response);
+      if (__DEV__) console.log('User reacted to notification:', response);
     });
 
     return () => {
@@ -67,7 +67,6 @@ export function usePushNotifications() {
 
 async function registerForPushNotificationsAsync() {
   if (Platform.OS === 'web') {
-    console.log('Push notifications are not currently configured for web.');
     return undefined;
   }
 
@@ -93,7 +92,6 @@ async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== 'granted') {
-      console.log('Failed to get push token for push notification!');
       return;
     }
     
@@ -109,11 +107,9 @@ async function registerForPushNotificationsAsync() {
         })
       ).data;
     } catch (e) {
-      console.log('Error getting push token:', e);
+      if (__DEV__) console.warn('Error getting push token:', e);
       token = undefined;
     }
-  } else {
-    console.log('Must use physical device for Push Notifications');
   }
 
   return token;

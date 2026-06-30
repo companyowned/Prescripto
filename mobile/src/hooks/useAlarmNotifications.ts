@@ -61,7 +61,7 @@ export function useAlarmNotifications() {
             }
         });
         return () => sub.remove();
-    }, []);
+    }, [handleTaken, handleSnooze]);
 
     // ── Handle "Taken" ────────────────────────────────────────────────────────
     const handleTaken = useCallback(async (alarm: AlarmNotificationData) => {

@@ -3,7 +3,7 @@
  * Auto-prompts lab upload when follow-up lab requests are detected.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { ScrollView, StyleSheet, SafeAreaView, Platform, Alert, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,21 +39,21 @@ export default function ResultScreen() {
     const followUpRequests = prescription?.follow_up_requests || [];
     const labRequests = followUpRequests.filter((r) => r.kind === 'lab');
 
-    const openFollowUpUpload = (purpose: 'lab_result' | 'radiology_report') => {
+    const openFollowUpUpload = useCallback((purpose: 'lab_result' | 'radiology_report') => {
         if (!prescription?.document_id) return;
         router.push({
             pathname: '/(app)/upload',
             params: { purpose, parentDocumentId: prescription.document_id },
         });
-    };
+    }, [prescription?.document_id, router]);
 
-    const openLabScan = () => {
+    const openLabScan = useCallback(() => {
         if (!prescription?.document_id) return;
         router.push({
             pathname: '/(app)/scan',
             params: { purpose: 'lab_result', parentDocumentId: prescription.document_id },
         });
-    };
+    }, [prescription?.document_id, router]);
 
     // Auto-prompt lab upload when arriving from processing and labs are detected
     useEffect(() => {
@@ -88,7 +88,7 @@ export default function ResultScreen() {
                 { text: 'Later', style: 'cancel' },
             ]
         );
-    }, [prescription, fromProcessing, labRequests]);
+    }, [prescription, fromProcessing, labRequests, openFollowUpUpload, openLabScan]);
 
     if (isLoading) {
         return (

@@ -25,6 +25,7 @@ class MedicationDoseEvent(Base):
 
     taken_at = Column(DateTime(timezone=True), nullable=True)
     snoozed_until = Column(DateTime(timezone=True), nullable=True)
+    notified_at = Column(DateTime(timezone=True), nullable=True)
     note = Column(Text, nullable=True)
     source = Column(
         String(30), nullable=False, default="manual"

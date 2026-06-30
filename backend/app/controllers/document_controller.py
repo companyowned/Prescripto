@@ -59,8 +59,8 @@ class DocumentController:
         if purpose not in ALLOWED_PURPOSES:
             raise BadRequestError(f"Unsupported document purpose: {purpose}")
 
-        # Read file content
-        content = await file.read()
+        # Check size before reading to avoid loading large files into memory
+        content = await file.read(MAX_FILE_SIZE + 1)
         if len(content) > MAX_FILE_SIZE:
             raise BadRequestError(f"File too large. Max size: {MAX_FILE_SIZE // (1024 * 1024)} MB")
 
@@ -104,9 +104,14 @@ class DocumentController:
                 try:
                     await WorkflowController.process_document(session, doc_id, j_id)
                 except Exception as e:
-                    logger.error(f"Background processing failed: {e}")
+                    logger.error(f"Background processing failed for doc {doc_id}: {e}", exc_info=True)
 
-        asyncio.create_task(_run_processing(document.id, job.id))
+        def _log_task_exception(task: asyncio.Task) -> None:
+            if not task.cancelled() and task.exception():
+                logger.error("Background task raised unhandled exception", exc_info=task.exception())
+
+        task = asyncio.create_task(_run_processing(document.id, job.id))
+        task.add_done_callback(_log_task_exception)
 
         return {
             "document_id": str(document.id),

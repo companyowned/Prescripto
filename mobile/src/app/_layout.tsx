@@ -57,11 +57,13 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         const inAuth       = segments[0] === '(auth)';
         const inOnboarding = segments[0] === '(onboarding)';
 
+        const inRoot = segments.length === 0;
+
         if (!onboardingDone && !inOnboarding) {
             router.replace('/(onboarding)');
         } else if (onboardingDone && !isAuthenticated && !inAuth) {
             router.replace('/(auth)/login');
-        } else if (onboardingDone && isAuthenticated && inAuth) {
+        } else if (onboardingDone && isAuthenticated && (inAuth || inRoot)) {
             router.replace('/(app)/home');
         }
     }, [isAuthenticated, segments, isReady, onboardingDone]);

@@ -44,6 +44,8 @@ class WorkflowController:
             doc = await DocumentRepo.get_by_id(db, document_id)
             if not doc:
                 raise Exception("Document not found")
+            if not doc.profile_id:
+                raise Exception(f"Document {document_id} has no associated profile")
 
             # 3. Call n8n webhook
             await JobRepo.update_status(db, job_id, JobStatus.PROCESSING, progress=30)

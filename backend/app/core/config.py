@@ -1,7 +1,19 @@
 """Application configuration loaded from environment variables."""
 
+import os
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
+
+
+def _require_env(name: str) -> str:
+    """Return env var value or raise at import time if missing."""
+    value = os.environ.get(name)
+    if not value:
+        raise ValueError(
+            f"Required environment variable '{name}' is not set. "
+            "Set it in your .env file or deployment environment."
+        )
+    return value
 
 
 class Settings(BaseSettings):
@@ -12,12 +24,12 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
 
-    # Database
-    DATABASE_URL: str = "postgresql+asyncpg://neondb_owner:npg_4ZteHp3OVaGn@ep-still-bread-a82fvyhm-pooler.eastus2.azure.neon.tech/neondb?ssl=require"
+    # Database — must be provided via environment; no hardcoded fallback
+    DATABASE_URL: str = ""
     INIT_DB_ON_STARTUP: bool = True
 
-    # JWT
-    JWT_SECRET_KEY: str = "change-me-in-production"
+    # JWT — must be provided via environment; no weak fallback
+    JWT_SECRET_KEY: str = ""
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
@@ -75,6 +87,26 @@ class Settings(BaseSettings):
         return value
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+
+    @field_validator("DATABASE_URL", mode="after")
+    @classmethod
+    def validate_database_url(cls, value: str) -> str:
+        if not value:
+            raise ValueError(
+                "DATABASE_URL is required. Set it in your .env file or environment."
+            )
+        return value
+
+    @field_validator("JWT_SECRET_KEY", mode="after")
+    @classmethod
+    def validate_jwt_secret(cls, value: str) -> str:
+        if not value:
+            raise ValueError(
+                "JWT_SECRET_KEY is required. Set it in your .env file or environment."
+            )
+        if len(value) < 32:
+            raise ValueError("JWT_SECRET_KEY must be at least 32 characters long.")
+        return value
 
 
 settings = Settings()

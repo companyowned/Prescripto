@@ -100,14 +100,14 @@ export default function LoginScreen() {
         setBiometricEmail(await biometricAuthService.getLinkedEmail());
     };
 
-    const maybeEnableBiometricLogin = async (loginEmail: string, loginPassword: string) => {
+    const maybeEnableBiometricLogin = async (loginEmail: string, accessToken: string) => {
         if (!(await biometricAuthService.shouldOfferSetup(loginEmail))) return;
 
         const shouldEnable = await askToEnableBiometricLogin();
         if (!shouldEnable) return;
 
         try {
-            await biometricAuthService.enable(loginEmail, loginPassword);
+            await biometricAuthService.enable(loginEmail, accessToken);
             await refreshBiometricState();
         } catch (err: any) {
             setError(err?.message || 'Could not enable fingerprint login.');
@@ -126,8 +126,8 @@ export default function LoginScreen() {
         setError('');
         try {
             const normalizedEmail = email.trim().toLowerCase();
-            await authService.login({ email: normalizedEmail, password });
-            await maybeEnableBiometricLogin(normalizedEmail, password);
+            const tokenResponse = await authService.login({ email: normalizedEmail, password });
+            await maybeEnableBiometricLogin(normalizedEmail, tokenResponse.access_token);
             signIn(); // Update AuthGate state → triggers navigation to home
         } catch (err: any) {
             setError(getApiErrorMessage(err, 'Login failed. Please try again.'));
@@ -142,12 +142,13 @@ export default function LoginScreen() {
         setBiometricLoading(true);
         setError('');
         try {
-            const credentials = await biometricAuthService.getCredentialsWithPrompt();
-            if (!credentials) {
+            const stored = await biometricAuthService.getTokenWithPrompt();
+            if (!stored) {
                 setError('Fingerprint login was cancelled.');
                 return;
             }
-            await authService.login(credentials);
+            // Apply the stored token directly — no password ever leaves the device
+            await authService.setStoredToken(stored.token);
             signIn();
         } catch (err: any) {
             setError(getApiErrorMessage(err, 'Fingerprint login failed. Please sign in with your password.'));

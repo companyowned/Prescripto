@@ -76,6 +76,7 @@ export default function RegisterScreen() {
         setError('');
         try {
             await authService.register({ email, full_name: fullName, password });
+            // Only attempt login after registration confirms success
             await authService.login({ email, password });
             signIn(); // Update AuthGate state → triggers navigation to home
         } catch (err: any) {

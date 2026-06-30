@@ -100,22 +100,21 @@ interface MonthSection {
 }
 
 const groupByMonth = (items: PrescriptionListItem[]): MonthSection[] => {
-    const groups: Record<string, PrescriptionListItem[]> = {};
+    const groups: Record<string, { label: string; items: PrescriptionListItem[] }> = {};
     for (const item of items) {
         const d = new Date(item.created_at);
         const key = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}`;
         const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         if (!groups[key]) {
-            groups[key] = [];
-            Object.defineProperty(groups[key], '__label', { value: label });
+            groups[key] = { label, items: [] };
         }
-        groups[key].push(item);
+        groups[key].items.push(item);
     }
     return Object.entries(groups)
         .sort(([a], [b]) => b.localeCompare(a))
-        .map(([, items]) => ({
-            title: (items as any).__label as string,
-            data: items,
+        .map(([, group]) => ({
+            title: group.label,
+            data: group.items,
         }));
 };
 
@@ -184,7 +183,7 @@ const RecordCard: React.FC<RecordCardProps> = ({ item, showCategoryBadge = false
     });
 
     const recordTitle = useMemo(() => {
-        const diag = item.diagnosis_text && item.diagnosis_text !== 'null'
+        const diag = item.diagnosis_text != null && item.diagnosis_text !== '' && item.diagnosis_text !== 'null'
             ? item.diagnosis_text : null;
 
         if (item.purpose === 'prescription') {

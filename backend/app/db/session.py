@@ -1,8 +1,11 @@
 """Async SQLAlchemy engine and session factory."""
 
+import logging
 from sqlalchemy import text, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def _normalize_database_url(url: str) -> str:
@@ -92,7 +95,7 @@ async def init_db():
                 async with conn.begin_nested():
                     await conn.execute(text(stmt))
             except Exception as e:
-                print(f"Migration statement ignored '{stmt}': {e}") 
+                logger.debug("Migration statement skipped (already applied?) '%s': %s", stmt, e)
 
         relationship_statements = [
             (
@@ -126,7 +129,7 @@ async def init_db():
                 async with conn.begin_nested():
                     await conn.execute(text(stmt))
             except Exception as e:
-                print(f"Relationship statement ignored '{stmt}': {e}")
+                logger.debug("Relationship statement skipped (already applied?) '%s': %s", stmt, e)
 
     async with async_session_factory() as session:
         await _backfill_profiles(session)

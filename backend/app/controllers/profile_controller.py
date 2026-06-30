@@ -126,7 +126,7 @@ class PatientProfileController:
         linked_user_id = None
         if getattr(data, "linked_email", None):
             from app.repos.user_repo import UserRepo
-            from app.core.security import get_password_hash
+            from app.core.security import hash_password
             import secrets
             # Check if user already exists
             existing_user = await UserRepo.get_by_email(db, data.linked_email)
@@ -134,7 +134,7 @@ class PatientProfileController:
                 raise BadRequestError("A user with this email already exists")
             # Create a pending user account
             temp_password = secrets.token_urlsafe(12)
-            hashed_pw = get_password_hash(temp_password)
+            hashed_pw = hash_password(temp_password)
             new_user = await UserRepo.create(
                 db, 
                 email=data.linked_email, 
@@ -210,7 +210,7 @@ class PatientProfileController:
         granting them SELF access so the data transfers when they log in.
         """
         from app.repos.user_repo import UserRepo
-        from app.core.security import get_password_hash
+        from app.core.security import hash_password
 
         profile = await PatientProfileController.get_profile(db, owner_user_id, profile_id)
 
@@ -226,7 +226,7 @@ class PatientProfileController:
             raise BadRequestError("A user with this email already exists. Please use a different email.")
 
         # Create a new user account for the family member
-        hashed_pw = get_password_hash(temp_password)
+        hashed_pw = hash_password(temp_password)
         new_user = await UserRepo.create(
             db,
             email=email,

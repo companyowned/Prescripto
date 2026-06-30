@@ -92,11 +92,12 @@ async def mark_overdue_as_missed() -> int:
     return marked_count
 
 
-_sent_notifications = set()
-
 async def send_dose_reminders() -> int:
     """
     Send push notifications precisely when upcoming doses are due.
+
+    Deduplication is handled via the dose event's `notified_at` column so the
+    check is correct across multiple workers and server restarts.
     """
     logger.info("[WORKER] Checking for exactly-due dose notifications")
     sent_count = 0
@@ -104,7 +105,7 @@ async def send_dose_reminders() -> int:
     async with async_session_factory() as db:
         try:
             now = datetime.now(timezone.utc)
-            # Narrow window to catch exactly-due doses (±1 minute)
+            # Narrow window to catch exactly-due doses (±2 minutes)
             window_start = now - timedelta(minutes=2)
             window_end = now + timedelta(minutes=1)
 
@@ -121,6 +122,7 @@ async def send_dose_reminders() -> int:
                     MedicationDoseEvent.status.in_(["pending", "snoozed"]),
                     MedicationDoseEvent.scheduled_at >= window_start,
                     MedicationDoseEvent.scheduled_at <= window_end,
+                    MedicationDoseEvent.notified_at.is_(None),
                     MedicationReminder.is_active == True,
                     MedicationReminder.is_deleted == False,
                 )
@@ -128,10 +130,6 @@ async def send_dose_reminders() -> int:
             events = list(result.scalars().all())
 
             for event in events:
-                event_id_str = str(event.id)
-                if event_id_str in _sent_notifications:
-                    continue
-
                 # For snoozed events, check snoozed_until
                 if event.status == "snoozed" and event.snoozed_until:
                     if event.snoozed_until > now:
@@ -152,11 +150,14 @@ async def send_dose_reminders() -> int:
                                 "type": "dose_reminder",
                             },
                         )
-                        _sent_notifications.add(event_id_str)
+                        # Mark as notified to prevent duplicate sends across workers/restarts
+                        event.notified_at = now
                         sent_count += 1
                 except Exception as notify_err:
                     logger.warning(f"[WORKER] Failed to send reminder notification: {notify_err}")
 
+            if sent_count:
+                await db.commit()
             logger.info(f"[WORKER] Sent {sent_count} dose reminder notifications")
         except Exception as e:
             logger.error(f"[WORKER] Dose reminder sending failed: {e}", exc_info=True)

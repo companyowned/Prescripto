@@ -1,14 +1,15 @@
 /**
- * Biometric login setup and credential storage.
+ * Biometric login setup and token storage.
+ * Stores the access token (not the password) so credentials are never persisted.
  */
 
 import { Platform } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
 
-interface StoredBiometricCredentials {
+interface StoredBiometricData {
     email: string;
-    password: string;
+    token: string;
 }
 
 const BIOMETRIC_CREDENTIALS_KEY = 'biometric_login_credentials';
@@ -26,8 +27,8 @@ export const biometricAuthService = {
         const raw = await SecureStore.getItemAsync(BIOMETRIC_CREDENTIALS_KEY);
         if (!raw) return null;
         try {
-            const credentials = JSON.parse(raw) as StoredBiometricCredentials;
-            return credentials.email || null;
+            const data = JSON.parse(raw) as StoredBiometricData;
+            return data.email || null;
         } catch {
             await SecureStore.deleteItemAsync(BIOMETRIC_CREDENTIALS_KEY);
             return null;
@@ -44,7 +45,7 @@ export const biometricAuthService = {
         return linkedEmail !== email.trim().toLowerCase();
     },
 
-    async enable(email: string, password: string): Promise<void> {
+    async enable(email: string, token: string): Promise<void> {
         const canUseBiometrics = await this.canUseBiometrics();
         if (!canUseBiometrics) {
             throw new Error('Fingerprint is not available or not set up on this device.');
@@ -64,12 +65,12 @@ export const biometricAuthService = {
             BIOMETRIC_CREDENTIALS_KEY,
             JSON.stringify({
                 email: email.trim().toLowerCase(),
-                password,
-            } satisfies StoredBiometricCredentials)
+                token,
+            } satisfies StoredBiometricData)
         );
     },
 
-    async getCredentialsWithPrompt(): Promise<StoredBiometricCredentials | null> {
+    async getTokenWithPrompt(): Promise<StoredBiometricData | null> {
         const linkedEmail = await this.getLinkedEmail();
         if (!linkedEmail) return null;
 
@@ -85,7 +86,7 @@ export const biometricAuthService = {
         if (!raw) return null;
 
         try {
-            return JSON.parse(raw) as StoredBiometricCredentials;
+            return JSON.parse(raw) as StoredBiometricData;
         } catch {
             await SecureStore.deleteItemAsync(BIOMETRIC_CREDENTIALS_KEY);
             return null;

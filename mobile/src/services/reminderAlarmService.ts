@@ -49,7 +49,7 @@ export async function setupAlarmChannel() {
             showBadge: true,
         });
     } catch (e) {
-        console.warn('setupAlarmChannel failed:', e);
+        if (__DEV__) console.warn('setupAlarmChannel failed:', e);
     }
 }
 
@@ -70,7 +70,7 @@ export async function registerAlarmCategory() {
             },
         ]);
     } catch (e) {
-        console.warn('registerAlarmCategory failed:', e);
+        if (__DEV__) console.warn('registerAlarmCategory failed:', e);
     }
 }
 
@@ -127,7 +127,7 @@ async function scheduleOne(
                 : { type: 'date', date: triggerDate } as any,
         });
     } catch (e) {
-        console.warn(`scheduleOne failed for reminder ${reminder.id}:`, e);
+        if (__DEV__) console.warn(`scheduleOne failed for reminder ${reminder.id}:`, e);
     }
 }
 
