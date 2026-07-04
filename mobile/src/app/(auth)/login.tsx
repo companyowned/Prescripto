@@ -147,8 +147,21 @@ export default function LoginScreen() {
                 setError('Fingerprint login was cancelled.');
                 return;
             }
-            // Apply the stored token directly — no password ever leaves the device
+
             await authService.setStoredToken(stored.token);
+
+            // Verify the stored token is still valid before navigating in
+            try {
+                await authService.getCurrentUser();
+            } catch {
+                // Token has expired — clear the stale biometric link and ask for password
+                await authService.logout();
+                await biometricAuthService.disable();
+                await refreshBiometricState();
+                setError('Your session has expired. Please sign in with your password to re-enable fingerprint login.');
+                return;
+            }
+
             signIn();
         } catch (err: any) {
             setError(getApiErrorMessage(err, 'Fingerprint login failed. Please sign in with your password.'));

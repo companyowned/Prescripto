@@ -70,6 +70,16 @@ export const biometricAuthService = {
         );
     },
 
+    async disable(): Promise<void> {
+        if (Platform.OS !== 'web') {
+            try {
+                await SecureStore.deleteItemAsync(BIOMETRIC_CREDENTIALS_KEY);
+            } catch {
+                // ignore
+            }
+        }
+    },
+
     async getTokenWithPrompt(): Promise<StoredBiometricData | null> {
         const linkedEmail = await this.getLinkedEmail();
         if (!linkedEmail) return null;
