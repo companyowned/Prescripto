@@ -19,7 +19,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.prescripto.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "Dawini needs camera access to scan prescriptions."
+        "NSCameraUsageDescription": "Dawini needs camera access to scan prescriptions.",
+        "NSPhotoLibraryUsageDescription": "Dawini needs photo library access to attach prescription images and update your profile picture.",
+        "NSLocationWhenInUseUsageDescription": "Dawini needs your location to find nearby pharmacies."
       }
     },
     "android": {
@@ -29,7 +31,6 @@
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
         "android.permission.VIBRATE",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.POST_NOTIFICATIONS",
@@ -65,6 +66,18 @@
         "expo-local-authentication",
         {
           "faceIDPermission": "Allow Dawini to use Face ID or fingerprint for account sign in."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Dawini needs photo library access to attach prescription images and update your profile picture."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Dawini needs your location to find nearby pharmacies."
         }
       ],
       "expo-secure-store",
