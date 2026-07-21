@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Refresh tokens — long-lived, rotated on each use, revocable server-side.
+    # Lets biometric/"remember me" login resume a session indefinitely without
+    # re-prompting for a password, without making the short-lived access token itself long-lived.
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 180
+
     # Password reset email / OTP
     PASSWORD_RESET_OTP_EXPIRE_MINUTES: int = 10
     PASSWORD_RESET_OTP_LENGTH: int = 6
@@ -47,16 +52,16 @@ class Settings(BaseSettings):
     SMTP_USE_SSL: bool = False
 
     # Storage
-    STORAGE_BACKEND: str = "local"  # "local" or "s3"
+    STORAGE_BACKEND: str = "local"  # "local" (dev, disk) or "vercel_blob" (prod, persistent)
     UPLOAD_DIR: str = "uploads"
-    S3_BUCKET_NAME: str = ""
-    S3_ENDPOINT_URL: str = ""
-    AWS_ACCESS_KEY_ID: str = ""
-    AWS_SECRET_ACCESS_KEY: str = ""
+    BLOB_READ_WRITE_TOKEN: str = ""
 
     # n8n
     N8N_WEBHOOK_URL: str = ""
     N8N_AUTH_KEY: str = ""
+
+    # Vercel Cron — secures GET /medication-reminders/run-cron (Vercel sends this as a Bearer token)
+    CRON_SECRET: str = ""
 
     # Azure Vision (OCR)
     AZURE_VISION_ENDPOINT: str = ""

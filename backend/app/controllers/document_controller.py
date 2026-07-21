@@ -74,8 +74,8 @@ class DocumentController:
             if not parent or parent.user_id != user_id:
                 raise NotFoundError("Parent document not found")
 
-        # Save file locally (uses /tmp on Vercel)
-        file_path = FileStorage.save_file(content, str(user_id), filename)
+        # Save file (local disk in dev, Vercel Blob in prod — see STORAGE_BACKEND)
+        file_path = await FileStorage.save_file(content, str(user_id), filename)
 
         # Create DB records
         document = await DocumentRepo.create(

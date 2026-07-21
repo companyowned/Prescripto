@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button, Input } from '../../components/ui';
@@ -69,8 +70,9 @@ export default function LoginScreen() {
     useEffect(() => {
         const loadBiometricState = async () => {
             const canUseBiometrics = await biometricAuthService.canUseBiometrics();
-            setBiometricAvailable(canUseBiometrics);
-            if (canUseBiometrics) {
+            const enabled = canUseBiometrics && (await biometricAuthService.isEnabled());
+            setBiometricAvailable(enabled);
+            if (enabled) {
                 setBiometricEmail(await biometricAuthService.getLinkedEmail());
             }
         };
@@ -86,7 +88,7 @@ export default function LoginScreen() {
         return new Promise((resolve) => {
             Alert.alert(
                 'Enable Fingerprint Login?',
-                'Use your fingerprint to sign in to this Dawini account on this device.',
+                'Use your fingerprint to sign in to this Dawini account on this device. You can turn this off anytime in Settings.',
                 [
                     { text: 'Not Now', style: 'cancel', onPress: () => resolve(false) },
                     { text: 'Enable', onPress: () => resolve(true) },
@@ -96,18 +98,21 @@ export default function LoginScreen() {
     };
 
     const refreshBiometricState = async () => {
-        setBiometricAvailable(await biometricAuthService.canUseBiometrics());
-        setBiometricEmail(await biometricAuthService.getLinkedEmail());
+        const enabled = await biometricAuthService.isEnabled();
+        setBiometricAvailable(enabled);
+        setBiometricEmail(enabled ? await biometricAuthService.getLinkedEmail() : null);
     };
 
-    const maybeEnableBiometricLogin = async (loginEmail: string, accessToken: string) => {
-        if (!(await biometricAuthService.shouldOfferSetup(loginEmail))) return;
+    const maybeEnableBiometricLogin = async (loginEmail: string) => {
+        if (!(await biometricAuthService.shouldOfferSetup())) return;
 
+        // Only ever ask once — record that we've prompted regardless of the answer.
         const shouldEnable = await askToEnableBiometricLogin();
+        await biometricAuthService.markPrompted();
         if (!shouldEnable) return;
 
         try {
-            await biometricAuthService.enable(loginEmail, accessToken);
+            await biometricAuthService.enable(loginEmail);
             await refreshBiometricState();
         } catch (err: any) {
             setError(err?.message || 'Could not enable fingerprint login.');
@@ -126,8 +131,8 @@ export default function LoginScreen() {
         setError('');
         try {
             const normalizedEmail = email.trim().toLowerCase();
-            const tokenResponse = await authService.login({ email: normalizedEmail, password });
-            await maybeEnableBiometricLogin(normalizedEmail, tokenResponse.access_token);
+            await authService.login({ email: normalizedEmail, password });
+            await maybeEnableBiometricLogin(normalizedEmail);
             signIn(); // Update AuthGate state → triggers navigation to home
         } catch (err: any) {
             setError(getApiErrorMessage(err, 'Login failed. Please try again.'));
@@ -142,27 +147,17 @@ export default function LoginScreen() {
         setBiometricLoading(true);
         setError('');
         try {
-            const stored = await biometricAuthService.getTokenWithPrompt();
-            if (!stored) {
+            const outcome = await biometricAuthService.unlockWithBiometrics();
+            if (outcome === 'success') {
+                signIn();
+            } else if (outcome === 'cancelled') {
                 setError('Fingerprint login was cancelled.');
-                return;
-            }
-
-            await authService.setStoredToken(stored.token);
-
-            // Verify the stored token is still valid before navigating in
-            try {
-                await authService.getCurrentUser();
-            } catch {
-                // Token has expired — clear the stale biometric link and ask for password
-                await authService.logout();
+            } else {
+                // Refresh token expired/revoked — clear the stale biometric link and ask for password
                 await biometricAuthService.disable();
                 await refreshBiometricState();
                 setError('Your session has expired. Please sign in with your password to re-enable fingerprint login.');
-                return;
             }
-
-            signIn();
         } catch (err: any) {
             setError(getApiErrorMessage(err, 'Fingerprint login failed. Please sign in with your password.'));
         } finally {
@@ -246,7 +241,8 @@ export default function LoginScreen() {
                                 />
                                 {biometricAvailable ? (
                                     <Button
-                                        title="⌾"
+                                        title=""
+                                        icon={<Ionicons name="finger-print" size={26} color={colors.primary[400]} />}
                                         onPress={handleBiometricLogin}
                                         loading={biometricLoading}
                                         disabled={!biometricEmail || loading}

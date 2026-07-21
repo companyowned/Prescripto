@@ -1,10 +1,12 @@
 """Medication Reminders API router."""
 
+import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.security import get_current_user
 from app.db.session import get_db
 from app.models.user import User
@@ -17,31 +19,38 @@ from app.schemas.medication_reminder import (
     UpcomingDoseResponse,
 )
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/medication-reminders", tags=["Medication Reminders"])
 
 
 @router.get("/run-cron")
-async def run_cron(db: AsyncSession = Depends(get_db)):
-    """Vercel cron job endpoint for serverless background tasks."""
+async def run_cron(request: Request, db: AsyncSession = Depends(get_db)):
+    """Vercel cron job endpoint for serverless background tasks.
+
+    Secured via CRON_SECRET — Vercel automatically sends it as a Bearer token
+    for requests it triggers (https://vercel.com/docs/cron-jobs/manage-cron-jobs#securing-cron-jobs).
+    """
+    if not settings.CRON_SECRET or request.headers.get("authorization") != f"Bearer {settings.CRON_SECRET}":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+
     from app.workers.reminder_tasks import (
         generate_upcoming_doses,
         mark_overdue_as_missed,
         send_dose_reminders,
     )
     from app.db.session import init_db
-    import logging
-    logger = logging.getLogger(__name__)
     try:
         # Safety: Ensure tables exist in production
         await init_db()
-        
+
         await generate_upcoming_doses(48)
         await mark_overdue_as_missed()
         await send_dose_reminders()
         return {"status": "success", "message": "Cron executed successfully"}
     except Exception as e:
-        logger.error(f"Vercel Cron failed: {e}")
-        return {"status": "error", "message": str(e)}
+        logger.error(f"Vercel Cron failed: {e}", exc_info=True)
+        return {"status": "error", "message": "Cron execution failed"}
 
 
 def _to_response(r) -> ReminderResponse:

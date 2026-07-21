@@ -16,6 +16,21 @@ from app.services.profile_access import ProfileAccessService
 logger = logging.getLogger(__name__)
 
 
+async def _get_owned_reminder(db: AsyncSession, reminder_id: UUID, user_id: UUID):
+    """Fetch a reminder and verify the caller has owner-level access to its profile.
+
+    Mutations (update/delete/pause/resume) are restricted to owner-level access —
+    same rule as reads via ProfileAccessService, but VIEWER grants never qualify.
+    """
+    reminder = await MedicationReminderRepo.get_by_id(db, reminder_id)
+    if not reminder or not reminder.profile_id:
+        raise NotFoundError("Reminder not found")
+    access = await ProfileAccessService.resolve(db, user_id, reminder.profile_id)
+    if not access.owner_like:
+        raise NotFoundError("Reminder not found")
+    return reminder
+
+
 class MedicationReminderController:
     @staticmethod
     async def create_reminder(
@@ -106,10 +121,8 @@ class MedicationReminderController:
         user_id: UUID,
         data: ReminderUpdateRequest,
     ):
-        """Update a reminder, checking ownership."""
-        reminder = await MedicationReminderRepo.get_by_id(db, reminder_id)
-        if not reminder or reminder.user_id != user_id:
-            raise NotFoundError("Reminder not found")
+        """Update a reminder, checking owner-level profile access."""
+        reminder = await _get_owned_reminder(db, reminder_id, user_id)
 
         update_fields = data.model_dump(exclude_unset=True)
         for field, value in update_fields.items():
@@ -128,17 +141,13 @@ class MedicationReminderController:
     @staticmethod
     async def delete_reminder(db: AsyncSession, reminder_id: UUID, user_id: UUID):
         """Soft-delete a reminder."""
-        reminder = await MedicationReminderRepo.get_by_id(db, reminder_id)
-        if not reminder or reminder.user_id != user_id:
-            raise NotFoundError("Reminder not found")
+        reminder = await _get_owned_reminder(db, reminder_id, user_id)
         return await MedicationReminderRepo.soft_delete(db, reminder)
 
     @staticmethod
     async def pause_reminder(db: AsyncSession, reminder_id: UUID, user_id: UUID):
         """Pause a reminder."""
-        reminder = await MedicationReminderRepo.get_by_id(db, reminder_id)
-        if not reminder or reminder.user_id != user_id:
-            raise NotFoundError("Reminder not found")
+        reminder = await _get_owned_reminder(db, reminder_id, user_id)
         if not reminder.is_active:
             raise BadRequestError("Reminder is already paused")
         reminder.is_active = False
@@ -147,9 +156,7 @@ class MedicationReminderController:
     @staticmethod
     async def resume_reminder(db: AsyncSession, reminder_id: UUID, user_id: UUID):
         """Resume a paused reminder."""
-        reminder = await MedicationReminderRepo.get_by_id(db, reminder_id)
-        if not reminder or reminder.user_id != user_id:
-            raise NotFoundError("Reminder not found")
+        reminder = await _get_owned_reminder(db, reminder_id, user_id)
         if reminder.is_active:
             raise BadRequestError("Reminder is already active")
         reminder.is_active = True

@@ -4,16 +4,30 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
+
+from app.core.config import settings
+from app.core.rate_limit import limiter
 
 
 def _get_allowed_origins() -> list[str]:
     """Build CORS origin list from ALLOWED_ORIGINS env var (comma-separated).
 
-    Falls back to localhost addresses for local development only.
+    Falls back to localhost addresses for local development only; raises in
+    production so a misconfigured deploy fails fast instead of silently
+    rejecting every request from the real app.
     """
     raw = os.environ.get("ALLOWED_ORIGINS", "")
     if raw:
         return [o.strip() for o in raw.split(",") if o.strip()]
+    if not settings.DEBUG:
+        raise ValueError(
+            "ALLOWED_ORIGINS is required in production. "
+            "Set it to a comma-separated list of allowed origins."
+        )
     return [
         "http://localhost:8081",
         "http://localhost:8082",
@@ -23,7 +37,6 @@ def _get_allowed_origins() -> list[str]:
         "http://127.0.0.1:8082",
     ]
 
-from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.db.session import init_db
 from app.views.health import router as health_router
@@ -56,6 +69,7 @@ async def lifespan(app: FastAPI):
     import app.models.medication_insight_snapshot  # noqa
     import app.models.password_reset_otp  # noqa
     import app.models.profile_link_request  # noqa
+    import app.models.refresh_token  # noqa
 
     is_vercel_runtime = os.getenv("VERCEL") == "1"
     
@@ -111,6 +125,11 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Rate limiting (best-effort brute-force protection on auth endpoints)
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
 
     # Exception handlers
     register_exception_handlers(app)

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Switch } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MockBottomTabs } from '../../components/home';
 import { GlassBackground } from '../../components/ui';
 import { authService } from '../../services/auth';
+import { biometricAuthService } from '../../services/biometricAuth';
 import { useAuth } from '../_layout';
 import { useTheme } from '../../contexts/theme-context';
 import { useLanguage } from '../../contexts/language-context';
@@ -18,9 +19,41 @@ export default function SettingsScreen() {
     const { isDark, toggleTheme } = useTheme();
     const { language, toggleLanguage, t, isRTL } = useLanguage();
 
+    const [biometricSupported, setBiometricSupported] = useState(false);
+    const [biometricEnabled, setBiometricEnabled] = useState(false);
+    const [biometricBusy, setBiometricBusy] = useState(false);
+
+    useEffect(() => {
+        (async () => {
+            const supported = await biometricAuthService.canUseBiometrics();
+            setBiometricSupported(supported);
+            setBiometricEnabled(supported && (await biometricAuthService.isEnabled()));
+        })();
+    }, []);
+
     const handleLogout = async () => {
         await authService.logout();
         signOut();
+    };
+
+    const handleToggleBiometric = async (value: boolean) => {
+        if (biometricBusy) return;
+        setBiometricBusy(true);
+        try {
+            if (value) {
+                const user = await authService.getCurrentUser();
+                await biometricAuthService.enable(user.email);
+                await biometricAuthService.markPrompted();
+                setBiometricEnabled(true);
+            } else {
+                await biometricAuthService.disable();
+                setBiometricEnabled(false);
+            }
+        } catch (err: any) {
+            Alert.alert('Fingerprint Login', err?.message || 'Could not update fingerprint login.');
+        } finally {
+            setBiometricBusy(false);
+        }
     };
 
     return (
@@ -92,6 +125,30 @@ export default function SettingsScreen() {
                                 onPress={() => router.push('/(app)/profiles')}
                             />
                         </View>
+
+                        {biometricSupported ? (
+                            <>
+                                <SectionLabel label="Security" />
+                                <View style={styles.card}>
+                                    <SettingRow
+                                        icon="finger-print-outline"
+                                        iconBg="rgba(56,189,248,0.15)"
+                                        iconColor={colors.primary[300]}
+                                        label="Fingerprint Login"
+                                        right={
+                                            <Switch
+                                                value={biometricEnabled}
+                                                onValueChange={handleToggleBiometric}
+                                                disabled={biometricBusy}
+                                                trackColor={{ false: 'rgba(255,255,255,0.15)', true: colors.primary[500] }}
+                                                thumbColor="#FFFFFF"
+                                                ios_backgroundColor="rgba(255,255,255,0.15)"
+                                            />
+                                        }
+                                    />
+                                </View>
+                            </>
+                        ) : null}
 
                         {/* Support section */}
                         <SectionLabel label={t('support')} />

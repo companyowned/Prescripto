@@ -18,5 +18,11 @@
   ],
   "env": {
     "PYTHONUNBUFFERED": "1"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/v1/medication-reminders/run-cron",
+      "schedule": "0 8 * * *"
+    }
+  ]
 }

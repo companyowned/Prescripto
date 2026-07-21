@@ -6,6 +6,7 @@ from typing import Optional
 import httpx
 
 from app.core.config import settings
+from app.utils.file_storage import FileStorage
 
 logger = logging.getLogger(__name__)
 
@@ -53,16 +54,18 @@ class N8nClient:
             # Prepare request based on input type
             async with httpx.AsyncClient(timeout=120.0) as client:
                 if file_path:
-                    with open(file_path, "rb") as f:
-                        # Send as "data" so n8n OCR node finds it in the binary 'data' field
-                        files = {"data": f}
-                        data = extra_data or {}
-                        response = await client.post(
-                            self.webhook_url,
-                            headers=headers,
-                            files=files,
-                            data=data,
-                        )
+                    file_bytes = await FileStorage.read_file(file_path)
+                    if file_bytes is None:
+                        raise FileNotFoundError(f"Stored document not found: {file_path}")
+                    # Send as "data" so n8n OCR node finds it in the binary 'data' field
+                    files = {"data": file_bytes}
+                    data = extra_data or {}
+                    response = await client.post(
+                        self.webhook_url,
+                        headers=headers,
+                        files=files,
+                        data=data,
+                    )
                 elif text_input:
                     payload = {"input": text_input, **(extra_data or {})}
                     response = await client.post(
@@ -84,13 +87,14 @@ class N8nClient:
             try:
                 # n8n often returns nested structures depending on your webhook config,
                 result = response.json()
-                if isinstance(result, list) and len(result) > 0:
-                    result = result[0]
-                logger.info("n8n workflow completed successfully.")
-                return result
             except Exception as e:
-                logger.warning(f"Could not parse n8n response as JSON. Returning mock data.")
-                return self._mock_output()
+                logger.error(f"Could not parse n8n response as JSON: {e}")
+                raise ValueError("n8n returned a non-JSON response; cannot extract prescription data.") from e
+
+            if isinstance(result, list) and len(result) > 0:
+                result = result[0]
+            logger.info("n8n workflow completed successfully.")
+            return result
 
         except httpx.HTTPStatusError as e:
             logger.error(f"n8n API error: {e.response.status_code} — {e.response.text}")

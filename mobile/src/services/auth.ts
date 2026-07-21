@@ -1,11 +1,12 @@
 /**
- * Auth service — login, register, token management
- * Uses SecureStore on native, localStorage on web
+ * Auth service — login, register, token management.
+ * Access tokens are short-lived (30 min); refresh tokens are long-lived and
+ * rotated on each use, so a session survives across app restarts without
+ * asking for a password again — see tokenStorage.ts / apiClient.ts.
  */
 
-import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 import apiClient from './apiClient';
+import { tokenStorage } from './tokenStorage';
 
 export interface LoginRequest {
     email: string;
@@ -20,6 +21,7 @@ export interface RegisterRequest {
 
 export interface TokenResponse {
     access_token: string;
+    refresh_token: string;
     token_type: string;
 }
 
@@ -33,45 +35,10 @@ export interface UserResponse {
     full_name: string;
 }
 
-const TOKEN_KEY = 'access_token';
-
-// Cross-platform token storage
-async function setToken(value: string): Promise<void> {
-    if (Platform.OS === 'web') {
-        localStorage.setItem(TOKEN_KEY, value);
-    } else {
-        await SecureStore.setItemAsync(TOKEN_KEY, value);
-    }
-}
-
-async function getToken(): Promise<string | null> {
-    if (Platform.OS === 'web') {
-        return localStorage.getItem(TOKEN_KEY);
-    } else {
-        try {
-            return await SecureStore.getItemAsync(TOKEN_KEY);
-        } catch {
-            return null;
-        }
-    }
-}
-
-async function removeToken(): Promise<void> {
-    if (Platform.OS === 'web') {
-        localStorage.removeItem(TOKEN_KEY);
-    } else {
-        try {
-            await SecureStore.deleteItemAsync(TOKEN_KEY);
-        } catch {
-            // ignore
-        }
-    }
-}
-
 export const authService = {
     async login(data: LoginRequest): Promise<TokenResponse> {
         const response = await apiClient.post<TokenResponse>('/auth/login', data);
-        await setToken(response.data.access_token);
+        await tokenStorage.setTokens(response.data.access_token, response.data.refresh_token);
         return response.data;
     },
 
@@ -102,21 +69,47 @@ export const authService = {
         return response.data;
     },
 
+    /** Exchange the stored refresh token for a fresh access token (rotates both). */
+    async refreshAccessToken(): Promise<string> {
+        const storedRefreshToken = await tokenStorage.getRefreshToken();
+        if (!storedRefreshToken) {
+            throw new Error('No stored session to refresh.');
+        }
+        try {
+            const response = await apiClient.post<TokenResponse>('/auth/token/refresh', {
+                refresh_token: storedRefreshToken,
+            });
+            await tokenStorage.setTokens(response.data.access_token, response.data.refresh_token);
+            return response.data.access_token;
+        } catch (err) {
+            await tokenStorage.clearAll();
+            throw err;
+        }
+    },
+
     async logout(): Promise<void> {
-        await removeToken();
+        const storedRefreshToken = await tokenStorage.getRefreshToken();
+        if (storedRefreshToken) {
+            try {
+                await apiClient.post('/auth/logout', { refresh_token: storedRefreshToken });
+            } catch {
+                // best-effort — still clear local tokens even if the server call fails
+            }
+        }
+        await tokenStorage.clearAll();
     },
 
     async getToken(): Promise<string | null> {
-        return getToken();
+        return tokenStorage.getAccessToken();
     },
 
     async isAuthenticated(): Promise<boolean> {
-        const token = await getToken();
+        const token = await tokenStorage.getAccessToken();
         return !!token;
     },
 
     async setStoredToken(token: string): Promise<void> {
-        await setToken(token);
+        await tokenStorage.setAccessToken(token);
     },
 
     async getCurrentUser(): Promise<UserResponse> {

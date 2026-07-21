@@ -101,7 +101,7 @@ export default function ChatScreen() {
                 <View style={styles.screen}>
                     <KeyboardAvoidingView
                         style={styles.container}
-                        behavior="padding"
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                         keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
                     >
                         <View style={styles.header}>
@@ -121,6 +121,7 @@ export default function ChatScreen() {
 
                         <ScrollView
                             ref={scrollRef}
+                            style={styles.messagesScroll}
                             contentContainerStyle={styles.messages}
                             showsVerticalScrollIndicator={false}
                             onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
@@ -242,6 +243,9 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         fontSize: 13,
         marginTop: 2,
+    },
+    messagesScroll: {
+        flex: 1,
     },
     messages: {
         paddingBottom: 20,

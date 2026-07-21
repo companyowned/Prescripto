@@ -66,6 +66,7 @@ async def init_db():
     import app.models.medication_insight_snapshot  # noqa
     import app.models.password_reset_otp  # noqa
     import app.models.profile_link_request  # noqa
+    import app.models.refresh_token  # noqa
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

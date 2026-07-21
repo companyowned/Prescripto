@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api *)",
+      "WebFetch(domain:github.com)",
+      "Bash(python3 -c \"import ast; [ast.parse\\(open\\(f\\).read\\(\\), f\\) for f in ['app/main.py','app/utils/file_storage.py','app/utils/n8n_client.py','app/controllers/document_controller.py','app/controllers/medication_reminder_controller.py','app/views/medication_reminders.py','app/views/documents.py','app/views/auth.py','app/core/config.py','app/core/rate_limit.py']]\")",
+      "Bash(python3 -c \"import fastapi\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\('app.json'\\)\\)\")",
+      "Bash(npx expo-doctor *)",
+      "Bash(npx tsc *)",
+      "Bash(python3 -c ' *)"
+    ]
+  }
+}
