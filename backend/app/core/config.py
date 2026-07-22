@@ -66,6 +66,7 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: str = ""
     CHAT_LLM_MODEL: str = "gemini-2.5-flash"
     CHAT_TEMPERATURE: float = 0.2
+    CHAT_MAX_OUTPUT_TOKENS: int = 1024
 
     # Deep link scheme embedded in profile QR (must match Expo `expo.scheme`)
     PROFILE_LINK_QR_SCHEME: str = "dawini"

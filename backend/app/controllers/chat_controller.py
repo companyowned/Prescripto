@@ -1,6 +1,7 @@
 """Business logic for the Dawini chat assistant."""
 
 import logging
+import re
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -56,6 +57,35 @@ ARABIC_URGENT_TERMS = (
     "تورم الحلق",
 )
 
+GREETING_TERMS = (
+    "hi",
+    "hello",
+    "hey",
+    "hiya",
+    "yo",
+    "howdy",
+    "greetings",
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "whats up",
+    "sup",
+)
+
+ARABIC_GREETING_TERMS = (
+    "مرحبا",
+    "مرحبًا",
+    "اهلا",
+    "أهلا",
+    "اهلين",
+    "أهلين",
+    "السلام عليكم",
+    "صباح الخير",
+    "مساء الخير",
+    "هاي",
+    "هلا",
+)
+
 CHANGE_TREATMENT_TERMS = (
     "stop",
     "change dose",
@@ -98,8 +128,18 @@ class ChatController:
         user: User,
         data: ChatRequest,
     ) -> ChatResponse:
-        context = await _build_context(db, user, data)
         safety_disclaimer = _safety_disclaimer_for_question(data.message)
+
+        # Greetings and urgent-safety triggers are resolved without touching the
+        # database or the LLM, so they answer immediately.
+        greeting_response = _greeting_response(data.message)
+        if greeting_response:
+            return ChatResponse(
+                message=greeting_response,
+                mode="fallback",
+                sources=[],
+                safety_disclaimer=safety_disclaimer,
+            )
 
         urgent_response = _urgent_safety_response(data.message)
         if urgent_response:
@@ -115,6 +155,8 @@ class ChatController:
                 ],
                 safety_disclaimer=safety_disclaimer,
             )
+
+        context = await _build_context(db, user, data)
 
         history_text = "\n".join(
             f"{message.role}: {message.content}" for message in data.history[-8:]
@@ -326,6 +368,34 @@ def _format_datetime(value: datetime | None) -> str:
     if value is None:
         return "unknown date"
     return value.strftime("%Y-%m-%d %H:%M")
+
+
+def _greeting_response(question: str) -> str | None:
+    """Answer plain greetings ("hi", "good morning", ...) instantly.
+
+    Only matches when the whole message is a greeting (<=4 words after
+    stripping punctuation), so a real question that happens to start with
+    "hi" still reaches the full context + LLM path.
+    """
+    normalized = re.sub(r"[^\w\s]", "", question, flags=re.UNICODE).strip().lower()
+    if not normalized or len(normalized.split()) > 4:
+        return None
+
+    is_arabic = _is_arabic_text(question)
+    terms = ARABIC_GREETING_TERMS if is_arabic else GREETING_TERMS
+    if not any(normalized == term or normalized.startswith(f"{term} ") for term in terms):
+        return None
+
+    if is_arabic:
+        return (
+            "أهلًا بك! أنا دَوّيني، مساعدك الطبي. يمكنني مساعدتك في فهم سجلاتك "
+            "الطبية المحفوظة أو الإجابة عن أسئلة طبية عامة. كيف أقدر أساعدك اليوم؟"
+        )
+    return (
+        "Hello! I'm Dawini, your medical assistant. I can help explain your saved "
+        "prescription records or answer general medical questions. How can I help "
+        "you today?"
+    )
 
 
 def _urgent_safety_response(question: str) -> str | None:

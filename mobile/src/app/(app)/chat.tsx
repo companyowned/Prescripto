@@ -133,6 +133,12 @@ export default function ChatScreen() {
                                         message.role === 'user' ? styles.userBubble : styles.assistantBubble,
                                     ]}
                                 >
+                                    {message.role === 'assistant' && message.id !== 'starter' ? (
+                                        <View style={styles.assistantHeader}>
+                                            <Ionicons name="sparkles" size={13} color={colors.primary[300]} />
+                                            <Text style={styles.assistantHeaderText}>Dawini</Text>
+                                        </View>
+                                    ) : null}
                                     <Text
                                         style={[
                                             styles.messageText,
@@ -141,19 +147,6 @@ export default function ChatScreen() {
                                     >
                                         {message.content}
                                     </Text>
-                                    {message.sources && message.sources.length > 0 ? (
-                                        <View style={styles.sources}>
-                                            <Text style={styles.sourceLabel}>
-                                                {message.mode === 'llamaindex' ? 'LlamaIndex' : 'Local'} answer
-                                                {' '}· {message.sources.length} source(s)
-                                            </Text>
-                                            {message.sources.slice(0, 3).map((source, index) => (
-                                                <Text key={`${message.id}-${source.type}-${index}`} style={styles.sourceText}>
-                                                    {source.type}: {source.title}
-                                                </Text>
-                                            ))}
-                                        </View>
-                                    ) : null}
                                 </View>
                             ))}
 
@@ -265,6 +258,18 @@ const styles = StyleSheet.create({
         borderColor: colors.glass.borderHighlight,
         borderBottomLeftRadius: 6,
     },
+    assistantHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        marginBottom: 6,
+    },
+    assistantHeaderText: {
+        color: colors.primary[300],
+        fontSize: 12,
+        fontWeight: '700',
+        letterSpacing: 0.2,
+    },
     messageText: {
         fontSize: 15,
         lineHeight: 22,
@@ -275,22 +280,6 @@ const styles = StyleSheet.create({
     },
     assistantText: {
         color: colors.white,
-    },
-    sources: {
-        marginTop: 12,
-        paddingTop: 10,
-        borderTopWidth: 1,
-        borderTopColor: colors.glass.border,
-        gap: 4,
-    },
-    sourceLabel: {
-        color: colors.primary[300],
-        fontSize: 12,
-        fontWeight: '700',
-    },
-    sourceText: {
-        color: colors.textSecondary,
-        fontSize: 12,
     },
     loadingBubble: {
         flexDirection: 'row',

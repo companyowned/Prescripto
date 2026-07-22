@@ -34,7 +34,21 @@
       "mcp__Neon__run_sql",
       "Bash(kill %1)",
       "Bash(pkill -f \"uvicorn app.main:app --host 127.0.0.1 --port 8899\")",
-      "Bash(rm -rf /tmp/prescripto-debug-venv /tmp/prescripto-local.log /tmp/chat_response.json *)"
+      "Bash(rm -rf /tmp/prescripto-debug-venv /tmp/prescripto-local.log /tmp/chat_response.json *)",
+      "Bash(npx tsc *)",
+      "Bash(python3.11 -m py_compile app/controllers/chat_controller.py app/utils/llamaindex_chat.py)",
+      "Bash(python3.11 -m venv /tmp/prescripto-debug-venv2)",
+      "Bash(/tmp/prescripto-debug-venv2/bin/pip install *)",
+      "Bash(/tmp/prescripto-debug-venv2/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8899)",
+      "Bash(curl -s -o /dev/null -w \"health: %{http_code}\\\\n\" http://127.0.0.1:8899/api/v1)",
+      "Bash(curl -s -o /tmp/greet1.json -w 'HTTP %{http_code} in %{time_total}s\\\\n' -X POST http://127.0.0.1:8899/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NDcxNDZ9.FAowtjJmSD6-g-yHmZZULPLMWDFyfglz1CwaQY0aB7o' -d '{\"message\":\"hi\",\"history\":[]}')",
+      "Bash(curl -s -o /tmp/greet2.json -w 'HTTP %{http_code} in %{time_total}s\\\\n' -X POST http://127.0.0.1:8899/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NDcxNDZ9.FAowtjJmSD6-g-yHmZZULPLMWDFyfglz1CwaQY0aB7o' -d '{\"message\":\"good morning\",\"history\":[]}')",
+      "Bash(/tmp/prescripto-debug-venv2/bin/python -c ' *)",
+      "Bash(curl -s -w '\\\\nHTTP %{http_code} in %{time_total}s\\\\n' -X POST http://127.0.0.1:8899/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NTUyMzB9.ayc-WiwQUoevdayoqJ8oIQvgreKLx8t69uMaLNVtIHM' -d '{\"message\":\"hi\",\"history\":[]}')",
+      "Bash(curl -s -w '\\\\nHTTP %{http_code} in %{time_total}s\\\\n' -X POST http://127.0.0.1:8899/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NTUyMzB9.ayc-WiwQUoevdayoqJ8oIQvgreKLx8t69uMaLNVtIHM' -d '{\"message\":\"good morning\",\"history\":[]}')",
+      "Bash(curl -s -w '\\\\nHTTP %{http_code} in %{time_total}s\\\\n' -X POST http://127.0.0.1:8899/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NTUyMzB9.ayc-WiwQUoevdayoqJ8oIQvgreKLx8t69uMaLNVtIHM' -d '{\"message\":\"history of my meds\",\"history\":[]}')",
+      "Bash(rm -rf /tmp/prescripto-debug-venv2 /tmp/prescripto-local2.log /tmp/greet1.json /tmp/greet2.json)",
+      "Bash(python3.11 -m py_compile app/core/config.py app/utils/llamaindex_chat.py app/controllers/chat_controller.py)"
     ],
     "additionalDirectories": [
       "/private/tmp/prescripto-debug-venv"
