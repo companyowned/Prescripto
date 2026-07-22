@@ -89,6 +89,7 @@ async def init_db():
             "ALTER TABLE profile_access ADD COLUMN IF NOT EXISTS can_read_reminders BOOLEAN NOT NULL DEFAULT true",
             "ALTER TABLE profile_access ADD COLUMN IF NOT EXISTS can_read_family_profile BOOLEAN NOT NULL DEFAULT true",
             "ALTER TABLE profile_access ADD COLUMN IF NOT EXISTS can_read_medical_history BOOLEAN NOT NULL DEFAULT true",
+            "ALTER TABLE medication_dose_events ADD COLUMN IF NOT EXISTS notified_at TIMESTAMP WITH TIME ZONE",
         ]
         for stmt in migration_statements:
             try:

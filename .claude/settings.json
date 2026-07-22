@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx expo *)",
+      "Bash(npx expo-doctor *)",
+      "Bash(npm ls *)",
+      "Bash(npm install *)",
+      "mcp__Neon__list_projects",
+      "mcp__Neon__get_connection_string",
+      "Bash(python3 -c \"import secrets; print\\(secrets.token_urlsafe\\(48\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://prescripto-taupe-ten.vercel.app/api/v1)",
+      "Bash(curl -s https://prescripto-taupe-ten.vercel.app/api/v1)",
+      "Bash(curl -s -i -X POST https://prescripto-taupe-ten.vercel.app/api/v1/chat -H 'Content-Type: application/json' -H 'Origin: http://localhost:8081' -d '{\"message\":\"hello\"}')",
+      "Bash(curl -s -i -X POST https://prescripto-taupe-ten.vercel.app/api/v1/auth/login -H 'Content-Type: application/x-www-form-urlencoded' -H 'Origin: http://localhost:8081' -d 'username=nonexistent@example.com&password=wrongpassword')",
+      "Bash(curl -s -i -X POST https://prescripto-taupe-ten.vercel.app/api/v1/auth/login -H 'Content-Type: application/json' -H 'Origin: http://localhost:8081' -d '{\"email\":\"nonexistent@example.com\",\"password\":\"wrongpassword\"}')",
+      "Bash(curl -s -i -X POST https://prescripto-taupe-ten.vercel.app/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NDcxNDZ9.FAowtjJmSD6-g-yHmZZULPLMWDFyfglz1CwaQY0aB7o' -H 'Origin: http://localhost:8081' -d '{\"message\":\"i have fever\",\"profile_id\":\"063e0bb1-4aee-4c0a-b9d6-abe6b0d8bd4e\",\"include_family_profiles\":true,\"history\":[],\"max_records\":20}')",
+      "Bash(curl -s -o /tmp/chat_response.json -w 'HTTP %{http_code}\\\\nTotal time: %{time_total}s\\\\n' -X POST https://prescripto-taupe-ten.vercel.app/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NDcxNDZ9.FAowtjJmSD6-g-yHmZZULPLMWDFyfglz1CwaQY0aB7o' -H 'Origin: http://localhost:8081' -d '{\"message\":\"i have fever\",\"profile_id\":\"063e0bb1-4aee-4c0a-b9d6-abe6b0d8bd4e\",\"include_family_profiles\":true,\"history\":[],\"max_records\":20}')",
+      "Read(//tmp/**)",
+      "Bash(python3 -c \"import fastapi, uvicorn\")",
+      "Read(//opt/homebrew/bin/**)",
+      "Read(//usr/local/bin/**)",
+      "Bash(pyenv versions *)",
+      "Bash(python3.11 -m venv /tmp/prescripto-debug-venv)",
+      "Bash(/tmp/prescripto-debug-venv/bin/pip install *)",
+      "Bash(/tmp/prescripto-debug-venv/bin/python -c \"import fastapi, llama_index.core, llama_index.llms.google_genai; print\\('ok'\\)\")",
+      "Bash(/tmp/prescripto-debug-venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8899)",
+      "Bash(echo \"started pid $!\")",
+      "Bash(curl -s -o /dev/null -w \"health check: %{http_code}\\\\n\" http://127.0.0.1:8899/api/v1)",
+      "Read(//private/tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8899/api/v1)",
+      "Bash(curl -s -i -X POST http://127.0.0.1:8899/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NDcxNDZ9.FAowtjJmSD6-g-yHmZZULPLMWDFyfglz1CwaQY0aB7o' -H 'Origin: http://localhost:8081' -d '{\"message\":\"i have fever\",\"profile_id\":\"063e0bb1-4aee-4c0a-b9d6-abe6b0d8bd4e\",\"include_family_profiles\":true,\"history\":[],\"max_records\":20}')",
+      "Bash(tail -60 /tmp/prescripto-local.log)",
+      "Bash(grep -n \"Unhandled exception on POST /api/v1/chat\" /tmp/prescripto-local.log)",
+      "mcp__Neon__run_sql",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"uvicorn app.main:app --host 127.0.0.1 --port 8899\")",
+      "Bash(rm -rf /tmp/prescripto-debug-venv /tmp/prescripto-local.log /tmp/chat_response.json *)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp/prescripto-debug-venv"
+    ]
+  }
+}

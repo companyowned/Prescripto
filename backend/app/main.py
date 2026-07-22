@@ -5,25 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-
-def _get_allowed_origins() -> list[str]:
-    """Build CORS origin list from ALLOWED_ORIGINS env var (comma-separated).
-
-    Falls back to localhost addresses for local development only.
-    """
-    raw = os.environ.get("ALLOWED_ORIGINS", "")
-    if raw:
-        return [o.strip() for o in raw.split(",") if o.strip()]
-    return [
-        "http://localhost:8081",
-        "http://localhost:8082",
-        "http://localhost:19006",
-        "http://localhost:3000",
-        "http://127.0.0.1:8081",
-        "http://127.0.0.1:8082",
-    ]
-
 from app.core.config import settings
+from app.core.cors import get_allowed_origins
 from app.core.exceptions import register_exception_handlers
 from app.db.session import init_db
 from app.views.health import router as health_router
@@ -106,7 +89,7 @@ def create_app() -> FastAPI:
     # CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=_get_allowed_origins(),
+        allow_origins=get_allowed_origins(),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

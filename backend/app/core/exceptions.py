@@ -4,7 +4,28 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from app.core.cors import get_allowed_origins
+
 logger = logging.getLogger(__name__)
+
+
+def _cors_headers_for(request: Request) -> dict[str, str]:
+    """Echo CORS headers for the request's Origin.
+
+    Needed because ServerErrorMiddleware (which dispatches the catch-all
+    Exception handler below) sits outside CORSMiddleware in the Starlette
+    stack, so responses from this handler would otherwise never get
+    Access-Control-Allow-Origin and browsers report a CORS failure instead
+    of the real 500.
+    """
+    origin = request.headers.get("origin")
+    if origin and origin in get_allowed_origins():
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Vary": "Origin",
+        }
+    return {}
 
 
 class AppException(Exception):
@@ -56,4 +77,5 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=500,
             content={"detail": "Internal server error"},
+            headers=_cors_headers_for(request),
         )
