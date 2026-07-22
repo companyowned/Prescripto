@@ -48,7 +48,8 @@
       "Bash(curl -s -w '\\\\nHTTP %{http_code} in %{time_total}s\\\\n' -X POST http://127.0.0.1:8899/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NTUyMzB9.ayc-WiwQUoevdayoqJ8oIQvgreKLx8t69uMaLNVtIHM' -d '{\"message\":\"good morning\",\"history\":[]}')",
       "Bash(curl -s -w '\\\\nHTTP %{http_code} in %{time_total}s\\\\n' -X POST http://127.0.0.1:8899/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NTUyMzB9.ayc-WiwQUoevdayoqJ8oIQvgreKLx8t69uMaLNVtIHM' -d '{\"message\":\"history of my meds\",\"history\":[]}')",
       "Bash(rm -rf /tmp/prescripto-debug-venv2 /tmp/prescripto-local2.log /tmp/greet1.json /tmp/greet2.json)",
-      "Bash(python3.11 -m py_compile app/core/config.py app/utils/llamaindex_chat.py app/controllers/chat_controller.py)"
+      "Bash(python3.11 -m py_compile app/core/config.py app/utils/llamaindex_chat.py app/controllers/chat_controller.py)",
+      "Bash(python3.11 -m py_compile app/core/config.py)"
     ],
     "additionalDirectories": [
       "/private/tmp/prescripto-debug-venv"

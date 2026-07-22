@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # JWT — must be provided via environment; no weak fallback
     JWT_SECRET_KEY: str = ""
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 43200  # 30 days — mobile app has no refresh-token flow
 
     # Password reset email / OTP
     PASSWORD_RESET_OTP_EXPIRE_MINUTES: int = 10
