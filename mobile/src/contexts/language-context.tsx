@@ -4,7 +4,7 @@ type Language = 'en' | 'ar';
 
 const translations = {
     en: {
-        home: 'Home', records: 'Records', meds: 'Meds', chat: 'Chat',
+        home: 'Home', records: 'Records', meds: 'Meds',
         insights: 'Insights', settings: 'Settings',
         dashboard: 'DASHBOARD', goodMorning: 'Good Morning',
         goodAfternoon: 'Good Afternoon', goodEvening: 'Good Evening',
@@ -27,11 +27,11 @@ const translations = {
         appearance: 'Appearance', account: 'Account', support: 'Support',
         accountProfile: 'Account Profile', familyProfiles: 'Family Profiles',
         notifications: 'Notifications', logOut: 'Log Out', settingsTitle: 'Settings',
-        dawiniAI: 'Dawini AI', schedule: 'Schedule', pharmacy: 'Pharmacy',
+        schedule: 'Schedule', pharmacy: 'Pharmacy',
         version: 'Prescripto v1.0.0',
     },
     ar: {
-        home: 'الرئيسية', records: 'السجلات', meds: 'الأدوية', chat: 'المحادثة',
+        home: 'الرئيسية', records: 'السجلات', meds: 'الأدوية',
         insights: 'التحليلات', settings: 'الإعدادات',
         dashboard: 'لوحة التحكم', goodMorning: 'صباح الخير',
         goodAfternoon: 'مساء الخير', goodEvening: 'مساء الخير',
@@ -54,7 +54,7 @@ const translations = {
         appearance: 'المظهر', account: 'الحساب', support: 'الدعم',
         accountProfile: 'ملف الحساب', familyProfiles: 'ملفات العائلة',
         notifications: 'الإشعارات', logOut: 'تسجيل الخروج', settingsTitle: 'الإعدادات',
-        dawiniAI: 'داويني AI', schedule: 'الجدول', pharmacy: 'الصيدلية',
+        schedule: 'الجدول', pharmacy: 'الصيدلية',
         version: 'Prescripto v1.0.0',
     },
 };

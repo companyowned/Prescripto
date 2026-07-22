@@ -48,7 +48,6 @@ from app.views.medication_dose_events import router as medication_dose_events_ro
 from app.views.medication_insights import router as medication_insights_router
 from app.views.profiles import router as profiles_router
 from app.views.profile_links import router as profile_links_router
-from app.views.chat import router as chat_router
 
 
 @asynccontextmanager
@@ -148,7 +147,6 @@ def create_app() -> FastAPI:
     app.include_router(medication_dose_events_router, prefix="/api/v1")
     app.include_router(medication_insights_router, prefix="/api/v1")
     app.include_router(profile_links_router, prefix="/api/v1")
-    app.include_router(chat_router, prefix="/api/v1")
 
     return app
 

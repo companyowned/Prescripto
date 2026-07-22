@@ -8,11 +8,10 @@ import { useRouter } from 'expo-router';
 import { useLanguage } from '../../contexts/language-context';
 
 interface MockBottomTabsProps {
-    activeTab?: 'home' | 'records' | 'reminders' | 'chat' | 'insights' | 'settings';
+    activeTab?: 'home' | 'records' | 'reminders' | 'insights' | 'settings';
     onHomePress: () => void;
     onRecordsPress: () => void;
     onRemindersPress?: () => void;
-    onChatPress?: () => void;
     onInsightsPress: () => void;
     onSettingsPress: () => void;
 }
@@ -22,7 +21,6 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
     onHomePress,
     onRecordsPress,
     onRemindersPress,
-    onChatPress,
     onInsightsPress,
     onSettingsPress,
 }) => {
@@ -33,7 +31,6 @@ export const MockBottomTabs: React.FC<MockBottomTabsProps> = ({
         { key: 'home',     icon: 'home',         lib: 'ion', label: t('home'),     onPress: onHomePress },
         { key: 'records',  icon: 'history',       lib: 'mci', label: t('records'),  onPress: onRecordsPress },
         { key: 'reminders',icon: 'notifications', lib: 'ion', label: t('meds'),     onPress: onRemindersPress || (() => router.push('/(app)/reminders')) },
-        { key: 'chat',     icon: 'chatbubbles',   lib: 'ion', label: t('chat'),     onPress: onChatPress || (() => router.push('/(app)/chat')) },
         { key: 'insights', icon: 'bar-chart',     lib: 'ion', label: t('insights'), onPress: onInsightsPress },
         { key: 'settings', icon: 'settings-sharp',lib: 'ion', label: t('settings'), onPress: onSettingsPress },
     ];

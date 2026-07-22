@@ -154,16 +154,6 @@ export default function SettingsScreen() {
                         <SectionLabel label={t('support')} />
                         <View style={styles.card}>
                             <SettingRow
-                                icon="chatbubbles-outline"
-                                iconBg="rgba(62,219,240,0.15)"
-                                iconColor={colors.primary[300]}
-                                label={t('dawiniAI')}
-                                chevron
-
-                                onPress={() => router.push('/(app)/chat')}
-                            />
-                            <View style={styles.divider} />
-                            <SettingRow
                                 icon="notifications-outline"
                                 iconBg="rgba(245,158,11,0.15)"
                                 iconColor="#F59E0B"
@@ -192,7 +182,6 @@ export default function SettingsScreen() {
                         onHomePress={() => router.push('/(app)/home')}
                         onRecordsPress={() => router.push('/(app)/history')}
                         onRemindersPress={() => router.push('/(app)/reminders')}
-                        onChatPress={() => router.push('/(app)/chat')}
                         onInsightsPress={() => router.push('/(app)/insights')}
                         onSettingsPress={() => {}}
                     />

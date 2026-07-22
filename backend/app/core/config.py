@@ -67,11 +67,6 @@ class Settings(BaseSettings):
     AZURE_VISION_ENDPOINT: str = ""
     AZURE_VISION_KEY: str = ""
 
-    # Gemini / Google GenAI
-    GOOGLE_API_KEY: str = ""
-    CHAT_LLM_MODEL: str = "gemini-2.5-flash"
-    CHAT_TEMPERATURE: float = 0.2
-
     # Deep link scheme embedded in profile QR (must match Expo `expo.scheme`)
     PROFILE_LINK_QR_SCHEME: str = "dawini"
 

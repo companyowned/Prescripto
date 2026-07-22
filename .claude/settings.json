@@ -10,7 +10,9 @@
       "Bash(python3 -c \"import json; json.load\\(open\\('app.json'\\)\\)\")",
       "Bash(npx expo-doctor *)",
       "Bash(npx tsc *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\('app/main.py'\\).read\\(\\)\\)\")",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\('app/core/config.py'\\).read\\(\\)\\)\")"
     ]
   }
 }

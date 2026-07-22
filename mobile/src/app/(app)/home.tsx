@@ -102,7 +102,6 @@ export default function HomeScreen() {
 
                         {/* Quick Actions */}
                         <View style={styles.quickGrid}>
-                            <QuickAction icon="chatbubbles"       label={t('dawiniAI')}  color="#4FB3FF" onPress={() => router.push('/(app)/chat')} />
                             <QuickAction icon="today-outline"     label={t('schedule')} color="#76FFB4" onPress={() => router.push('/(app)/today-schedule')} />
                             <QuickAction icon="bar-chart-outline" label={t('insights')} color="#FFD96E" onPress={() => router.push('/(app)/insights')} />
                             <QuickAction icon="medical"           label={t('pharmacy')} color="#C4B5FD" onPress={() => { tap(); setPharmacyVisible(true); }} />
@@ -121,7 +120,6 @@ export default function HomeScreen() {
                         onHomePress={() => {}}
                         onRecordsPress={() => router.push('/(app)/history')}
                         onRemindersPress={() => router.push('/(app)/reminders')}
-                        onChatPress={() => router.push('/(app)/chat')}
                         onInsightsPress={() => router.push('/(app)/insights')}
                         onSettingsPress={() => router.push('/(app)/settings')}
                     />

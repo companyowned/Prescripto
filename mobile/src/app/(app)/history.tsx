@@ -490,7 +490,6 @@ export default function HistoryScreen() {
                     onHomePress={() => router.push('/(app)/home')}
                     onRecordsPress={() => {}}
                     onRemindersPress={() => router.push('/(app)/reminders')}
-                    onChatPress={() => router.push('/(app)/chat')}
                     onInsightsPress={() => router.push('/(app)/insights')}
                     onSettingsPress={() => router.push('/(app)/settings')}
                 />
