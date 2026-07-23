@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     skipText: { fontSize: 15, fontWeight: '600', color: 'rgba(255,255,255,0.45)' },
     slideArea: { flex: 1, width, alignItems: 'center', justifyContent: 'center' },
     slide: { flex: 1, width, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, paddingTop: 60 },
-    slideGrad: { ...StyleSheet.absoluteFillObject },
+    slideGrad: { ...StyleSheet.absoluteFill },
     iconOuter: {
         width: 120, height: 120, borderRadius: 40,
         alignItems: 'center', justifyContent: 'center',

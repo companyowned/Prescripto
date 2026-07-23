@@ -49,7 +49,15 @@
       "Bash(curl -s -w '\\\\nHTTP %{http_code} in %{time_total}s\\\\n' -X POST http://127.0.0.1:8899/api/v1/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmNlZGVhNi0zYzYxLTRlZDUtODc0NC1lMWNkNzIyZmZmNmIiLCJleHAiOjE3ODQ3NTUyMzB9.ayc-WiwQUoevdayoqJ8oIQvgreKLx8t69uMaLNVtIHM' -d '{\"message\":\"history of my meds\",\"history\":[]}')",
       "Bash(rm -rf /tmp/prescripto-debug-venv2 /tmp/prescripto-local2.log /tmp/greet1.json /tmp/greet2.json)",
       "Bash(python3.11 -m py_compile app/core/config.py app/utils/llamaindex_chat.py app/controllers/chat_controller.py)",
-      "Bash(python3.11 -m py_compile app/core/config.py)"
+      "Bash(python3.11 -m py_compile app/core/config.py)",
+      "Bash(echo \"pid $!\")",
+      "Bash(sleep 15 && cat /tmp/expo-start.log)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:8081)",
+      "Bash(curl -s \"http://localhost:8081/index.bundle?platform=web&dev=true\" -o /tmp/bundle.js -w \"HTTP %{http_code}, size: %{size_download} bytes\\\\n\")",
+      "Bash(curl -s http://localhost:8081)",
+      "Bash(curl -s \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=src%2Fapp&unstable_transformProfile=hermes-stable\" -o /tmp/bundle.js -w \"HTTP %{http_code}, size: %{size_download} bytes\\\\n\" --max-time 90)",
+      "Bash(pkill -f \"expo start --web\")",
+      "Bash(rm -f /tmp/bundle.js /tmp/expo-start.log)"
     ],
     "additionalDirectories": [
       "/private/tmp/prescripto-debug-venv"

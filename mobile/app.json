@@ -7,11 +7,6 @@
     "icon": "./src/assets/Logo for Dawini.png",
     "userInterfaceStyle": "automatic",
     "scheme": "dawini",
-    "splash": {
-      "image": "./src/assets/Logo for Dawini.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0F172A"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -68,7 +63,16 @@
         }
       ],
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./src/assets/Logo for Dawini.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0F172A"
+        }
+      ]
     ],
     "extra": {
       "router": {},

@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     vignette: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         zIndex: 2,
     },
 });

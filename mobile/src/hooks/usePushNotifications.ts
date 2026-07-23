@@ -2,18 +2,28 @@ import { useState, useEffect, useRef } from 'react';
 import { Platform, Alert } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { authService } from '../services/auth';
-// push notifications
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+
+// Expo Go on Android removed remote push notification support in SDK 53+, and
+// touching this module's push APIs there throws synchronously. Local
+// medication-alarm notifications (useAlarmNotifications / reminderAlarmService)
+// use a separate, unaffected code path and keep working everywhere.
+const isPushUnsupportedHere =
+  Platform.OS === 'android' &&
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+if (!isPushUnsupportedHere) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 export function usePushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState('');
@@ -24,6 +34,10 @@ export function usePushNotifications() {
   const responseListener = useRef<Notifications.Subscription | null>(null);
 
   useEffect(() => {
+    if (isPushUnsupportedHere) {
+      return;
+    }
+
     registerForPushNotificationsAsync().then(token => {
         if (token) {
             setExpoPushToken(token);

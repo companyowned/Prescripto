@@ -57,7 +57,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         const inAuth       = segments[0] === '(auth)';
         const inOnboarding = segments[0] === '(onboarding)';
 
-        const inRoot = segments.length === 0;
+        const inRoot = (segments as string[]).length === 0;
 
         if (!onboardingDone && !inOnboarding) {
             router.replace('/(onboarding)');

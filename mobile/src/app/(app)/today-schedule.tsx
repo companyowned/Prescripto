@@ -112,7 +112,7 @@ export default function TodayScheduleScreen() {
                     </ScrollView>
 
                     <MockBottomTabs
-                        activeTab="schedule"
+                        activeTab="reminders"
                         onHomePress={() => router.push('/(app)/home')}
                         onRecordsPress={() => router.push('/(app)/history')}
                         onChatPress={() => router.push('/(app)/chat')}
