@@ -1,12 +1,20 @@
 /**
  * Reminder Alarm Service
  *
- * Schedules cascading local notifications for each reminder:
- *   - Primary: at the exact scheduled time
- *   - Follow-ups: every 5 minutes after (up to 20 min) if not acknowledged
+ * Schedules alarms for each reminder:
+ *   - Primary: a recurring, OS-level alarm (daily clock-time or fixed interval)
+ *     that keeps firing forever once scheduled — the OS re-arms it after every
+ *     firing, so it does NOT depend on the app being opened again.
+ *   - Follow-ups: one-shot notifications every 5 minutes after the primary
+ *     (up to 20 min) if not acknowledged, for today's remaining occurrence
+ *     only. These are refreshed opportunistically whenever the app schedules
+ *     (app open, reminder created/edited) — a best-effort escalation layer on
+ *     top of the always-firing primary alarm.
  *
- * When the user taps "Take Now" or "Snooze" on any notification, all
- * follow-up notifications for that reminder are cancelled.
+ * When the user taps "Take Now" or "Snooze" on any notification, the
+ * follow-up notifications for that specific slot are cancelled. The
+ * recurring primary alarm is never cancelled by this — it must keep firing
+ * on future days/intervals.
  */
 
 import * as Notifications from 'expo-notifications';
@@ -28,9 +36,32 @@ export type AlarmNotificationData = {
     dosage:          string | null;
     form:            string | null;
     instructions:    string | null;
-    scheduledAt:     string;  // ISO string of the original dose time
-    followUpIndex:   number;  // 0 = primary, 1-4 = follow-ups
+    hour:            number;   // clock hour for fixed-time alarms, -1 for interval-based
+    minute:          number;   // clock minute for fixed-time alarms, -1 for interval-based
+    scheduledAt?:    string;   // ISO string of the exact dose time (always set for follow-ups)
+    followUpIndex:   number;   // 0 = primary, 1-4 = follow-ups
+    // True for the persistent, OS-recurring primary alarm. Its `scheduledAt`
+    // (set once, at schedule time) goes stale after the first firing, since
+    // the same notification content is reused every time the OS re-fires it
+    // — callers must use resolveAlarmData() before trusting scheduledAt.
+    recurring?:      boolean;
 };
+
+/**
+ * Normalizes alarm data received from a notification event. For the
+ * recurring primary alarm, `scheduledAt` is recomputed as "today at this
+ * alarm's clock time" since the stored value is from whenever it was first
+ * scheduled, not from this particular firing.
+ */
+export function resolveAlarmData(data: AlarmNotificationData): AlarmNotificationData {
+    if (!data.recurring) return data;
+
+    const d = new Date();
+    if (data.hour >= 0 && data.minute >= 0) {
+        d.setHours(data.hour, data.minute, 0, 0);
+    }
+    return { ...data, scheduledAt: d.toISOString() };
+}
 
 // ── Android alarm channel setup ──────────────────────────────────────────────
 
@@ -76,31 +107,67 @@ export async function registerAlarmCategory() {
 
 // ── Notification identifier helpers ──────────────────────────────────────────
 
-function notifId(reminderId: string, followUpIndex: number, scheduledAt: string) {
+function pad2(n: number) {
+    return String(n).padStart(2, '0');
+}
+
+function primaryNotifId(reminderId: string, hour: number, minute: number) {
+    return `alarm_primary_${reminderId}_${pad2(hour)}${pad2(minute)}`;
+}
+
+function intervalNotifId(reminderId: string) {
+    return `alarm_primary_${reminderId}_interval`;
+}
+
+function followUpNotifId(reminderId: string, followUpIndex: number, scheduledAt: string) {
     // stable, unique per (reminder × time-slot × follow-up)
     const slot = new Date(scheduledAt).toISOString().slice(0, 16); // "2024-01-15T08:30"
     return `alarm_${reminderId}_${slot}_${followUpIndex}`;
 }
 
-// ── Schedule a single alarm notification ─────────────────────────────────────
-
-async function scheduleOne(
-    reminder: MedicationReminder,
-    triggerDate: Date,
-    followUpIndex: number,
-    originalScheduledAt: Date,
-) {
-    if (triggerDate.getTime() <= Date.now()) return; // skip past times
-
-    const isFollowUp = followUpIndex > 0;
-    const title = isFollowUp
-        ? `⚠️ Reminder: ${reminder.medication_name}`
-        : `💊 Time to take ${reminder.medication_name}`;
-
+function bodyFor(reminder: MedicationReminder) {
     const bodyParts = [reminder.dosage, reminder.form, reminder.instructions].filter(Boolean);
-    const body = bodyParts.length > 0
+    return bodyParts.length > 0
         ? bodyParts.join(' · ')
         : 'Tap "Taken" to confirm you took your medicine';
+}
+
+// ── Schedule the recurring primary alarm ─────────────────────────────────────
+
+async function schedulePrimaryDaily(reminder: MedicationReminder, hour: number, minute: number) {
+    const data: AlarmNotificationData = {
+        reminderId:     reminder.id,
+        medicationName: reminder.medication_name,
+        dosage:         reminder.dosage,
+        form:           reminder.form,
+        instructions:   reminder.instructions,
+        hour,
+        minute,
+        followUpIndex:  0,
+        recurring:      true,
+    };
+
+    try {
+        await Notifications.scheduleNotificationAsync({
+            identifier: primaryNotifId(reminder.id, hour, minute),
+            content: {
+                title: `💊 Time to take ${reminder.medication_name}`,
+                body: bodyFor(reminder),
+                data: data as any,
+                sound: true,
+                categoryIdentifier: CATEGORY_MEDICATION,
+            },
+            trigger: Platform.OS === 'android'
+                ? { type: 'daily', hour, minute, channelId: ALARM_CHANNEL } as any
+                : { type: 'daily', hour, minute } as any,
+        });
+    } catch (e) {
+        if (__DEV__) console.warn(`schedulePrimaryDaily failed for reminder ${reminder.id}:`, e);
+    }
+}
+
+async function scheduleIntervalRecurring(reminder: MedicationReminder) {
+    if (!reminder.interval_hours) return;
 
     const data: AlarmNotificationData = {
         reminderId:     reminder.id,
@@ -108,16 +175,59 @@ async function scheduleOne(
         dosage:         reminder.dosage,
         form:           reminder.form,
         instructions:   reminder.instructions,
+        hour:           -1,
+        minute:         -1,
+        followUpIndex:  0,
+        recurring:      true,
+    };
+
+    try {
+        await Notifications.scheduleNotificationAsync({
+            identifier: intervalNotifId(reminder.id),
+            content: {
+                title: `💊 Time to take ${reminder.medication_name}`,
+                body: bodyFor(reminder),
+                data: data as any,
+                sound: true,
+                categoryIdentifier: CATEGORY_MEDICATION,
+            },
+            trigger: Platform.OS === 'android'
+                ? { type: 'timeInterval', seconds: Math.round(reminder.interval_hours * 3600), repeats: true, channelId: ALARM_CHANNEL } as any
+                : { type: 'timeInterval', seconds: Math.round(reminder.interval_hours * 3600), repeats: true } as any,
+        });
+    } catch (e) {
+        if (__DEV__) console.warn(`scheduleIntervalRecurring failed for reminder ${reminder.id}:`, e);
+    }
+}
+
+// ── Schedule a one-shot follow-up alarm ──────────────────────────────────────
+
+async function scheduleFollowUp(
+    reminder: MedicationReminder,
+    triggerDate: Date,
+    followUpIndex: number,
+    originalScheduledAt: Date,
+) {
+    if (triggerDate.getTime() <= Date.now()) return; // skip past times
+
+    const data: AlarmNotificationData = {
+        reminderId:     reminder.id,
+        medicationName: reminder.medication_name,
+        dosage:         reminder.dosage,
+        form:           reminder.form,
+        instructions:   reminder.instructions,
+        hour:           triggerDate.getHours(),
+        minute:         triggerDate.getMinutes(),
         scheduledAt:    originalScheduledAt.toISOString(),
         followUpIndex,
     };
 
     try {
         await Notifications.scheduleNotificationAsync({
-            identifier: notifId(reminder.id, followUpIndex, originalScheduledAt.toISOString()),
+            identifier: followUpNotifId(reminder.id, followUpIndex, originalScheduledAt.toISOString()),
             content: {
-                title,
-                body,
+                title: `⚠️ Reminder: ${reminder.medication_name}`,
+                body: bodyFor(reminder),
                 data: data as any,
                 sound: true,
                 categoryIdentifier: CATEGORY_MEDICATION,
@@ -127,43 +237,38 @@ async function scheduleOne(
                 : { type: 'date', date: triggerDate } as any,
         });
     } catch (e) {
-        if (__DEV__) console.warn(`scheduleOne failed for reminder ${reminder.id}:`, e);
+        if (__DEV__) console.warn(`scheduleFollowUp failed for reminder ${reminder.id}:`, e);
     }
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
- * Schedule all alarms for a single reminder (today's slots only).
- * Each slot gets a primary notification + up to 4 follow-up notifications.
+ * Schedule all alarms for a single reminder: a persistent, OS-recurring
+ * primary alarm (fires every day/interval forever, independent of the app),
+ * plus today's remaining follow-up escalation chain.
  */
 export async function scheduleReminderAlarms(reminder: MedicationReminder) {
     if (!reminder.is_active) return;
 
     await cancelReminderAlarms(reminder.id);
 
-    const today = new Date();
-    const slots: Date[] = [];
-
     if (reminder.schedule_type === 'fixed_times' && reminder.times?.length) {
         for (const t of reminder.times) {
             const [h, m] = t.split(':').map(Number);
-            const d = new Date(today);
-            d.setHours(h, m, 0, 0);
-            // If this time is in the past, skip (notifications already missed)
-            if (d.getTime() > Date.now()) slots.push(d);
+            await schedulePrimaryDaily(reminder, h, m);
+
+            const slot = new Date();
+            slot.setHours(h, m, 0, 0);
+            if (slot.getTime() > Date.now()) {
+                for (let i = 0; i < FOLLOWUP_OFFSETS.length; i++) {
+                    const followUpTime = new Date(slot.getTime() + FOLLOWUP_OFFSETS[i] * 60 * 1000);
+                    await scheduleFollowUp(reminder, followUpTime, i + 1, slot);
+                }
+            }
         }
     } else if (reminder.schedule_type === 'interval' && reminder.interval_hours) {
-        const next = new Date(Date.now() + reminder.interval_hours * 3600 * 1000);
-        slots.push(next);
-    }
-
-    for (const slot of slots) {
-        await scheduleOne(reminder, slot, 0, slot);
-        for (let i = 0; i < FOLLOWUP_OFFSETS.length; i++) {
-            const followUpTime = new Date(slot.getTime() + FOLLOWUP_OFFSETS[i] * 60 * 1000);
-            await scheduleOne(reminder, followUpTime, i + 1, slot);
-        }
+        await scheduleIntervalRecurring(reminder);
     }
 }
 
@@ -180,12 +285,14 @@ export async function cancelReminderAlarms(reminderId: string) {
 }
 
 /**
- * Cancel a single alarm slot's follow-up chain.
+ * Cancel a single alarm slot's follow-up chain (today's escalation only).
+ * The recurring primary alarm is intentionally left alone — it must keep
+ * firing on future days/intervals.
  * Call this when "Taken" or "Snooze" is tapped for a specific scheduled time.
  */
 export async function cancelAlarmSlot(reminderId: string, scheduledAt: string) {
-    for (let i = 0; i <= MAX_FOLLOWUPS; i++) {
-        const id = notifId(reminderId, i, scheduledAt);
+    for (let i = 1; i <= MAX_FOLLOWUPS; i++) {
+        const id = followUpNotifId(reminderId, i, scheduledAt);
         await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
     }
 }

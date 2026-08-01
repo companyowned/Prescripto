@@ -45,6 +45,27 @@ export const biometricAuthService = {
         return linkedEmail !== email.trim().toLowerCase();
     },
 
+    /**
+     * Silently refreshes the stored token for an already-linked email, without
+     * re-prompting for fingerprint auth. Call this after every successful
+     * password login so the biometric login stays valid — otherwise the token
+     * captured at `enable()` time never changes and eventually expires even
+     * though the user keeps signing in with a password in the meantime.
+     * No-op if this device isn't linked to `email`.
+     */
+    async refreshLinkedToken(email: string, token: string): Promise<void> {
+        const linkedEmail = await this.getLinkedEmail();
+        if (linkedEmail !== email.trim().toLowerCase()) return;
+
+        await SecureStore.setItemAsync(
+            BIOMETRIC_CREDENTIALS_KEY,
+            JSON.stringify({
+                email: linkedEmail,
+                token,
+            } satisfies StoredBiometricData)
+        );
+    },
+
     async enable(email: string, token: string): Promise<void> {
         const canUseBiometrics = await this.canUseBiometrics();
         if (!canUseBiometrics) {

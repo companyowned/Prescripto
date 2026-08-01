@@ -14,6 +14,7 @@ import {
     ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -127,6 +128,10 @@ export default function LoginScreen() {
         try {
             const normalizedEmail = email.trim().toLowerCase();
             const tokenResponse = await authService.login({ email: normalizedEmail, password });
+            // Keep an already-linked device's fingerprint login alive — otherwise the
+            // token captured once at setup time goes stale even though the user keeps
+            // signing in with a password in the meantime.
+            await biometricAuthService.refreshLinkedToken(normalizedEmail, tokenResponse.access_token);
             await maybeEnableBiometricLogin(normalizedEmail, tokenResponse.access_token);
             signIn(); // Update AuthGate state → triggers navigation to home
         } catch (err: any) {
@@ -153,12 +158,20 @@ export default function LoginScreen() {
             // Verify the stored token is still valid before navigating in
             try {
                 await authService.getCurrentUser();
-            } catch {
-                // Token has expired — clear the stale biometric link and ask for password
+            } catch (verifyErr: any) {
                 await authService.logout();
-                await biometricAuthService.disable();
-                await refreshBiometricState();
-                setError('Your session has expired. Please sign in with your password to re-enable fingerprint login.');
+                if (verifyErr?.response?.status === 401) {
+                    // Token is genuinely invalid/expired — clear the stale biometric
+                    // link and ask for a password sign-in to re-enable it.
+                    await biometricAuthService.disable();
+                    await refreshBiometricState();
+                    setError('Your session has expired. Please sign in with your password to re-enable fingerprint login.');
+                } else {
+                    // Transient failure (network/server issue) — keep the fingerprint
+                    // link intact so the user can just try again, instead of forcing
+                    // a full password sign-in every time this happens.
+                    setError(getApiErrorMessage(verifyErr, 'Could not verify your session. Check your connection and try again.'));
+                }
                 return;
             }
 
@@ -238,6 +251,7 @@ export default function LoginScreen() {
 
                             <View style={styles.loginActions}>
                                 <Button
+                                    testID="sign-in-button"
                                     title="Sign In"
                                     onPress={handleLogin}
                                     loading={loading}
@@ -246,12 +260,21 @@ export default function LoginScreen() {
                                 />
                                 {biometricAvailable ? (
                                     <Button
-                                        title="⌾"
+                                        testID="fingerprint-login-button"
+                                        title=""
                                         onPress={handleBiometricLogin}
                                         loading={biometricLoading}
                                         disabled={!biometricEmail || loading}
                                         variant="outline"
                                         size="lg"
+                                        icon={
+                                            <Ionicons
+                                                testID="icon-finger-print"
+                                                name="finger-print"
+                                                size={28}
+                                                color={colors.primary[400]}
+                                            />
+                                        }
                                         style={styles.fingerprintButton}
                                     />
                                 ) : null}

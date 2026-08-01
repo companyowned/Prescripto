@@ -21,11 +21,12 @@ interface ButtonProps {
     icon?: React.ReactNode;
     style?: ViewStyle;
     haptic?: boolean;
+    testID?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
     title, onPress, variant = 'primary', size = 'md',
-    loading = false, disabled = false, icon, style, haptic = true,
+    loading = false, disabled = false, icon, style, haptic = true, testID,
 }) => {
     const isDisabled = disabled || loading;
     const scale = useSharedValue(1);
@@ -63,6 +64,7 @@ export const Button: React.FC<ButtonProps> = ({
     return (
         <Animated.View style={[containerStyle, animatedStyle]}>
             <Pressable
+                testID={testID}
                 onPress={handlePress}
                 disabled={isDisabled}
                 onPressIn={handlePressIn}
@@ -99,7 +101,7 @@ export const Button: React.FC<ButtonProps> = ({
                     ) : (
                         <>
                             {icon}
-                            <Text style={textStyle}>{title}</Text>
+                            {title ? <Text style={textStyle}>{title}</Text> : null}
                         </>
                     )}
                 </View>

@@ -18,6 +18,7 @@ import {
     cancelAlarmSlot,
     setupAlarmChannel,
     registerAlarmCategory,
+    resolveAlarmData,
 } from '../services/reminderAlarmService';
 import { remindersApi } from '../features/reminders/api';
 
@@ -35,9 +36,9 @@ export function useAlarmNotifications() {
     // ── Foreground notifications → show in-app overlay ───────────────────────
     useEffect(() => {
         const sub = Notifications.addNotificationReceivedListener((notification) => {
-            const data = notification.request.content.data as AlarmNotificationData | undefined;
-            if (data?.reminderId) {
-                setActiveAlarm(data);
+            const raw = notification.request.content.data as AlarmNotificationData | undefined;
+            if (raw?.reminderId) {
+                setActiveAlarm(resolveAlarmData(raw));
             }
         });
         return () => sub.remove();
@@ -50,7 +51,7 @@ export function useAlarmNotifications() {
 
         try {
             // Cancel the entire notification cascade for this slot
-            await cancelAlarmSlot(alarm.reminderId, alarm.scheduledAt);
+            await cancelAlarmSlot(alarm.reminderId, alarm.scheduledAt ?? new Date().toISOString());
 
             // Find the dose event for this reminder and mark it taken
             if (Platform.OS !== 'web') {
@@ -81,7 +82,7 @@ export function useAlarmNotifications() {
         try {
             // Cancel the current slot's cascade (there will be follow-ups already scheduled,
             // but we add an explicit 10-min reschedule as a clean "snooze")
-            await cancelAlarmSlot(alarm.reminderId, alarm.scheduledAt);
+            await cancelAlarmSlot(alarm.reminderId, alarm.scheduledAt ?? new Date().toISOString());
 
             // Schedule a new alarm 10 minutes from now
             const snoozeTime = new Date(Date.now() + 10 * 60 * 1000);
@@ -92,8 +93,11 @@ export function useAlarmNotifications() {
                     body: [alarm.dosage, alarm.form].filter(Boolean).join(' · ') || 'Time to take your medicine',
                     data: {
                         ...alarm,
+                        hour: snoozeTime.getHours(),
+                        minute: snoozeTime.getMinutes(),
                         scheduledAt: snoozeTime.toISOString(),
                         followUpIndex: 0,
+                        recurring: false,
                     } as any,
                     sound: true,
                     categoryIdentifier: 'MEDICATION_ALARM',
@@ -128,8 +132,9 @@ export function useAlarmNotifications() {
     // Defined after handleTaken/handleSnooze to avoid temporal dead zone in dep array
     useEffect(() => {
         const sub = Notifications.addNotificationResponseReceivedListener(async (response) => {
-            const data = response.notification.request.content.data as AlarmNotificationData | undefined;
-            if (!data?.reminderId || processingRef.current) return;
+            const raw = response.notification.request.content.data as AlarmNotificationData | undefined;
+            if (!raw?.reminderId || processingRef.current) return;
+            const data = resolveAlarmData(raw);
 
             const actionId = response.actionIdentifier;
 
