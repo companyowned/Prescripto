@@ -7,6 +7,8 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFonts } from 'expo-font';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { authService } from '../services/auth';
 import { ThemeProvider } from '../contexts/theme-context';
 import { LanguageProvider } from '../contexts/language-context';
@@ -78,6 +80,16 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
+    // Preload icon fonts before any screen mounts — otherwise the first Icon
+    // component rendered in the app's lifecycle (e.g. login's fingerprint
+    // button) can render blank permanently on a cold start.
+    const [iconFontsLoaded] = useFonts({
+        ...Ionicons.font,
+        ...MaterialCommunityIcons.font,
+    });
+
+    if (!iconFontsLoaded) return null;
+
     return (
         <GestureHandlerRootView style={StyleSheet.absoluteFill}>
             <QueryClientProvider client={queryClient}>

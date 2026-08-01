@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Platform } from 'react-native';
 import apiClient from '../../services/apiClient';
 import { authService } from '../../services/auth';
@@ -40,18 +41,22 @@ export const documentsApi = {
         }
 
         const baseUrl = apiClient.defaults.baseURL || 'https://prescripto-taupe-ten.vercel.app/api/v1';
-        const response = await fetch(`${baseUrl}/documents`, {
-            method: 'POST',
-            body: formData,
-            headers,
-        });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => null);
-            throw new Error(errorData?.detail || `Upload failed with status ${response.status}`);
+        // Native uploads use axios (XMLHttpRequest transport) rather than global fetch:
+        // RN's New Architecture fetch implementation throws "Unsupported FormDataPart
+        // implementation" for the {uri,name,type} file part shape that expo-camera /
+        // expo-image-picker / expo-document-picker produce.
+        try {
+            const response = await axios.post<DocumentUploadResponse>(`${baseUrl}/documents`, formData, {
+                headers,
+            });
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(error.response?.data?.detail || `Upload failed with status ${error.response?.status}`);
+            }
+            throw error;
         }
-
-        return await response.json();
     },
 
     async getDocument(documentId: string): Promise<DocumentResponse> {
