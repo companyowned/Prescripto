@@ -70,7 +70,11 @@
       "Bash(python3 -c \"import fastapi\")",
       "Bash(python3 -m venv /private/tmp/claude-501/-Users-hazemmahmoud-Downloads-Repo-Dawini-Prescripto/ff10fd43-4490-401d-9268-8f31d731f9e8/scratchpad/venv)",
       "Bash(/private/tmp/claude-501/-Users-hazemmahmoud-Downloads-Repo-Dawini-Prescripto/ff10fd43-4490-401d-9268-8f31d731f9e8/scratchpad/venv/bin/pip install *)",
-      "Bash(/private/tmp/claude-501/-Users-hazemmahmoud-Downloads-Repo-Dawini-Prescripto/ff10fd43-4490-401d-9268-8f31d731f9e8/scratchpad/venv/bin/python -c ' *)"
+      "Bash(/private/tmp/claude-501/-Users-hazemmahmoud-Downloads-Repo-Dawini-Prescripto/ff10fd43-4490-401d-9268-8f31d731f9e8/scratchpad/venv/bin/python -c ' *)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://prescripto-taupe-ten.vercel.app/api/v1/documents/1139ab19-ff35-47ad-b635-42c1c6a630e7/file\")",
+      "Bash(git fetch *)",
+      "Bash(vercel ls *)",
+      "Bash(vercel inspect *)"
     ],
     "additionalDirectories": [
       "/private/tmp/prescripto-debug-venv"

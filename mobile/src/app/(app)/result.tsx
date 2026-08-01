@@ -69,6 +69,36 @@ export default function ResultScreen() {
         ? { Authorization: `Bearer ${authToken}` }
         : undefined;
 
+    // Web's <img> can't send custom headers, so fetch the authenticated file
+    // ourselves and hand the Image component a local blob: URL instead.
+    const [webImageUri, setWebImageUri] = useState<string | null>(null);
+    useEffect(() => {
+        if (Platform.OS !== 'web' || !fileUrl || !authToken) return;
+        let cancelled = false;
+        let objectUrl: string | null = null;
+
+        fetch(fileUrl, { headers: { Authorization: `Bearer ${authToken}` } })
+            .then((res) => {
+                if (!res.ok) throw new Error(`Failed to load document file: ${res.status}`);
+                return res.blob();
+            })
+            .then((blob) => {
+                if (cancelled) return;
+                objectUrl = URL.createObjectURL(blob);
+                setWebImageUri(objectUrl);
+            })
+            .catch(() => {
+                if (!cancelled) setWebImageUri(null);
+            });
+
+        return () => {
+            cancelled = true;
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+        };
+    }, [fileUrl, authToken]);
+
+    const displayImageUri = Platform.OS === 'web' ? webImageUri : fileUrl;
+
     const followUpRequests = prescription?.follow_up_requests || [];
     const labRequests = followUpRequests.filter((r) => r.kind === 'lab');
 
@@ -206,7 +236,7 @@ export default function ResultScreen() {
                                     style={styles.scanThumbWrapper}
                                 >
                                     <Image
-                                        source={{ uri: fileUrl, headers: imageHeaders }}
+                                        source={{ uri: displayImageUri ?? undefined, headers: imageHeaders }}
                                         style={styles.scanThumb}
                                         resizeMode="cover"
                                     />
@@ -260,9 +290,9 @@ export default function ResultScreen() {
                             </SafeAreaView>
 
                             {/* Image */}
-                            {fileUrl && (
+                            {displayImageUri && (
                                 <Image
-                                    source={{ uri: fileUrl, headers: imageHeaders }}
+                                    source={{ uri: displayImageUri, headers: imageHeaders }}
                                     style={styles.modalImage}
                                     resizeMode="contain"
                                 />
