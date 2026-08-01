@@ -23,7 +23,8 @@ class N8nClient:
 
     async def run_workflow(
         self,
-        file_path: Optional[str] = None,
+        file_content: Optional[bytes] = None,
+        file_name: Optional[str] = None,
         text_input: Optional[str] = None,
         extra_data: Optional[dict] = None,
     ) -> dict:
@@ -31,7 +32,8 @@ class N8nClient:
         Execute an n8n workflow and return the JSON output.
 
         Args:
-            file_path: Path to the file to process
+            file_content: Raw bytes of the file to process
+            file_name: Original filename, sent alongside file_content
             text_input: Alternative text input (for text trigger)
             extra_data: Additional fields to send to the webhook
         """
@@ -52,17 +54,16 @@ class N8nClient:
 
             # Prepare request based on input type
             async with httpx.AsyncClient(timeout=120.0) as client:
-                if file_path:
-                    with open(file_path, "rb") as f:
-                        # Send as "data" so n8n OCR node finds it in the binary 'data' field
-                        files = {"data": f}
-                        data = extra_data or {}
-                        response = await client.post(
-                            self.webhook_url,
-                            headers=headers,
-                            files=files,
-                            data=data,
-                        )
+                if file_content:
+                    # Send as "data" so n8n OCR node finds it in the binary 'data' field
+                    files = {"data": (file_name or "upload", file_content)}
+                    data = extra_data or {}
+                    response = await client.post(
+                        self.webhook_url,
+                        headers=headers,
+                        files=files,
+                        data=data,
+                    )
                 elif text_input:
                     payload = {"input": text_input, **(extra_data or {})}
                     response = await client.post(
@@ -71,7 +72,7 @@ class N8nClient:
                         json=payload,
                     )
                 else:
-                    raise ValueError("Either file_path or text_input must be provided")
+                    raise ValueError("Either file_content or text_input must be provided")
 
             response.raise_for_status()
 

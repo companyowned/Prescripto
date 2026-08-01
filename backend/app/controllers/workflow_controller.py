@@ -17,6 +17,7 @@ from app.repos.prescription_repo import (
 )
 from app.models.document import DocumentStatus
 from app.schemas.prescription import NormalizedPrescriptionOutput
+from app.utils.file_storage import FileStorage
 from app.utils.n8n_client import N8nClient
 from app.utils.parsing import parse_workflow_output
 
@@ -49,9 +50,13 @@ class WorkflowController:
 
             # 3. Call n8n webhook
             await JobRepo.update_status(db, job_id, JobStatus.PROCESSING, progress=30)
+            file_content = await FileStorage.read_file(doc.file_url)
+            if file_content is None:
+                raise Exception(f"Document {document_id} file could not be read from storage")
             client = N8nClient()
             raw_output = await client.run_workflow(
-                file_path=doc.file_url,
+                file_content=file_content,
+                file_name=doc.original_filename,
                 extra_data={"purpose": doc.purpose}
             )
 

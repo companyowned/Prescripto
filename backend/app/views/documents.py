@@ -1,11 +1,9 @@
 """Document API router — upload, status, and management."""
 
 import mimetypes
-import os
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import get_current_user
@@ -14,6 +12,7 @@ from app.models.user import User
 from app.controllers.document_controller import DocumentController
 from app.schemas.document import DocumentUploadResponse, DocumentResponse
 from app.schemas.job import JobStatusResponse
+from app.utils.file_storage import FileStorage
 
 router = APIRouter(tags=["Documents"])
 
@@ -96,14 +95,16 @@ async def get_document_file(
 ):
     """Stream the raw file (image or PDF) for a document the caller has read access to."""
     doc = await DocumentController.get_document(db, document_id, current_user.id)
-    file_path = doc.file_url
-    if not os.path.exists(file_path):
+    content = await FileStorage.read_file(doc.file_url)
+    if content is None:
         raise HTTPException(status_code=404, detail="File not available on server")
-    mime = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
-    return FileResponse(
-        path=file_path,
+    mime = mimetypes.guess_type(doc.original_filename or doc.file_url)[0] or "application/octet-stream"
+    return Response(
+        content=content,
         media_type=mime,
-        filename=doc.original_filename or "document",
+        headers={
+            "Content-Disposition": f'inline; filename="{doc.original_filename or "document"}"'
+        },
     )
 
 

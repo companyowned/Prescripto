@@ -54,6 +54,10 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
 
+    # Vercel Blob — used for uploaded document storage when set; falls back to
+    # local disk (dev only) when empty, since local disk is ephemeral on Vercel.
+    BLOB_READ_WRITE_TOKEN: str = ""
+
     # n8n
     N8N_WEBHOOK_URL: str = ""
     N8N_AUTH_KEY: str = ""

@@ -57,7 +57,20 @@
       "Bash(curl -s http://localhost:8081)",
       "Bash(curl -s \"http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=src%2Fapp&unstable_transformProfile=hermes-stable\" -o /tmp/bundle.js -w \"HTTP %{http_code}, size: %{size_download} bytes\\\\n\" --max-time 90)",
       "Bash(pkill -f \"expo start --web\")",
-      "Bash(rm -f /tmp/bundle.js /tmp/expo-start.log)"
+      "Bash(rm -f /tmp/bundle.js /tmp/expo-start.log)",
+      "Bash(grep -Ei '\\\\.\\(tsx|ts|js|jsx\\)$')",
+      "Read(//Users/hazemmahmoud/Downloads/Repo/Dawini/**)",
+      "Bash(vercel blob *)",
+      "Bash(vercel project *)",
+      "Bash(vercel link *)",
+      "Bash(yes)",
+      "Bash(vercel env *)",
+      "Bash(python3 -c ' *)",
+      "Bash(pip3 show *)",
+      "Bash(python3 -c \"import fastapi\")",
+      "Bash(python3 -m venv /private/tmp/claude-501/-Users-hazemmahmoud-Downloads-Repo-Dawini-Prescripto/ff10fd43-4490-401d-9268-8f31d731f9e8/scratchpad/venv)",
+      "Bash(/private/tmp/claude-501/-Users-hazemmahmoud-Downloads-Repo-Dawini-Prescripto/ff10fd43-4490-401d-9268-8f31d731f9e8/scratchpad/venv/bin/pip install *)",
+      "Bash(/private/tmp/claude-501/-Users-hazemmahmoud-Downloads-Repo-Dawini-Prescripto/ff10fd43-4490-401d-9268-8f31d731f9e8/scratchpad/venv/bin/python -c ' *)"
     ],
     "additionalDirectories": [
       "/private/tmp/prescripto-debug-venv"
