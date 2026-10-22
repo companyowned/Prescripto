@@ -16,16 +16,17 @@ Prescripto is a full-stack medical app that digitizes handwritten prescriptions 
 ## 🏗 Architecture
 
 1. **Mobile (Expo / React Native)**
+
    - Authentication
    - Scan/upload prescription documents
    - History and profile views
-
 2. **Backend (FastAPI / SQLAlchemy)**
+
    - JWT authentication
    - Document and prescription APIs
    - DB access via async SQLAlchemy
-
 3. **AI Workflow (n8n, optional)**
+
    - Webhook-based extraction/parsing pipeline
    - Can be enabled/disabled with env vars
 
