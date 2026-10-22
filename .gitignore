@@ -155,3 +155,7 @@ backend/.env
 mobile/.env
 .vercel
 .env*.local
+
+# Expo CNG — native folders are generated from app.json by prebuild/EAS
+mobile/ios/
+mobile/android/

@@ -13,6 +13,9 @@ import { authService } from '../services/auth';
 import { ThemeProvider } from '../contexts/theme-context';
 import { LanguageProvider } from '../contexts/language-context';
 
+// Show a recoverable error screen instead of crashing the app on render errors
+export { ErrorBoundary } from 'expo-router';
+
 const ONBOARDING_KEY = '@dawini_onboarding_done';
 
 const queryClient = new QueryClient({
@@ -35,9 +38,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     // On mount: check auth status AND whether onboarding was already completed
     useEffect(() => {
         const bootstrap = async () => {
+            // A storage failure (e.g. Android keystore reset after reinstall)
+            // must not leave the app stuck on a blank screen.
             const [authed, stored] = await Promise.all([
-                authService.isAuthenticated(),
-                AsyncStorage.getItem(ONBOARDING_KEY),
+                authService.isAuthenticated().catch(() => false),
+                AsyncStorage.getItem(ONBOARDING_KEY).catch(() => null),
             ]);
             setIsAuthenticated(authed);
             setOnboardingDone(stored === 'true');
@@ -83,12 +88,12 @@ export default function RootLayout() {
     // Preload icon fonts before any screen mounts — otherwise the first Icon
     // component rendered in the app's lifecycle (e.g. login's fingerprint
     // button) can render blank permanently on a cold start.
-    const [iconFontsLoaded] = useFonts({
+    const [iconFontsLoaded, iconFontsError] = useFonts({
         ...Ionicons.font,
         ...MaterialCommunityIcons.font,
     });
 
-    if (!iconFontsLoaded) return null;
+    if (!iconFontsLoaded && !iconFontsError) return null;
 
     return (
         <GestureHandlerRootView style={StyleSheet.absoluteFill}>
